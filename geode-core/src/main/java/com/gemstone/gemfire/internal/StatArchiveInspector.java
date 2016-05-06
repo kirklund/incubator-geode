@@ -42,22 +42,18 @@ public class StatArchiveInspector {
   }
 
   public String inspect() {
-    StringBuilder sb = new StringBuilder();
 
     Properties props = config;
-    System.out.println(props);
     Set<String> propertyKeys = props.stringPropertyNames();
 
+    StringBuilder sb = new StringBuilder();
     for (Iterator iterator = propertyKeys.iterator(); iterator.hasNext();) {
+
       String propertyKey = (String)iterator.next();
       int limit = Integer.valueOf(props.getProperty(propertyKey)).intValue();
       String[] statNameValues = propertyKey.split("\\.");
-      System.out.println("snv = " + statNameValues + " p = " + propertyKey);
       String currentTypeName = statNameValues[0];
       String currentStatName = statNameValues[1];
-      System.out.println("StatType = " + currentTypeName);
-      System.out.println("StatName = " + currentStatName);
-      System.out.println("limit = " + limit);
 
       StatSpec statSpec = new StatSpec() {
         @Override
@@ -83,19 +79,15 @@ public class StatArchiveInspector {
         }
       };
       for (StatValue v: this.reader.matchSpec(statSpec)) {
-/*
-        if (v.getSnapshotsMaximum() > (double)limit) {
-          sb.append(currentTypeName + "." + currentStatName + " detected in: ").append(getArchives(v)).append(System.lineSeparator());
-        }
-*/
-        double[] statSamples = v.getRawSnapshots();
+        double[] statSamples = v.getSnapshots();
         int thresholdCrossings = 0;
         for (int i = 0; i < statSamples.length; i++) {
-          if (statSamples[i] >= limit) {
+          if (statSamples[i] > limit) {
             thresholdCrossings++;
           }
         }
-        sb.append(currentTypeName + "." + currentStatName + " crossed threshold of " + limit +  " " + thresholdCrossings/v.getSnapshotsSize() + " percent of the time in : ").append(getArchives(v)).append(System.lineSeparator());
+        double percentage = ((double)thresholdCrossings/(double)v.getSnapshotsSize()) * 100.0;
+        sb.append(currentTypeName + "." + currentStatName + " crossed threshold of " + limit +  " " + percentage + " percent of the time in : ").append(getArchives(v)).append(System.lineSeparator());
       }
       try {
         this.reader.close();
