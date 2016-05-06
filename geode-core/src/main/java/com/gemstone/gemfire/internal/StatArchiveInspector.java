@@ -18,7 +18,9 @@ package com.gemstone.gemfire.internal;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
@@ -38,54 +40,82 @@ public class StatArchiveInspector {
     this.reader = new StatArchiveReader(archiveNames, null, true);
     this.config = config;
   }
-  
+
   public String inspect() {
     StringBuilder sb = new StringBuilder();
-    StatSpec jvmPauseSpec = new StatSpec() {
-      @Override
-      public boolean archiveMatches(File archive) {
-        return true;
-      }
-      @Override
-      public boolean typeMatches(String typeName) {
-        return typeName.equals("StatSampler");
-      }
-      @Override
-      public boolean statMatches(String statName) {
-        return statName.equals("jvmPauses");
-      }
 
-      @Override
-      public boolean instanceMatches(String textId, long numericId) {
-        return true;
+    Properties props = config;
+    System.out.println(props);
+    Set<String> propertyKeys = props.stringPropertyNames();
+
+    for (Iterator iterator = propertyKeys.iterator(); iterator.hasNext();) {
+      String propertyKey = (String)iterator.next();
+      int limit = Integer.valueOf(props.getProperty(propertyKey)).intValue();
+      String[] statNameValues = propertyKey.split("\\.");
+      System.out.println("snv = " + statNameValues + " p = " + propertyKey);
+      String currentTypeName = statNameValues[0];
+      String currentStatName = statNameValues[1];
+      System.out.println("StatType = " + currentTypeName);
+      System.out.println("StatName = " + currentStatName);
+      System.out.println("limit = " + limit);
+
+      StatSpec statSpec = new StatSpec() {
+        @Override
+        public boolean archiveMatches(File archive) {
+          return true;
+        }
+        @Override
+        public boolean typeMatches(String typeName) {
+          return typeName.equals(currentTypeName);
+        }
+        @Override
+        public boolean statMatches(String statName) {
+          return statName.equals(currentStatName);
+        }
+  
+        @Override
+        public boolean instanceMatches(String textId, long numericId) {
+          return true;
+        }
+        @Override
+        public int getCombineType() {
+          return NONE;
+        }
+      };
+      for (StatValue v: this.reader.matchSpec(statSpec)) {
+/*
+        if (v.getSnapshotsMaximum() > (double)limit) {
+          sb.append(currentTypeName + "." + currentStatName + " detected in: ").append(getArchives(v)).append(System.lineSeparator());
+        }
+*/
+        double[] statSamples = v.getRawSnapshots();
+        int thresholdCrossings = 0;
+        for (int i = 0; i < statSamples.length; i++) {
+          if (statSamples[i] >= limit) {
+            thresholdCrossings++;
+          }
+        }
+        sb.append(currentTypeName + "." + currentStatName + " crossed threshold of " + limit +  " " + thresholdCrossings/v.getSnapshotsSize() + " percent of the time in : ").append(getArchives(v)).append(System.lineSeparator());
       }
-      @Override
-      public int getCombineType() {
-        return NONE;
+      try {
+        this.reader.close();
+      } catch (IOException e) {
+        // ignore IOExceptions on close
       }
-    };
-    for (StatValue jvmPauseValue: this.reader.matchSpec(jvmPauseSpec)) {
-      if (jvmPauseValue.getSnapshotsMaximum() > 0.0) {
-        sb.append("jvmPause detected in: ").append(getArchives(jvmPauseValue)).append(System.lineSeparator());
-      }
-    }
-    try {
-      this.reader.close();
-    } catch (IOException e) {
-      // ignore IOExceptions on close
     }
     return sb.toString();
   }
   
-  private Set<File> getArchives(StatValue jvmPauseValue) {
+  private Set<File> getArchives(StatValue statValue) {
     HashSet<File> result = new HashSet<>();
-    for (ResourceInst resource: jvmPauseValue.getResources()) {
+    for (ResourceInst resource: statValue.getResources()) {
       result.add(resource.getArchive().getFile());
     }
     return result;
   }
 
   public static void main(String[] args) throws IOException {
+
     File[] files = new File[args.length];
     int i = 0;
     for (String arg: args) {
