@@ -21,16 +21,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import com.gemstone.gemfire.internal.StatArchiveInspector;
+
 public class Inspector {
 
   private final Properties config;
+  private final StatArchiveInspector statArchiveInspector;
 
   public Inspector() {
-    this.config = readDefaultProperties();
+    this(null, null);
   }
 
   public Inspector(File[] statFiles, File[] logFiles) {
     this.config = readDefaultProperties();
+    try {
+      this.statArchiveInspector = new StatArchiveInspector(this.config, statFiles);
+    } catch (IOException e) {
+      throw new Error("Failed to create StatArchiveInspector", e);
+    }
   }
 
   Properties getConfig() {

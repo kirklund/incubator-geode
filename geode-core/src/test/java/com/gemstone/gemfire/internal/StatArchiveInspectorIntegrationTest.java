@@ -24,6 +24,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
@@ -72,7 +73,7 @@ public class StatArchiveInspectorIntegrationTest {
     File targetFile2 = copyResource("jvmPauses2.gfs");
     File targetFile3 = copyResource("noJvmPause.gfs");
     
-    StatArchiveInspector inspector = new StatArchiveInspector(new File[]{targetFile, targetFile2});
+    StatArchiveInspector inspector = new StatArchiveInspector(new Properties(), new File[]{targetFile, targetFile2});
     String result = inspector.inspect();
     System.out.println(result);
     assertThat(result).containsPattern("jvmPause detected.*"+targetFile.getAbsolutePath());

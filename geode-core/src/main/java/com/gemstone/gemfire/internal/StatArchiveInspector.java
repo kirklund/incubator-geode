@@ -19,6 +19,7 @@ package com.gemstone.gemfire.internal;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 
 import com.gemstone.gemfire.internal.StatArchiveReader.ResourceInst;
@@ -27,10 +28,15 @@ import com.gemstone.gemfire.internal.StatArchiveReader.StatValue;
 
 public class StatArchiveInspector {
 
+  private final Properties config;
   private final StatArchiveReader reader;
   
-  public StatArchiveInspector(File[] archiveNames) throws IOException {
+  public StatArchiveInspector(Properties config, File[] archiveNames) throws IOException {
+    if (config == null) {
+      throw new NullPointerException("Properties config is required");
+    }
     this.reader = new StatArchiveReader(archiveNames, null, true);
+    this.config = config;
   }
   
   public String inspect() {
@@ -86,7 +92,7 @@ public class StatArchiveInspector {
       files[i] = new File(arg);
       i++;
     }
-    StatArchiveInspector inspector = new StatArchiveInspector(files);
+    StatArchiveInspector inspector = new StatArchiveInspector(new Properties(), files);
     System.out.println(inspector.inspect());
   }
 
