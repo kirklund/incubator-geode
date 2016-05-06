@@ -31,7 +31,7 @@ import com.gemstone.gemfire.management.cli.Result;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 
-public class AnalyzeCommands extends AbstractCommandsSupport {
+public class InspectCommands extends AbstractCommandsSupport {
 
   @CliCommand(value= CliStrings.INSPECT_OFFLINE_MEMBER, help=CliStrings.INSPECT_OFFLINE_MEMBER__HELP)
   @CliMetaData(shellOnly=true, relatedTopic={CliStrings.TOPIC_GEMFIRE_MEMBER})
