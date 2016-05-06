@@ -16,6 +16,7 @@
  */
 package com.gemstone.gemfire.management.internal.inspector;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -25,6 +26,10 @@ public class Inspector {
   private final Properties config;
 
   public Inspector() {
+    this.config = readDefaultProperties();
+  }
+
+  public Inspector(File[] statFiles, File[] logFiles) {
     this.config = readDefaultProperties();
   }
 
