@@ -88,6 +88,8 @@ public class CliStrings {
   public static final String TOPIC_GEMFIRE_SERVER__DESC = "A server is GemFire cluster member which holds a GemFire cache. Depending on the topology used it can refer to either a system that responds to client requests or a system that is only a peer to other members.";
   public static final String TOPIC_GEMFIRE_MANAGER = "Manager";
   public static final String TOPIC_GEMFIRE_MANAGER__DESC = "The Manager is a member which has the additional role of a managing & monitoring the GemFire distributed system.";
+  public static final String TOPIC_GEMFIRE_MEMBER = "Member";
+  public static final String TOPIC_GEMFIRE_MEMBER__DESC = "A member is a process which holds a GemFire cache.";
   public static final String TOPIC_GEMFIRE_STATISTICS = "Statistics";
   public static final String TOPIC_GEMFIRE_STATISTICS__DESC = "Every application and server in a vFabric GemFire distributed system can be configured to perform statistical data collection for analysis.";
   public static final String TOPIC_GEMFIRE_LIFECYCLE = "Lifecycle";
@@ -746,7 +748,23 @@ public class CliStrings {
   public static final String DESCRIBE_OFFLINE_DISK_STORE__DISKDIRS__HELP = "Directories which contain the disk store files.";
   public static final String DESCRIBE_OFFLINE_DISK_STORE__PDX_TYPES = "pdx";
   public static final String DESCRIBE_OFFLINE_DISK_STORE__PDX_TYPES__HELP = "Display all the pdx types stored in the disk store";
-  
+
+  /* 'inspect offline-member' command */
+  public static final String INSPECT_OFFLINE_MEMBER = "inspect offline-member";
+  public static final String INSPECT_OFFLINE_MEMBER__HELP = "Inspect statistics from an offline member.";
+  public static final String INSPECT_OFFLINE_MEMBER__FILES = "stat-files";
+  public static final String INSPECT_OFFLINE_MEMBER__FILES__HELP = "Stat archive files to be inspected.";
+  public static final String INSPECT_OFFLINE_MEMBER__DIRS = "stat-dirs";
+  public static final String INSPECT_OFFLINE_MEMBER__DIRS__HELP = "Directories which contain the stat archive files to be inspected.";
+
+  /* 'inspect member' command */
+  public static final String INSPECT_MEMBER = "inspect member";
+  public static final String INSPECT_MEMBER__HELP = "Inspect statistics from a running member.";
+  public static final String INSPECT_MEMBER__NAME = "name";
+  public static final String INSPECT_MEMBER__NAME__HELP = "Name/Id of the member to be inspected.";
+  public static final String INSPECT_MEMBER__MSG__NOT_FOUND = "Member \"{0}\" not found";
+  public static final String INSPECT_MEMBER__MSG__INFO_FOR__0__COULD_NOT_BE_RETRIEVED = "Statistics for the member \"{0}\" could not be retrieved.";
+
   /* 'export offline-disk-store' command */
   public static final String EXPORT_OFFLINE_DISK_STORE = "export offline-disk-store";
   public static final String EXPORT_OFFLINE_DISK_STORE__HELP = "Export region data from an offline disk store into gemfire snapshot files.";
