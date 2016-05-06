@@ -19,7 +19,11 @@ package com.gemstone.gemfire.management.internal.inspector;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+import com.gemstone.gemfire.test.junit.categories.UnitTest;
+
+@Category(UnitTest.class)
 public class InspectorTest {
 
   @Test
