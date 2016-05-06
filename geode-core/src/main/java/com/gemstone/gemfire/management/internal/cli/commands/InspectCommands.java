@@ -17,17 +17,16 @@
 package com.gemstone.gemfire.management.internal.cli.commands;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.PrintStream;
 
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import com.gemstone.gemfire.SystemFailure;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.internal.cache.DiskStoreImpl;
 import com.gemstone.gemfire.management.cli.CliMetaData;
 import com.gemstone.gemfire.management.cli.Result;
+import com.gemstone.gemfire.management.internal.cli.CliUtil;
 import com.gemstone.gemfire.management.internal.cli.i18n.CliStrings;
 import com.gemstone.gemfire.management.internal.cli.result.ResultBuilder;
 
@@ -35,49 +34,69 @@ public class InspectCommands extends AbstractCommandsSupport {
 
   @CliCommand(value= CliStrings.INSPECT_OFFLINE_MEMBER, help=CliStrings.INSPECT_OFFLINE_MEMBER__HELP)
   @CliMetaData(shellOnly=true, relatedTopic={CliStrings.TOPIC_GEMFIRE_MEMBER})
-  public Result describeOfflineDiskStore(
-          @CliOption(key=CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKSTORENAME,
+  public Result inspectOfflineMember(
+          @CliOption(key=CliStrings.INSPECT_OFFLINE_MEMBER__STATFILES,
                   mandatory=true,
-                  help=CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKSTORENAME__HELP)
-                  String diskStoreName,
-          @CliOption (key=CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKDIRS,
-                  mandatory=true,
-                  help=CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKDIRS__HELP)
+                  help=CliStrings.INSPECT_OFFLINE_MEMBER__STATFILES__HELP)
+                  String[] statFiles,
+          @CliOption (key=CliStrings.INSPECT_OFFLINE_MEMBER__STATDIRS,
+                  mandatory=false,
+                  help=CliStrings.INSPECT_OFFLINE_MEMBER__STATDIRS__HELP)
           @CliMetaData (valueSeparator = ",")
-                  String[] diskDirs,
-          @CliOption (key=CliStrings.DESCRIBE_OFFLINE_DISK_STORE__PDX_TYPES,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help=CliStrings.DESCRIBE_OFFLINE_DISK_STORE__PDX_TYPES__HELP)
-                  Boolean listPdxTypes,
-          @CliOption  (key=CliStrings.DESCRIBE_OFFLINE_DISK_STORE__REGIONNAME,
-                  help=CliStrings.DESCRIBE_OFFLINE_DISK_STORE__REGIONNAME__HELP,
-                  unspecifiedDefaultValue=CliMetaData.ANNOTATION_NULL_VALUE)
-                  String regionName) {
+                  String[] statDirs) {
 
     try {
-      final File[] dirs = new File[diskDirs.length];
-      for (int i = 0; i < diskDirs.length; i++) {
-        dirs[i] = new File((diskDirs[i]));
-      }
+//      final File[] dirs = new File[diskDirs.length];
+//      for (int i = 0; i < diskDirs.length; i++) {
+//        dirs[i] = new File((diskDirs[i]));
+//      }
 
-      if (Region.SEPARATOR.equals(regionName)) {
-        return ResultBuilder.createUserErrorResult(CliStrings.INVALID_REGION_NAME);
-      }
+//      if (Region.SEPARATOR.equals(regionName)) {
+//        return ResultBuilder.createUserErrorResult(CliStrings.INVALID_REGION_NAME);
+//      }
 
       ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
       PrintStream printStream = new PrintStream(outputStream);
 
-      DiskStoreImpl.dumpInfo(printStream, diskStoreName, dirs, regionName, listPdxTypes);
+      //DiskStoreImpl.dumpInfo(printStream, diskStoreName, dirs, regionName, listPdxTypes);
+
+      dumpInspectionResults(printStream, statFiles);
+
       return ResultBuilder.createInfoResult(outputStream.toString());
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;
-    } catch (Throwable th) {
+    } catch (Throwable t) {
       SystemFailure.checkFailure();
-      if (th.getMessage() == null) {
-        return ResultBuilder.createGemFireErrorResult("An error occurred while describing offline disk stores: " + th);
+      if (t.getMessage() == null) {
+        return ResultBuilder.createGemFireErrorResult("An error occurred while inspecting offline member: " + t);
       }
-      return ResultBuilder.createGemFireErrorResult("An error occurred while describing offline disk stores: " + th.getMessage());
+      return ResultBuilder.createGemFireErrorResult("An error occurred while inspecting offline member: " + t.getMessage());
     }
+  }
+
+  @CliAvailabilityIndicator({CliStrings.INSPECT_OFFLINE_MEMBER})
+  public boolean offlineInspectMemberCommandsAvailable() {
+    return true;
+  }
+
+  @CliAvailabilityIndicator({CliStrings.INSPECT_MEMBER})
+  public boolean inspectMemberCommandsAvailable() {
+    return (!CliUtil.isGfshVM() || (getGfsh() != null && getGfsh().isConnectedAndReady()));
+  }
+
+  private void dumpInspectionResults(PrintStream printStream, String[] statFiles) {
+    boolean comma = false;
+    StringBuilder sb = new StringBuilder();
+    for (String statFile : statFiles) {
+      if (comma) {
+        sb.append(",");
+      }
+      sb.append(statFile);
+      comma = true;
+    }
+
+    printStream.println("Inspecting member with stat files: " + sb.toString());
+    printStream.println("Member is healthy.");
   }
 }

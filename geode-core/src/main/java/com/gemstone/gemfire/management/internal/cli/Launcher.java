@@ -121,7 +121,9 @@ public final class Launcher {
     this.allowedCommandLineCommands.add(CliStrings.VALIDATE_DISK_STORE);
     this.allowedCommandLineCommands.add(CliStrings.PDX_DELETE_FIELD);
     this.allowedCommandLineCommands.add(CliStrings.PDX_RENAME);
-    
+    this.allowedCommandLineCommands.add(CliStrings.INSPECT_OFFLINE_MEMBER);
+    this.allowedCommandLineCommands.add(CliStrings.INSPECT_MEMBER);
+
     this.commandLineParser = new OptionParser();
     this.commandLineParser.accepts(EXECUTE_OPTION).withOptionalArg().ofType(String.class);
     this.commandLineParser.accepts(HELP_OPTION).withOptionalArg().ofType(Boolean.class);

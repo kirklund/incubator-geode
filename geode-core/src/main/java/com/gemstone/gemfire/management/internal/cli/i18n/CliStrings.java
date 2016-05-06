@@ -752,10 +752,10 @@ public class CliStrings {
   /* 'inspect offline-member' command */
   public static final String INSPECT_OFFLINE_MEMBER = "inspect offline-member";
   public static final String INSPECT_OFFLINE_MEMBER__HELP = "Inspect statistics from an offline member.";
-  public static final String INSPECT_OFFLINE_MEMBER__FILES = "stat-files";
-  public static final String INSPECT_OFFLINE_MEMBER__FILES__HELP = "Stat archive files to be inspected.";
-  public static final String INSPECT_OFFLINE_MEMBER__DIRS = "stat-dirs";
-  public static final String INSPECT_OFFLINE_MEMBER__DIRS__HELP = "Directories which contain the stat archive files to be inspected.";
+  public static final String INSPECT_OFFLINE_MEMBER__STATFILES = "stat-files";
+  public static final String INSPECT_OFFLINE_MEMBER__STATFILES__HELP = "Stat archive files to be inspected.";
+  public static final String INSPECT_OFFLINE_MEMBER__STATDIRS = "stat-dirs";
+  public static final String INSPECT_OFFLINE_MEMBER__STATDIRS__HELP = "Directories which contain the stat archive files to be inspected.";
 
   /* 'inspect member' command */
   public static final String INSPECT_MEMBER = "inspect member";
