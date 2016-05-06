@@ -58,10 +58,9 @@ public class StatArchiveInspector {
         return NONE;
       }
     };
-    
     for (StatValue jvmPauseValue: this.reader.matchSpec(jvmPauseSpec)) {
       if (jvmPauseValue.getSnapshotsMaximum() > 0.0) {
-        sb.append("jvmPause detected in: ").append(getArchives(jvmPauseValue));
+        sb.append("jvmPause detected in: ").append(getArchives(jvmPauseValue)).append(System.lineSeparator());
       }
     }
     try {
