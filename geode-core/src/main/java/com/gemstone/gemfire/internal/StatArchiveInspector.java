@@ -19,6 +19,9 @@ package com.gemstone.gemfire.internal;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
@@ -42,8 +45,7 @@ public class StatArchiveInspector {
   }
 
   public String inspect() {
-
-    Properties props = config;
+    Properties props = this.config;
     Set<String> propertyKeys = props.stringPropertyNames();
 
     StringBuilder sb = new StringBuilder();
@@ -68,7 +70,6 @@ public class StatArchiveInspector {
         public boolean statMatches(String statName) {
           return statName.equals(currentStatName);
         }
-  
         @Override
         public boolean instanceMatches(String textId, long numericId) {
           return true;
@@ -78,6 +79,7 @@ public class StatArchiveInspector {
           return NONE;
         }
       };
+
       for (StatValue v: this.reader.matchSpec(statSpec)) {
         double[] statSamples = v.getSnapshots();
         int thresholdCrossings = 0;
@@ -87,15 +89,22 @@ public class StatArchiveInspector {
           }
         }
         double percentage = ((double)thresholdCrossings/(double)v.getSnapshotsSize()) * 100.0;
-        sb.append(currentTypeName + "." + currentStatName + " crossed threshold of " + limit +  " " + percentage + " percent of the time in : ").append(getArchives(v)).append(System.lineSeparator());
-      }
-      try {
-        this.reader.close();
-      } catch (IOException e) {
-        // ignore IOExceptions on close
+        sb.append(currentTypeName).append(".").append(currentStatName).append(" threshold of ").append(limit).append(" was crossed ").append(formatPercentage(percentage)).append(" percent of the time in: ").append(getArchives(v)).append(System.lineSeparator());
       }
     }
+
+    try {
+      this.reader.close();
+    } catch (IOException e) {
+      // ignore IOExceptions on close
+    }
     return sb.toString();
+  }
+
+  private String formatPercentage(double value) {
+    DecimalFormat df = new DecimalFormat("#.##");
+    df.setRoundingMode(RoundingMode.CEILING);
+    return df.format(value);
   }
   
   private Set<File> getArchives(StatValue statValue) {

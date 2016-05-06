@@ -27,6 +27,7 @@ public class Inspector {
 
   private final Properties config;
   private final StatArchiveInspector statArchiveInspector;
+  // private final LogFileInspector
 
   public Inspector() {
     this(null, null);
@@ -34,15 +35,22 @@ public class Inspector {
 
   public Inspector(File[] statFiles, File[] logFiles) {
     this.config = readDefaultProperties();
-    try {
-      this.statArchiveInspector = new StatArchiveInspector(this.config, statFiles);
-    } catch (IOException e) {
-      throw new Error("Failed to create StatArchiveInspector", e);
+    if (statFiles == null) {
+      this.statArchiveInspector = null;
+    } else {
+      try {
+        this.statArchiveInspector = new StatArchiveInspector(this.config, statFiles);
+      } catch (IOException e) {
+        throw new Error("Failed to create StatArchiveInspector", e);
+      }
     }
   }
 
   public String inspect() {
-    return this.statArchiveInspector.inspect();
+    if (this.statArchiveInspector != null) {
+      return this.statArchiveInspector.inspect();
+    }
+    return null;
   }
 
   Properties getConfig() {

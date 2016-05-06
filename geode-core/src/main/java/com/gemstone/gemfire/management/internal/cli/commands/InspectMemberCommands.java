@@ -143,13 +143,15 @@ public class InspectMemberCommands extends AbstractCommandsSupport {
 
     Set<File> allStatFiles = new TreeSet<>();
 
-    if (statFiles != null) {
-      for (String statFile : statFiles) {
-        allStatFiles.add(new File(statFile));
+    if (statFiles != null && statFiles.length > 0) {
+      if (!"null".equals(statFiles[0])) {
+        for (String statFile : statFiles) {
+          allStatFiles.add(new File(statFile));
+        }
       }
     }
 
-    if (statDirs != null) {
+    if (statDirs != null && statDirs.length > 0) {
       for (String statDir : statDirs) {
         File dir = new File(statDir);
         File[] files = dir.listFiles(new FilenameFilter() {
