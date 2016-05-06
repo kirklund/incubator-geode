@@ -141,11 +141,11 @@ public class InspectMemberCommands extends AbstractCommandsSupport {
   private void inspectOfflineMember(PrintStream printStream, String[] statFiles, String[] statDirs, String[] logFiles) {
     // TODO: inspect the stat files
 
-    Set<String> allStatFiles = new TreeSet<>();
+    Set<File> allStatFiles = new TreeSet<>();
 
     if (statFiles != null) {
       for (String statFile : statFiles) {
-        allStatFiles.add(statFile);
+        allStatFiles.add(new File(statFile));
       }
     }
 
@@ -159,7 +159,7 @@ public class InspectMemberCommands extends AbstractCommandsSupport {
           }
         });
         for (File file : files) {
-          allStatFiles.add(file.getAbsolutePath());
+          allStatFiles.add(file);
         }
       }
     }
@@ -168,12 +168,12 @@ public class InspectMemberCommands extends AbstractCommandsSupport {
       // TODO: error?
     }
 
-    Inspector inspector = new Inspector();
+    Inspector inspector = new Inspector(allStatFiles.toArray(new File[allStatFiles.size()]), new File[] {});
 
-    printInspectOfflineMemberResults(printStream, statFiles);
+    printInspectOfflineMemberResults(printStream, statFiles, inspector);
   }
 
-  private void printInspectOfflineMemberResults(PrintStream printStream, String[] statFiles) {
+  private void printInspectOfflineMemberResults(PrintStream printStream, String[] statFiles, Inspector inspector) {
     // TODO: print real results of inspection
 
     boolean comma = false;
@@ -187,7 +187,7 @@ public class InspectMemberCommands extends AbstractCommandsSupport {
     }
 
     printStream.println("Inspecting member with stat files: " + sb.toString());
-    printStream.println("Member is healthy.");
+    printStream.println(inspector.inspect());
   }
 
   private MemberInspectionDetails getMemberInspectionDetails(final String memberName) {

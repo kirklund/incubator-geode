@@ -41,6 +41,10 @@ public class Inspector {
     }
   }
 
+  public String inspect() {
+    return this.statArchiveInspector.inspect();
+  }
+
   Properties getConfig() {
     return this.config;
   }
