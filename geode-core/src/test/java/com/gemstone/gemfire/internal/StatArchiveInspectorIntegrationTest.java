@@ -73,12 +73,14 @@ public class StatArchiveInspectorIntegrationTest {
     File targetFile2 = copyResource("jvmPauses2.gfs");
     File targetFile3 = copyResource("noJvmPause.gfs");
     
-    StatArchiveInspector inspector = new StatArchiveInspector(new Properties(), new File[]{targetFile, targetFile2});
+    Properties p = new Properties();
+    p.setProperty("StatSampler.jvmPauses", "0");
+    StatArchiveInspector inspector = new StatArchiveInspector(p, new File[]{targetFile, targetFile2});
     String result = inspector.inspect();
     System.out.println(result);
-    assertThat(result).containsPattern("jvmPause detected.*"+targetFile.getAbsolutePath());
-    assertThat(result).containsPattern("jvmPause detected.*"+targetFile2.getAbsolutePath());
-    assertThat(result).doesNotMatch("jvmPause detected.*"+targetFile3.getAbsolutePath());
+    assertThat(result).containsPattern("StatSampler.jvmPauses crossed threshold of 0 .*"+targetFile.getAbsolutePath());
+    assertThat(result).containsPattern("StatSampler.jvmPauses crossed threshold of 0 .*"+targetFile2.getAbsolutePath());
+    assertThat(result).doesNotMatch("StatSampler.jvmPauses crossed threshold of 0 .*"+targetFile3.getAbsolutePath());
   }
 
 }
