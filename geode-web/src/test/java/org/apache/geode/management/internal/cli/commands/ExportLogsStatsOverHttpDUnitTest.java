@@ -40,7 +40,7 @@ public class ExportLogsStatsOverHttpDUnitTest extends ExportLogsStatsDUnitTest {
   @Override
   public void connectIfNeeded() throws Exception {
     if (!connector.isConnected())
-      connector.connect(httpPort, GfshShellConnectionRule.PortType.http);
+      connector.connect(httpPort, GfshShellConnectionRule.PortType.HTTP);
   }
 
   @Test

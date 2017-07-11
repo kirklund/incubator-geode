@@ -14,74 +14,105 @@
  */
 package org.apache.geode.test.dunit.rules;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.CONNECT;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.CONNECT__JMX_MANAGER;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.CONNECT__LOCATOR;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.CONNECT__PASSWORD;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.CONNECT__URL;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.CONNECT__USERNAME;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.CONNECT__USE_HTTP;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.HeadlessGfsh;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.junit.rules.DescribedExternalResource;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.Supplier;
+
 import org.json.JSONArray;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.Description;
 
-import java.util.function.Supplier;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.HeadlessGfsh;
+import org.apache.geode.management.internal.cli.json.GfJsonException;
+import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.junit.rules.DescribedExternalResource;
 
 /**
- * Class which eases the connection to the locator/jmxManager in Gfsh shell and execute gfsh
+ * JUnit Rule which eases the connection to the locator/jmxManager in Gfsh shell and execute Gfsh
  * commands.
  *
- * if used with {@link ConnectionConfiguration}, you will need to specify a port number when
- * constructing this rule. Then this rule will do auto connect for you before running your test.
+ * <p>
+ * If used with {@link ConnectionConfiguration}, you will need to specify a port number when
+ * constructing this rule. It will then auto connect for you before running your test.
  *
- * otherwise, you can call connect with the specific port number yourself in your test. This rules
- * handles closing your connection and gfsh instance.
+ * <p>
+ * Alternatively, you can call connect with the specific port number yourself in your test. This
+ * rule handles closing your connection and Gfsh instance.
  *
- * you can use this as Rule
- * 
- * @Rule GfshShellConnectionRule rule = new GfshSheelConnectionRule(); then after you connect to a
- *       locator, you don't have to call disconnect() or close() at all, since the rule's after
- *       takes care of it for you.
+ * <p>
+ * Usage as {@literal @}Rule or {@literal @}ClassRule:
  *
- *       Or as a ClassRule
- * @ClassRule GfshShellConnectionRule rule = new GfshSheelConnectionRule(); When using as a
- *            ClassRule, if you call connect in a test, you will need to call disconnect after the
- *            test as well. See NetstatDUnitTest for example.
+ * <p>
+ * {@literal @}Rule GfshShellConnectionRule rule = new GfshShellConnectionRule();
  *
+ * <p>
+ * After you connect to a locator, you don't have to call disconnect() or close(), since the rule's
+ * tear down takes care of that for you.
+ *
+ * <p>
+ * {@literal @}ClassRule GfshShellConnectionRule rule = new GfshShellConnectionRule();
+ *
+ * <p>
+ * If you call connect in a test when using it as a ClassRule, you will need to explicitly call
+ * disconnect after the test. See NetstatDUnitTest for example.
  */
 public class GfshShellConnectionRule extends DescribedExternalResource {
 
-  private Supplier<Integer> portSupplier;
-  private PortType portType = PortType.jmxManger;
-  private HeadlessGfsh gfsh = null;
-  private boolean connected = false;
-  private IgnoredException ignoredException;
-  private TemporaryFolder temporaryFolder = new TemporaryFolder();
+  private static final int HEADLESS_GFSH_TIMEOUT_SECONDS = 30;
+
+  private final Supplier<Integer> portSupplier;
+  private final PortType portType;
+  private final Set<IgnoredException> ignoredExceptions = new HashSet<>();
+  private final TemporaryFolder temporaryFolder;
+
+  private volatile HeadlessGfsh gfsh;
+  private volatile boolean connected;
 
   public GfshShellConnectionRule() {
-    try {
-      temporaryFolder.create();
-    } catch (Exception e) {
-      throw new RuntimeException(e.getMessage(), e);
-    }
+    this(new TemporaryFolder(), null, PortType.JMX_MANGER);
   }
 
   public GfshShellConnectionRule(Supplier<Integer> portSupplier, PortType portType) {
-    this();
-    this.portType = portType;
+    this(new TemporaryFolder(), portSupplier, portType);
+  }
+
+  private GfshShellConnectionRule(TemporaryFolder temporaryFolder, Supplier<Integer> portSupplier,
+      PortType portType) {
+    this.temporaryFolder = temporaryFolder;
     this.portSupplier = portSupplier;
+    this.portType = portType;
+
+    try {
+      temporaryFolder.create();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
   protected void before(Description description) throws Throwable {
-    this.gfsh = new HeadlessGfsh(getClass().getName(), 30,
+    this.gfsh = new HeadlessGfsh(getClass().getName(), HEADLESS_GFSH_TIMEOUT_SECONDS,
         temporaryFolder.newFolder("gfsh_files").getAbsolutePath());
-    ignoredException =
-        addIgnoredException("java.rmi.NoSuchObjectException: no such object in table");
+
+    ignoredExceptions
+        .add(addIgnoredException("java.rmi.NoSuchObjectException: no such object in table"));
 
     // do not auto connect if no port initialized
     if (portSupplier == null) {
@@ -94,56 +125,71 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
       return;
     }
 
-    connect(portSupplier.get(), portType, CliStrings.CONNECT__USERNAME, config.user(),
-        CliStrings.CONNECT__PASSWORD, config.password());
-
+    connect(portSupplier.get(), portType, CONNECT__USERNAME, config.user(), CONNECT__PASSWORD,
+        config.password());
   }
 
-  public void connect(Member locator, String... options) throws Exception {
-    connect(locator.getPort(), PortType.locator, options);
+  @Override
+  protected void after(Description description) throws Throwable {
+    close();
+
+    for (IgnoredException ignoredException : ignoredExceptions) {
+      ignoredException.remove();
+    }
+    ignoredExceptions.clear();
   }
 
-  public void connectAndVerify(Member locator, String... options) throws Exception {
-    connect(locator.getPort(), PortType.locator, options);
+  public void connect(Member locator, String... options)
+      throws IOException, ClassNotFoundException, InterruptedException, GfJsonException {
+    connect(locator.getPort(), PortType.LOCATOR, options);
+  }
+
+  public void connectAndVerify(Member locator, String... options)
+      throws IOException, ClassNotFoundException, InterruptedException, GfJsonException {
+    connect(locator.getPort(), PortType.LOCATOR, options);
     assertThat(this.connected).isTrue();
   }
 
-  public void connectAndVerify(int port, PortType type, String... options) throws Exception {
+  public void connectAndVerify(int port, PortType type, String... options)
+      throws IOException, ClassNotFoundException, InterruptedException, GfJsonException {
     connect(port, type, options);
     assertThat(this.connected).isTrue();
   }
 
   public void secureConnect(int port, PortType type, String username, String password)
-      throws Exception {
-    connect(port, type, CliStrings.CONNECT__USERNAME, username, CliStrings.CONNECT__PASSWORD,
-        password);
+      throws IOException, ClassNotFoundException, InterruptedException, GfJsonException {
+    connect(port, type, CONNECT__USERNAME, username, CONNECT__PASSWORD, password);
   }
 
   public void secureConnectAndVerify(int port, PortType type, String username, String password)
-      throws Exception {
-    connect(port, type, CliStrings.CONNECT__USERNAME, username, CliStrings.CONNECT__PASSWORD,
-        password);
+      throws IOException, ClassNotFoundException, InterruptedException, GfJsonException {
+    connect(port, type, CONNECT__USERNAME, username, CONNECT__PASSWORD, password);
     assertThat(this.connected).isTrue();
   }
 
-  public void connect(int port, PortType type, String... options) throws Exception {
+  public void connect(int port, PortType type, String... options)
+      throws IOException, ClassNotFoundException, InterruptedException, GfJsonException {
     if (gfsh == null) {
-      this.gfsh = new HeadlessGfsh(getClass().getName(), 30,
+      this.gfsh = new HeadlessGfsh(getClass().getName(), HEADLESS_GFSH_TIMEOUT_SECONDS,
           temporaryFolder.newFolder("gfsh_files").getAbsolutePath());
     }
-    final CommandStringBuilder connectCommand = new CommandStringBuilder(CliStrings.CONNECT);
-    String endpoint;
-    if (type == PortType.locator) {
-      // port is the locator port
-      endpoint = "localhost[" + port + "]";
-      connectCommand.addOption(CliStrings.CONNECT__LOCATOR, endpoint);
-    } else if (type == PortType.http) {
-      endpoint = "http://localhost:" + port + "/gemfire/v1";
-      connectCommand.addOption(CliStrings.CONNECT__USE_HTTP, Boolean.TRUE.toString());
-      connectCommand.addOption(CliStrings.CONNECT__URL, endpoint);
-    } else {
-      endpoint = "localhost[" + port + "]";
-      connectCommand.addOption(CliStrings.CONNECT__JMX_MANAGER, endpoint);
+
+    CommandStringBuilder connectCommand = new CommandStringBuilder(CONNECT);
+
+    String endpoint = "localhost[" + port + "]";
+    switch (type) {
+      case LOCATOR:
+        // port is the locator port
+        connectCommand.addOption(CONNECT__LOCATOR, endpoint);
+        break;
+      case HTTP:
+        endpoint = "http://localhost:" + port + "/gemfire/v1";
+        connectCommand.addOption(CONNECT__USE_HTTP, Boolean.TRUE.toString());
+        connectCommand.addOption(CONNECT__URL, endpoint);
+        break;
+      default:
+        connectCommand.addOption(CONNECT__JMX_MANAGER, endpoint);
+        break;
     }
 
     // add the extra options
@@ -153,38 +199,33 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
       }
     }
 
-    // when we connect too soon, we would get "Failed to retrieve RMIServer stub:
+    // Connecting too soon may result in "Failed to retrieve RMIServer stub:
     // javax.naming.CommunicationException [Root exception is java.rmi.NoSuchObjectException: no
     // such object in table]" Exception.
-    // can not use Awaitility here because it starts another thead, but the Gfsh instance is in a
-    // threadLocal variable, See Gfsh.getExistingInstance()
-    CommandResult result = null;
-    for (int i = 0; i < 50; i++) {
+
+    // throws ConditionTimeoutException if not connected within timeout
+    await().atMost(2, MINUTES).until(() -> connect(connectCommand));
+  }
+
+  private boolean connect(CommandStringBuilder connectCommand) {
+    CommandResult result;
+    try {
       result = executeCommand(connectCommand.toString());
-      if (!gfsh.outputString.contains("no such object in table")) {
-        break;
-      }
-      Thread.currentThread().sleep(2000);
+    } catch (InterruptedException | GfJsonException e) {
+      throw new RuntimeException(e);
     }
-    connected = (result.getStatus() == Result.Status.OK);
+    connected = !gfsh.outputString.contains("no such object in table")
+        && result.getStatus() == Result.Status.OK;
+    return connected;
   }
 
-  @Override
-  protected void after(Description description) throws Throwable {
-    close();
-
-    if (ignoredException != null) {
-      ignoredException.remove();
-    }
-  }
-
-  public void disconnect() throws Exception {
+  public void disconnect() throws GfJsonException, InterruptedException {
     gfsh.clear();
     executeCommand("disconnect");
     connected = false;
   }
 
-  public void close() throws Exception {
+  public void close() throws InterruptedException, GfJsonException {
     temporaryFolder.delete();
     if (connected) {
       disconnect();
@@ -198,15 +239,15 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
     return gfsh;
   }
 
-  public CommandResult executeCommand(String command) throws Exception {
+  public CommandResult executeCommand(String command) throws InterruptedException, GfJsonException {
     gfsh.executeCommand(command);
     CommandResult result = (CommandResult) gfsh.getResult();
-    if (StringUtils.isBlank(gfsh.outputString) && result != null && result.getContent() != null) {
+    if (isBlank(gfsh.outputString) && result != null && result.getContent() != null) {
       if (result.getStatus() == Result.Status.ERROR) {
         gfsh.outputString = result.toString();
       } else {
         // print out the message body as the command result
-        JSONArray messages = ((JSONArray) result.getContent().get("message"));
+        JSONArray messages = (JSONArray) result.getContent().get("message");
         if (messages != null) {
           for (int i = 0; i < messages.length(); i++) {
             gfsh.outputString += messages.getString(i) + "\n";
@@ -222,14 +263,14 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
     return gfsh.outputString;
   }
 
-
-  public CommandResult executeAndVerifyCommand(String command) throws Exception {
+  public CommandResult executeAndVerifyCommand(String command)
+      throws GfJsonException, InterruptedException {
     CommandResult result = executeCommand(command);
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
     return result;
   }
 
-  public String execute(String command) throws Exception {
+  public String execute(String command) throws GfJsonException, InterruptedException {
     executeCommand(command);
     return gfsh.outputString;
   }
@@ -239,6 +280,6 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
   }
 
   public enum PortType {
-    locator, jmxManger, http
+    LOCATOR, JMX_MANGER, HTTP
   }
 }

@@ -104,7 +104,7 @@ public class ConnectToLocatorSSLDUnitTest {
     Host.getHost(0).getVM(1).invoke(() -> {
       GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
       try {
-        gfshConnector.connectAndVerify(locatorPort, GfshShellConnectionRule.PortType.locator,
+        gfshConnector.connectAndVerify(locatorPort, GfshShellConnectionRule.PortType.LOCATOR,
             CliStrings.CONNECT__SECURITY_PROPERTIES, securityPropsFilePath);
       } finally {
         gfshConnector.close();

@@ -25,6 +25,6 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 public class GfshCommandsOverHttpSecurityTest extends GfshCommandsSecurityTest {
   public GfshCommandsOverHttpSecurityTest() {
     gfshConnection = new GfshShellConnectionRule(serverStarter::getHttpPort,
-        GfshShellConnectionRule.PortType.http);
+        GfshShellConnectionRule.PortType.HTTP);
   }
 }

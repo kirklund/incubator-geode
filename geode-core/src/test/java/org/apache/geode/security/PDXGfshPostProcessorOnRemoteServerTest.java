@@ -99,7 +99,7 @@ public class PDXGfshPostProcessorOnRemoteServerTest {
           });
     });
 
-    gfsh.connectAndVerify(locatorVM.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger,
+    gfsh.connectAndVerify(locatorVM.getJmxPort(), GfshShellConnectionRule.PortType.JMX_MANGER,
         CliStrings.CONNECT__USERNAME, "dataUser", CliStrings.CONNECT__PASSWORD, "1234567");
 
     // get command

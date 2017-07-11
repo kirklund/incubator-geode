@@ -53,7 +53,7 @@ public class GfshCommandsSecurityTest {
 
   @Rule
   public GfshShellConnectionRule gfshConnection = new GfshShellConnectionRule(
-      serverStarter::getJmxPort, GfshShellConnectionRule.PortType.jmxManger);
+      serverStarter::getJmxPort, GfshShellConnectionRule.PortType.JMX_MANGER);
 
   @BeforeClass
   public static void beforeClass() throws Exception {

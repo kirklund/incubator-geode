@@ -26,7 +26,7 @@ public class ExportLogsOverHttpIntegrationTest extends ExportLogsIntegrationTest
 
   @Override
   public void connect() throws Exception {
-    gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+    gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.HTTP);
   }
 
   public File getWorkingDirectory() throws Exception {

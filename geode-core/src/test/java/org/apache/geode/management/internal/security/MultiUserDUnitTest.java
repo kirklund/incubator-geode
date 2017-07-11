@@ -79,7 +79,7 @@ public class MultiUserDUnitTest {
     VM vm1 = Host.getHost(0).getVM(1);
     AsyncInvocation vm1Invoke = vm1.invokeAsync("run as data-reader", () -> {
       GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
-      gfsh.secureConnectAndVerify(jmxPort, PortType.jmxManger, "data-reader", "1234567");
+      gfsh.secureConnectAndVerify(jmxPort, PortType.JMX_MANGER, "data-reader", "1234567");
 
       Awaitility.waitAtMost(5, TimeUnit.MILLISECONDS);
       gfsh.close();
@@ -90,7 +90,7 @@ public class MultiUserDUnitTest {
     // assert errors comes back are NotAuthorized
     AsyncInvocation vm2Invoke = vm2.invokeAsync("run as guest", () -> {
       GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
-      gfsh.secureConnectAndVerify(jmxPort, PortType.jmxManger, "stranger", "1234567");
+      gfsh.secureConnectAndVerify(jmxPort, PortType.JMX_MANGER, "stranger", "1234567");
 
       List<TestCommand> allCommands = TestCommand.getOnlineCommands();
       for (TestCommand command : allCommands) {
@@ -126,7 +126,7 @@ public class MultiUserDUnitTest {
     // commands and assert we don't get a NotAuthorized Exception
     AsyncInvocation vm3Invoke = vm3.invokeAsync("run as superUser", () -> {
       GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
-      gfsh.secureConnectAndVerify(jmxPort, PortType.jmxManger, "super-user", "1234567");
+      gfsh.secureConnectAndVerify(jmxPort, PortType.JMX_MANGER, "super-user", "1234567");
 
       List<TestCommand> allCommands = TestCommand.getOnlineCommands();
       for (TestCommand command : allCommands) {

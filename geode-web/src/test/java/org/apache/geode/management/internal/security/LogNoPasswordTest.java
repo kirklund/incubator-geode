@@ -45,7 +45,7 @@ public class LogNoPasswordTest {
   @Test
   public void testPasswordInLogs() throws Exception {
     locator.startLocator();
-    gfsh.secureConnectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http, "any",
+    gfsh.secureConnectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.HTTP, "any",
         PASSWORD);
     gfsh.executeAndVerifyCommand("list members");
 

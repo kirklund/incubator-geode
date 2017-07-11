@@ -78,7 +78,7 @@ public class ConcurrentDeployDUnitTest {
 
   public static void connectToLocator(int locatorPort) throws Exception {
     gfsh = new GfshShellConnectionRule();
-    gfsh.connectAndVerify(locatorPort, GfshShellConnectionRule.PortType.locator);
+    gfsh.connectAndVerify(locatorPort, GfshShellConnectionRule.PortType.LOCATOR);
   }
 
   public static void loopThroughDeployAndUndeploys(File jar1) throws Exception {
