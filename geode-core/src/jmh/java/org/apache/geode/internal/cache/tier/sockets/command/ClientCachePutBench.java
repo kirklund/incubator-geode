@@ -14,24 +14,32 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
-import static java.lang.System.*;
-import static java.util.concurrent.TimeUnit.*;
-import static org.apache.commons.io.FileUtils.*;
-import static org.apache.commons.lang.StringUtils.*;
-import static org.apache.geode.cache.client.ClientRegionShortcut.*;
-import static org.apache.geode.distributed.AbstractLauncher.Status.*;
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.distributed.internal.DistributionConfig.*;
-import static org.apache.geode.internal.AvailablePort.*;
-import static org.apache.geode.test.dunit.NetworkUtils.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.awaitility.Awaitility.*;
+import static java.lang.System.getProperty;
+import static java.lang.System.nanoTime;
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.apache.commons.io.FileUtils.copyURLToFile;
+import static org.apache.commons.lang.StringUtils.replace;
+import static org.apache.geode.cache.client.ClientRegionShortcut.PROXY;
+import static org.apache.geode.distributed.AbstractLauncher.Status.ONLINE;
+import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
+import static org.apache.geode.internal.AvailablePort.SOCKET;
+import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
+import static org.apache.geode.test.dunit.NetworkUtils.getIPLiteral;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.client.ClientCache;
-import org.apache.geode.cache.client.ClientCacheFactory;
-import org.apache.geode.distributed.ServerLauncher;
-import org.apache.geode.internal.process.ProcessStreamReader;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+
 import org.junit.rules.TemporaryFolder;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -46,13 +54,11 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.distributed.ServerLauncher;
+import org.apache.geode.internal.process.ProcessStreamReader;
 
 /**
  * Benchmark that measures throughput of single-threaded client performing puts to a loner server.
