@@ -85,6 +85,31 @@ public interface DiskStoreMXBean {
    */
   long getTotalBytesOnDisk();
 
+
+  /**
+   *
+   * Returns free disk space on disk store
+   *
+   */
+
+  long getDiskFreeBytes();
+
+  /**
+   *
+   *  Returns disk usage as percentage
+   */
+
+  long getDiskUtilization();
+
+  /**
+   *
+   * Returns disk space used in bytes
+   *
+  */
+
+  long getDiskUsedBytes();
+
+
   /**
    * Returns the average latency of disk reads in nanoseconds Its the average latency required to
    * read a byte from disk.

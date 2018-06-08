@@ -274,4 +274,19 @@ public class DiskStoreMBeanBridge {
   public void setDiskUsageCriticalPercentage(float criticalPercent) {
     diskStore.setDiskUsageCriticalPercentage(criticalPercent);
   }
+
+  public long getDiskFreeBytes() {
+
+    return directoryHolders[0].getDir().getFreeSpace();
+
+  }
+
+  public long getDiskUtilization() {
+    return (long)(((double)getDiskUsedBytes() / directoryHolders[0].getDir().getTotalSpace()) * 100);
+  }
+
+  public long getDiskUsedBytes() {
+    return directoryHolders[0].getDir().getTotalSpace() - getDiskFreeBytes();
+  }
+
 }

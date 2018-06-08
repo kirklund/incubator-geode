@@ -174,4 +174,19 @@ public class DiskStoreMBean extends NotificationBroadcasterSupport implements Di
     bridge.stopMonitor();
   }
 
+  @Override
+  public long getDiskFreeBytes() {
+    return bridge.getDiskFreeBytes();
+  }
+
+  @Override
+  public long getDiskUtilization() {
+    return bridge.getDiskUtilization();
+  }
+
+  @Override
+  public long getDiskUsedBytes() {
+    return bridge.getDiskUsedBytes();
+  }
+
 }

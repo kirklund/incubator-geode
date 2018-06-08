@@ -17,6 +17,9 @@ package org.apache.geode.internal.cache;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.lang.management.ManagementFactory;
+
+import javax.management.MBeanServer;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -24,6 +27,12 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.management.DiskStoreMXBean;
+import org.apache.geode.management.internal.beans.DiskStoreMBean;
+import org.apache.geode.management.internal.beans.DiskStoreMBeanBridge;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -54,4 +63,32 @@ public class DiskStoreMonitorTest {
     DiskStoreMonitor diskStoreMonitor = new DiskStoreMonitor(new File("child"));
     assertThat(diskStoreMonitor.getLogDisk().dir()).isEqualTo(new File("."));
   }
+/*
+  @Test
+  public void currentFreeBytesValid() {
+    Cache cache = new CacheFactory().create();
+
+    MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+
+    server.getObjectInstance()
+
+    DiskStoreMBeanBridge bridge = new DiskStoreMBeanBridge(disk);
+    DiskStoreMXBean diskStoreMBean = new DiskStoreMBean(bridge);
+
+
+  }
+*/
+
+  @Test
+  public void test() {
+
+    File f = new File(".");
+
+    long usedSpace = f.getTotalSpace() - f.getFreeSpace();
+
+    System.out.println("alex "+ (usedSpace / f.getTotalSpace() * 100));
+
+  }
+
+
 }
