@@ -185,7 +185,7 @@ dependencies {
     ext.optional = true
   }
   compile('io.micrometer:micrometer-core:' + project.'micrometer.version')
-  compile 'io.micrometer:micrometer-registry-prometheus:latest.release'
+  compile('io.micrometer:micrometer-registry-prometheus:' + project.'micrometer.version')
 
   compile('io.netty:netty-all:' + project.'netty-all.version') {
     ext.optional = true
