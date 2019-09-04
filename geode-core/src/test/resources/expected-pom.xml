@@ -57,6 +57,16 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
+      <groupId>io.zipkin.zipkin2</groupId>
+      <artifactId>zipkin</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.zipkin.brave</groupId>
+      <artifactId>brave</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
       <groupId>javax.resource</groupId>
       <artifactId>javax.resource-api</artifactId>
       <scope>compile</scope>
