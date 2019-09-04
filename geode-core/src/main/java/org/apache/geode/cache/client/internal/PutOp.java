@@ -16,6 +16,9 @@
 package org.apache.geode.cache.client.internal;
 
 
+import brave.Span;
+import brave.propagation.B3SingleFormat;
+import brave.propagation.TraceContext;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
@@ -36,6 +39,7 @@ import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.tracing.Tracing;
 
 /**
  * Does a region put (or create) on a server
@@ -59,10 +63,10 @@ public class PutOp {
    */
   public static Object execute(ExecutablePool pool, LocalRegion region, Object key, Object value,
       byte[] deltaBytes, EntryEventImpl event, Operation operation, boolean requireOldValue,
-      Object expectedOldValue, Object callbackArg, boolean prSingleHopEnabled) {
+      Object expectedOldValue, Object callbackArg, boolean prSingleHopEnabled, Tracing tracing) {
     PutOpImpl op = new PutOpImpl(region, key, value, deltaBytes, event, operation, requireOldValue,
         expectedOldValue, callbackArg, false/* donot send full obj; send delta */,
-        prSingleHopEnabled);
+        prSingleHopEnabled, tracing);
 
     if (prSingleHopEnabled) {
       ClientMetadataService cms = region.getCache().getClientMetadataService();
@@ -94,14 +98,12 @@ public class PutOp {
   }
 
   public static Object execute(ExecutablePool pool, String regionName, Object key, Object value,
-      byte[] deltaBytes, EntryEventImpl event, Operation operation,
-      boolean requireOldValue,
-      Object expectedOldValue, Object callbackArg,
-      boolean prSingleHopEnabled) {
+      byte[] deltaBytes, EntryEventImpl event, Operation operation, boolean requireOldValue,
+      Object expectedOldValue, Object callbackArg, boolean prSingleHopEnabled, Tracing tracing) {
 
     AbstractOp op = new PutOpImpl(regionName, key, value, deltaBytes, event, operation,
         requireOldValue, expectedOldValue, callbackArg, false/* donot send full obj; send delta */,
-        prSingleHopEnabled);
+        prSingleHopEnabled, tracing);
     return pool.execute(op);
   }
 
@@ -120,9 +122,11 @@ public class PutOp {
    * @param callbackArg an optional callback arg to pass to any cache callbacks
    */
   public static void execute(Connection con, ExecutablePool pool, String regionName, Object key,
-      Object value, EntryEventImpl event, Object callbackArg, boolean prSingleHopEnabled) {
+      Object value, EntryEventImpl event, Object callbackArg, boolean prSingleHopEnabled,
+      Tracing tracing) {
     AbstractOp op = new PutOpImpl(regionName, key, value, null, event, Operation.CREATE, false,
-        null, callbackArg, false /* donot send full Obj; send delta */, prSingleHopEnabled);
+        null, callbackArg, false /* donot send full Obj; send delta */, prSingleHopEnabled,
+        tracing);
     pool.executeOn(con, op);
   }
 
@@ -161,29 +165,30 @@ public class PutOp {
 
     private Object expectedOldValue;
 
-
     public PutOpImpl(String regionName, Object key, Object value, byte[] deltaBytes,
         EntryEventImpl event, Operation op, boolean requireOldValue, Object expectedOldValue,
-        Object callbackArg, boolean respondingToInvalidDelta, boolean prSingleHopEnabled) {
+        Object callbackArg, boolean respondingToInvalidDelta, boolean prSingleHopEnabled,
+        Tracing tracing) {
       this(regionName, key, value, deltaBytes, event, op, requireOldValue, expectedOldValue,
-          callbackArg, respondingToInvalidDelta, respondingToInvalidDelta, prSingleHopEnabled);
+          callbackArg, respondingToInvalidDelta, respondingToInvalidDelta, prSingleHopEnabled,
+          tracing);
     }
 
     PutOpImpl(Region region, Object key, Object value, byte[] deltaBytes,
         EntryEventImpl event, Operation op, boolean requireOldValue, Object expectedOldValue,
-        Object callbackArg, boolean sendFullObj, boolean prSingleHopEnabled) {
+        Object callbackArg, boolean sendFullObj, boolean prSingleHopEnabled, Tracing tracing) {
       this(region.getFullPath(), key, value, deltaBytes, event, op, requireOldValue,
-          expectedOldValue,
-          callbackArg, false, sendFullObj, prSingleHopEnabled);
+          expectedOldValue, callbackArg, false, sendFullObj, prSingleHopEnabled, tracing);
       this.region = (LocalRegion) region;
     }
 
     private PutOpImpl(String regionName, Object key, Object value, byte[] deltaBytes,
         EntryEventImpl event, Operation op, boolean requireOldValue, Object expectedOldValue,
         Object callbackArg, boolean respondingToInvalidDelta, boolean sendFullObj,
-        boolean prSingleHopEnabled) {
+        boolean prSingleHopEnabled, Tracing tracing) {
       super(MessageType.PUT,
-          7 + (callbackArg != null ? 1 : 0) + (expectedOldValue != null ? 1 : 0));
+          7 + (callbackArg != null ? 1 : 0) + (expectedOldValue != null ? 1 : 0)
+              + (tracing != null ? 1 : 0));
       final boolean isDebugEnabled = logger.isDebugEnabled();
       if (isDebugEnabled) {
         logger.debug("PutOpImpl constructing message for {}; operation={}", event.getEventId(),
@@ -242,6 +247,13 @@ public class PutOp {
       getMessage().addBytesPart(event.getEventId().calcBytes());
       if (callbackArg != null) {
         getMessage().addObjPart(callbackArg);
+      }
+      if (tracing != null) {
+        long putOpThreadId = Thread.currentThread().getId();
+        Span currentSpan = tracing.getTracer().currentSpan();
+        TraceContext traceContext = currentSpan.context();
+        String b3String = B3SingleFormat.writeB3SingleFormat(traceContext);
+        getMessage().addStringPart(b3String);
       }
     }
 
@@ -329,7 +341,7 @@ public class PutOp {
           }
           AbstractOp op = new PutOpImpl(regionName, key, value, null, event,
               Operation.CREATE, requireOldValue, expectedOldValue, callbackArg,
-              true /* send full obj */, prSingleHopEnabled);
+              true /* send full obj */, prSingleHopEnabled, region.getCache().getTracing());
 
           op.attempt(con);
           if (region != null) {

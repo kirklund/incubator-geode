@@ -224,6 +224,10 @@ dependencies {
   //micrometer is used for micrometer based metrics from geode geode
   api('io.micrometer:micrometer-core')
 
+  api('io.zipkin.brave:brave')
+  api('io.zipkin.reporter2:zipkin-reporter')
+  api('io.zipkin.reporter2:zipkin-sender-okhttp3')
+  api('io.zipkin.zipkin2:zipkin')
 
   //FastUtil contains optimized collections that are used in multiple places in core
   implementation('it.unimi.dsi:fastutil')

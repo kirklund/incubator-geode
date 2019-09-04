@@ -19,6 +19,11 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import brave.Span;
+import brave.Tracer;
+import brave.propagation.B3SingleFormat;
+import brave.propagation.TraceContextOrSamplingFlags;
+
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.DynamicRegionFactory;
@@ -78,6 +83,7 @@ public class Put65 extends BaseCommand {
       start = DistributionStats.getStatTime();
       stats.incReadPutRequestTime(start - oldStart);
     }
+
     // Retrieve the data from the message parts
     int idx = 0;
 
@@ -128,7 +134,19 @@ public class Put65 extends BaseCommand {
     if (clientMessage.getNumberOfParts() > idx) {
       final Part callbackArgPart = clientMessage.getPart(idx++);
       try {
-        callbackArg = callbackArgPart.getObject();
+        callbackArg = callbackArgPart.getString();
+      } catch (Exception e) {
+        writeException(clientMessage, e, false, serverConnection);
+        serverConnection.setAsTrue(RESPONDED);
+        return;
+      }
+    }
+
+    String b3String = (String) callbackArg;
+    if (clientMessage.getNumberOfParts() > idx) {
+      final Part b3Part = clientMessage.getPart(idx++);
+      try {
+        b3String = b3Part.getString();
       } catch (Exception e) {
         writeException(clientMessage, e, false, serverConnection);
         serverConnection.setAsTrue(RESPONDED);
@@ -154,6 +172,16 @@ public class Put65 extends BaseCommand {
           serverConnection.getName(), (isDelta ? " delta " : " "), clientMessage.getPayloadLength(),
           serverConnection.getSocketString(), regionName, key, clientMessage.getTransactionId(),
           clientMessage.isRetry());
+    }
+
+    Span span = null;
+    System.out.println("KIRK:SERVER: b3String=" + b3String);
+    if (b3String != null) {
+      Tracer tracer = serverConnection.getTracing().getTracer();
+      TraceContextOrSamplingFlags traceContextOrSamplingFlags =
+          B3SingleFormat.parseB3SingleFormat(b3String);
+      span = tracer.newChild(traceContextOrSamplingFlags.context()).name("server.put").start();
+
     }
 
     // Process the put request
@@ -444,6 +472,9 @@ public class Put65 extends BaseCommand {
       }
       return;
     } finally {
+      if (span != null) {
+        span.finish();
+      }
       long oldStart = start;
       start = DistributionStats.getStatTime();
       stats.incProcessPutTime(start - oldStart);

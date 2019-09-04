@@ -218,6 +218,30 @@
         <scope>compile</scope>
       </dependency>
       <dependency>
+        <groupId>io.zipkin.brave</groupId>
+        <artifactId>brave</artifactId>
+        <version>5.6.11</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.zipkin.reporter2</groupId>
+        <artifactId>zipkin-reporter</artifactId>
+        <version>2.10.2</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.zipkin.reporter2</groupId>
+        <artifactId>zipkin-sender-okhttp3</artifactId>
+        <version>2.10.2</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.zipkin.zipkin2</groupId>
+        <artifactId>zipkin</artifactId>
+        <version>2.16.2</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
         <groupId>it.unimi.dsi</groupId>
         <artifactId>fastutil</artifactId>
         <version>8.2.2</version>
@@ -874,7 +898,7 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-unsafe</artifactId>
-        <version>1.10.0-SNAPSHOT</version>
+        <version>1.11.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
       <dependency>

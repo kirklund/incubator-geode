@@ -72,6 +72,7 @@ import org.apache.geode.management.internal.JmxManagerAdvisor;
 import org.apache.geode.management.internal.RestAgent;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.TypeRegistry;
+import org.apache.geode.tracing.Tracing;
 
 /**
  * The InternalCache interface is contract for implementing classes for defining internal cache
@@ -388,4 +389,6 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime, Reco
   MeterRegistry getMeterRegistry();
 
   void saveCacheXmlForReconnect();
+
+  Tracing getTracing();
 }

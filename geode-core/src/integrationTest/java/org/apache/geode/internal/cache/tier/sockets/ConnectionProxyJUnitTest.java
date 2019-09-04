@@ -25,6 +25,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
 
 import java.util.Map;
 import java.util.Properties;
@@ -58,6 +59,7 @@ import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
+import org.apache.geode.tracing.Tracing;
 
 /**
  *
@@ -174,7 +176,8 @@ public class ConnectionProxyJUnitTest {
       EntryEventImpl event = new EntryEventImpl((Object) null, false);
       try {
         event.setEventId(new EventID(new byte[] {1}, 1, 1));
-        PutOp.execute(conn, proxy, testRegion.getFullPath(), "key1", "val1", event, null, false);
+        PutOp.execute(conn, proxy, testRegion.getFullPath(), "key1", "val1", event, null, false,
+            mock(Tracing.class));
       } finally {
         event.release();
       }

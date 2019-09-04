@@ -56,6 +56,7 @@ import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 
+import brave.ScopedSpan;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
@@ -220,6 +221,7 @@ import org.apache.geode.internal.util.concurrent.FutureResult;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.tracing.Tracing;
 
 /**
  * Implementation of a local scoped-region. Note that this class has a different meaning starting
@@ -500,6 +502,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    */
   private static final ThreadLocal<LocalRegion> initializingRegion = new ThreadLocal<>();
 
+  private final Tracing tracing;
+
   /**
    * Get the current initializing region as set in the ThreadLocal.
    *
@@ -597,6 +601,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       setUserAttribute(internalRegionArgs.getUserAttribute());
     }
     initializingRegion.set(this);
+
+    tracing = cache.getTracing();
 
     diskStoreImpl = findDiskStore(attrs, internalRegionArgs);
     diskRegion = createDiskRegion(internalRegionArgs);
@@ -1615,12 +1621,14 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   public Object put(Object key, Object value, Object aCallbackArgument)
       throws TimeoutException, CacheWriterException {
     long startPut = getStatisticsClock().getTime();
+    ScopedSpan span = tracing.getTracer().startScopedSpan("region.put");
     @Released
     EntryEventImpl event = newUpdateEntryEvent(key, value, aCallbackArgument);
     try {
       return validatedPut(event, startPut);
     } finally {
       event.release();
+      span.finish();
     }
   }
 

@@ -166,6 +166,7 @@ import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.pdx.internal.TypeRegistry;
+import org.apache.geode.tracing.Tracing;
 
 /**
  * Represents a {@link Cache} that is created declaratively. Notice that it implements the
@@ -2425,6 +2426,11 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public void saveCacheXmlForReconnect() {
+    throw new UnsupportedOperationException("Should not be invoked");
+  }
+
+  @Override
+  public Tracing getTracing() {
     throw new UnsupportedOperationException("Should not be invoked");
   }
 

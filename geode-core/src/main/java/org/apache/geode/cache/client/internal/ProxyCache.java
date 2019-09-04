@@ -33,6 +33,7 @@ import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
+import org.apache.geode.tracing.Tracing;
 
 /**
  * A wrapper class over an actual Cache instance. This is used when the multiuser-authentication
@@ -64,6 +65,10 @@ public class ProxyCache implements RegionService {
   public ProxyCache(Properties properties, InternalCache cache, PoolImpl pool) {
     this.userAttributes = new UserAttributes(properties, pool);
     this.cache = cache;
+  }
+
+  public Tracing getTracing() {
+    return cache.getTracing();
   }
 
   @Override

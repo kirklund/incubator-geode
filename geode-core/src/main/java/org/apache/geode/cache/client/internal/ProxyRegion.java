@@ -45,6 +45,7 @@ import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.snapshot.RegionSnapshotService;
 import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl;
 import org.apache.geode.internal.statistics.StatisticsClock;
+import org.apache.geode.tracing.Tracing;
 
 /**
  * A wrapper class over an actual Region instance. This is used when the multiuser-authentication
@@ -58,11 +59,13 @@ public class ProxyRegion implements Region {
   private final ProxyCache proxyCache;
   private final Region realRegion;
   private final StatisticsClock statisticsClock;
+  private final Tracing tracing;
 
   public ProxyRegion(ProxyCache proxyCache, Region realRegion, StatisticsClock statisticsClock) {
     this.proxyCache = proxyCache;
     this.realRegion = realRegion;
     this.statisticsClock = statisticsClock;
+    tracing = proxyCache.getTracing();
   }
 
   @Override
