@@ -213,6 +213,7 @@ tasks.register('distAppServer', Zip) {
       filter(ReplaceTokens, tokens:['ANTLR_VERSION': DependencyConstraints.get('antlr.version')])
       filter(ReplaceTokens, tokens:['MICROMETER_VERSION': DependencyConstraints.get('micrometer.version')])
       filter(ReplaceTokens, tokens:['ZIPKIN_VERSION': DependencyConstraints.get('zipkin.version')])
+      filter(ReplaceTokens, tokens:['ZIPKIN_REPORTER2_VERSION': DependencyConstraints.get('zipkin-reporter2.version')])
       filter(ReplaceTokens, tokens:['BRAVE_VERSION': DependencyConstraints.get('brave.version')])
       filter(ReplaceTokens, tokens:['TX_VERSION': DependencyConstraints.get('javax.transaction-api.version')])
       filter(ReplaceTokens, tokens:['JGROUPS_VERSION': DependencyConstraints.get('jgroups.version')])

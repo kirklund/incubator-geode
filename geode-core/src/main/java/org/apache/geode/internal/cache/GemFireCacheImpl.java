@@ -256,6 +256,8 @@ import org.apache.geode.pdx.internal.InternalPdxInstance;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
 import org.apache.geode.pdx.internal.TypeRegistry;
+import org.apache.geode.tracing.Tracing;
+import org.apache.geode.tracing.TracingFactory;
 
 // TODO: somebody Come up with more reasonable values for {@link #DEFAULT_LOCK_TIMEOUT}, etc.
 /**
@@ -606,6 +608,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final StatisticsClock statisticsClock;
 
+  private final Tracing tracing;
+
   static {
     // this works around jdk bug 6427854, reported in ticket #44434
     String propertyName = "sun.nio.ch.bugLevel";
@@ -788,6 +792,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     pdxRegistry = typeRegistry;
     this.meterRegistry = meterRegistry;
     this.meterSubregistries = meterSubregistries;
+    tracing = new TracingFactory().create();
 
     // Synchronized to prevent a new cache from being created
     // before an old one has finished closing
@@ -998,6 +1003,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       getCacheConfig().setCacheServerCreation(list);
       logger.info("CacheServer configuration saved");
     }
+  }
+
+  @Override
+  public Tracing getTracing() {
+    return tracing;
   }
 
   @Override

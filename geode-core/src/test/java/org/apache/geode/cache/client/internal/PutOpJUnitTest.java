@@ -36,7 +36,7 @@ public class PutOpJUnitTest {
   public void regularDeltaPutShouldNotRetryFlagInMessage() {
     PutOp.PutOpImpl putOp = new PutOp.PutOpImpl("testRegion", "testKey", "testValue", new byte[10],
         getEntryEvent(), Operation.UPDATE,
-        false, false, null, false, false);
+        false, false, null, false, false, null);
     assertFalse(putOp.getMessage().isRetry());
   }
 
@@ -45,7 +45,7 @@ public class PutOpJUnitTest {
 
     PutOp.PutOpImpl putOp = new PutOp.PutOpImpl("testRegion", "testKey", "testValue", null,
         getEntryEvent(), Operation.UPDATE,
-        false, false, null, false, false);
+        false, false, null, false, false, null);
     assertFalse(putOp.getMessage().isRetry());
   }
 
@@ -53,7 +53,7 @@ public class PutOpJUnitTest {
   public void failedDeltaPutShouldSetRetryFlagInMessage() {
     PutOp.PutOpImpl putOp = new PutOp.PutOpImpl("testRegion", "testKey", "testValue", new byte[10],
         getEntryEvent(), Operation.UPDATE,
-        false, false, null, true, false);
+        false, false, null, true, false, null);
     assertTrue(putOp.getMessage().isRetry());
   }
 

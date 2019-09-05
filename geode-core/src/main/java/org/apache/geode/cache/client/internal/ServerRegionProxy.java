@@ -134,10 +134,10 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
       Object callbackArg) {
     if (region == null) {
       return PutOp.execute(pool, regionName, key, value, deltaBytes, event,
-          Operation.CREATE, false, null, callbackArg, pool.getPRSingleHopEnabled());
+          Operation.CREATE, false, null, callbackArg, pool.getPRSingleHopEnabled(), null);
     } else {
       return PutOp.execute(pool, region, key, value, deltaBytes, event, Operation.CREATE,
-          false, null, callbackArg, pool.getPRSingleHopEnabled());
+          false, null, callbackArg, pool.getPRSingleHopEnabled(), region.getCache().getTracing());
     }
   }
 
@@ -154,10 +154,11 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
     if (region == null) {
       return PutOp.execute(pool, regionName, key, value, deltaBytes, event, operation,
-          requireOldValue, expectedOldValue, callbackArg, pool.getPRSingleHopEnabled());
+          requireOldValue, expectedOldValue, callbackArg, pool.getPRSingleHopEnabled(), null);
     } else {
       return PutOp.execute(pool, region, key, value, deltaBytes, event, operation,
-          requireOldValue, expectedOldValue, callbackArg, pool.getPRSingleHopEnabled());
+          requireOldValue, expectedOldValue, callbackArg, pool.getPRSingleHopEnabled(),
+          region.getCache().getTracing());
     }
   }
 
@@ -175,7 +176,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
       Object callbackArg) {
     EventIDHolder event = new EventIDHolder(eventId);
     PutOp.execute(con, pool, regionName, key, value, event, callbackArg,
-        pool.getPRSingleHopEnabled());
+        pool.getPRSingleHopEnabled(), region.getCache().getTracing());
   }
 
   /*

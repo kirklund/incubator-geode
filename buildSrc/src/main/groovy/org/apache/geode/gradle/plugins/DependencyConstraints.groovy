@@ -45,6 +45,7 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("shiro.version", "1.4.0")
     deps.put("slf4j-api.version", "1.7.25")
     deps.put("zipkin.version", "2.16.2")
+    deps.put("zipkin-reporter2.version", "2.10.2")
     deps.put("brave.version", "5.6.11")
 
     // These version numbers are used in testing various versions of tomcat and are consumed explicitly
@@ -116,8 +117,10 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'io.github.classgraph', name: 'classgraph', version: '4.0.6')
         api(group: 'io.micrometer', name: 'micrometer-core', version: get('micrometer.version'))
         api(group: 'io.netty', name: 'netty-all', version: '4.1.31.Final')
-        api(group: 'io.zipkin.zipkin2', name: 'zipkin', version: get('zipkin.version'))
         api(group: 'io.zipkin.brave', name: 'brave', version: get('brave.version'))
+        api(group: 'io.zipkin.reporter2', name: 'zipkin-reporter', version: get('zipkin-reporter2.version'))
+        api(group: 'io.zipkin.reporter2', name: 'zipkin-sender-okhttp3', version: get('zipkin-reporter2.version'))
+        api(group: 'io.zipkin.zipkin2', name: 'zipkin', version: get('zipkin.version'))
         api(group: 'it.unimi.dsi', name: 'fastutil', version: get('fastutil.version'))
         api(group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2')
         api(group: 'javax.annotation', name: 'jsr250-api', version: '1.0')

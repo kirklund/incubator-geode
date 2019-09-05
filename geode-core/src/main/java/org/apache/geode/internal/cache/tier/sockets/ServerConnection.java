@@ -76,6 +76,7 @@ import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.tracing.Tracing;
 
 /**
  * Provides an implementation for the server socket end of the hierarchical cache connection. Each
@@ -110,6 +111,8 @@ public abstract class ServerConnection implements Runnable {
   protected final SecurityService securityService;
 
   protected final CacheServerStats stats;
+
+  private final Tracing tracing;
 
   private final ServerSideHandshakeFactory handshakeFactory = new ServerSideHandshakeFactory();
 
@@ -275,6 +278,7 @@ public abstract class ServerConnection implements Runnable {
     name = buffer.toString();
 
     this.stats = stats;
+    tracing = internalCache.getTracing();
     this.acceptor = acceptor;
     crHelper = cachedRegionHelper;
     logWriter = (InternalLogWriter) internalCache.getLogger();
@@ -1503,6 +1507,10 @@ public abstract class ServerConnection implements Runnable {
    */
   public CacheServerStats getCacheServerStats() {
     return stats;
+  }
+
+  public Tracing getTracing() {
+    return tracing;
   }
 
   /**
