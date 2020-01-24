@@ -176,8 +176,7 @@ public class JMXMBeanReconnectDUnitTest implements Serializable {
             .as("GemFire mbeans on locator1")
             .containsAll(expectedServerMXBeansOnLocator("server1", "region1"))
             .containsAll(expectedLocatorMXBeansOnLocator("locator1"))
-            // GEODE-7739: skip validation of locator2 mbeans on locator1
-            // .containsAll(expectedLocatorMXBeansOnLocator("locator2"))
+            .containsAll(expectedLocatorMXBeansOnOtherLocator("locator2"))
             .containsAll(expectedDistributedTypeMXBeansOnLocator("region1"));
       });
 
@@ -189,8 +188,7 @@ public class JMXMBeanReconnectDUnitTest implements Serializable {
         assertThat(getPlatformMBeanServer().queryNames(getInstance("GemFire:*"), null))
             .as("GemFire mbeans on locator2")
             .containsAll(expectedServerMXBeansOnLocator("server1", "region1"))
-            // GEODE-7739: skip validation of locator1 mbeans on locator2
-            // .containsAll(expectedLocatorMXBeansOnLocator("locator1"))
+            .containsAll(expectedLocatorMXBeansOnOtherLocator("locator1"))
             .containsAll(expectedLocatorMXBeansOnLocator("locator2"))
             .containsAll(expectedDistributedTypeMXBeansOnLocator("region1"));
       });
@@ -583,6 +581,20 @@ public class JMXMBeanReconnectDUnitTest implements Serializable {
         // NOTE: ManagerMXBean is never federated to other JMX Managers (not sure why)
         getInstance(
             "GemFire:service=Manager,type=Member,member=" + memberName)));
+  }
+
+  private static Set<ObjectName> expectedLocatorMXBeansOnOtherLocator(String memberName)
+      throws MalformedObjectNameException {
+    return new HashSet<>(asList(
+        getInstance(
+            "GemFire:service=DiskStore,name=cluster_config,type=Member,member=" + memberName),
+        getInstance(
+            "GemFire:service=Locator,type=Member,member=" + memberName),
+        getInstance(
+            "GemFire:service=LockService,name=__CLUSTER_CONFIG_LS,type=Member,member="
+                + memberName),
+        getInstance(
+            "GemFire:type=Member,member=" + memberName)));
   }
 
   private static Set<ObjectName> expectedDistributedTypeMXBeansOnLocator(String regionName)
