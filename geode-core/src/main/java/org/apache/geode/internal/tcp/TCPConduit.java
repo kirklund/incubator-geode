@@ -814,6 +814,7 @@ public class TCPConduit implements Runnable {
           problem = e;
           // don't keep trying to connect to an alert listener
           if (AlertingAction.isThreadAlerting()) {
+            if (true) throw new RuntimeException("KIRK was here");
             if (logger.isDebugEnabled()) {
               logger.debug("Giving up connecting to alert listener {}", memberAddress);
             }
