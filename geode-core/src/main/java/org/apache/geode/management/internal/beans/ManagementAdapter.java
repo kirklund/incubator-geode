@@ -155,13 +155,13 @@ public class ManagementAdapter {
   private final MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
   private final Object regionOpLock = new Object();
 
-  private SystemManagementService service;
-  private InternalCache internalCache;
-  private String memberSource;
-  private NotificationBroadcasterSupport memberLevelNotificationEmitter;
-  private MemberMBean memberBean;
-  private MBeanAggregator aggregator;
-  private MemberMBeanBridge memberMBeanBridge;
+  private volatile SystemManagementService service;
+  private volatile InternalCache internalCache;
+  private volatile String memberSource;
+  private volatile NotificationBroadcasterSupport memberLevelNotificationEmitter;
+  private volatile MemberMBean memberBean;
+  private volatile MBeanAggregator aggregator;
+  private volatile MemberMBeanBridge memberMBeanBridge;
 
   private volatile boolean serviceInitialised;
 

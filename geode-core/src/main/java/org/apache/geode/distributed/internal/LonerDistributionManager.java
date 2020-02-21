@@ -1342,6 +1342,11 @@ public class LonerDistributionManager implements DistributionManager {
   }
 
   @Override
+  public String getRedundancyZone(InternalDistributedMember member) {
+    return null;
+  }
+
+  @Override
   public boolean areInSameZone(InternalDistributedMember member1,
       InternalDistributedMember member2) {
     return false;

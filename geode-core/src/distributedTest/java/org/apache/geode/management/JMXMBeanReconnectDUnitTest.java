@@ -32,9 +32,7 @@ import static org.apache.geode.distributed.internal.membership.api.MembershipMan
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
-import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
-import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.VM.getVMId;
 import static org.apache.geode.test.dunit.VM.toArray;
@@ -53,6 +51,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -70,6 +69,8 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem.Reconnect
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.dunit.rules.SharedErrorCollector;
@@ -81,6 +82,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
 @Category(JMXTest.class)
 @SuppressWarnings("serial")
 public class JMXMBeanReconnectDUnitTest implements Serializable {
+  private static final Logger logger = LogService.getLogger();
 
   private static final long TIMEOUT_MILLIS = getTimeout().getValueInMS();
   private static final LocatorLauncher DUMMY_LOCATOR = mock(LocatorLauncher.class);
@@ -116,7 +118,8 @@ public class JMXMBeanReconnectDUnitTest implements Serializable {
   @Rule
   public DistributedRule distributedRule = new DistributedRule();
   @Rule
-  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
+  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder()
+      .copyTo(new File(getClass().getSimpleName()));
   @Rule
   public SharedErrorCollector errorCollector = new SharedErrorCollector();
   @Rule
@@ -202,13 +205,14 @@ public class JMXMBeanReconnectDUnitTest implements Serializable {
 
   @After
   public void tearDown() {
-    invokeInEveryVM(() -> {
-      BEFORE.get().countDown();
-      AFTER.get().countDown();
-      SERVER.getAndSet(DUMMY_SERVER).stop();
-      LOCATOR.getAndSet(DUMMY_LOCATOR).stop();
-    });
-    disconnectAllFromDS();
+    for (VM vm : asList(serverVM, locator2VM, locator1VM)) {
+      vm.invoke(() -> {
+        BEFORE.get().countDown();
+        AFTER.get().countDown();
+        SERVER.getAndSet(DUMMY_SERVER).stop();
+        LOCATOR.getAndSet(DUMMY_LOCATOR).stop();
+      });
+    }
   }
 
   @Test
@@ -241,17 +245,29 @@ public class JMXMBeanReconnectDUnitTest implements Serializable {
       await().untilAsserted(() -> {
         assertThat(getPlatformMBeanServer().queryNames(getInstance("GemFire:*"), null))
             .as("GemFire mbeans on locator1")
-            .containsAll(expectedLocatorMXBeans(locator1Name));
+            .containsAll(expectedLocatorMXBeans(locator1Name))
+            .containsAll(expectedLocatorMXBeans(locator2Name));
       });
+      dumpFederationComponents();
     });
 
     locator2VM.invoke(() -> {
       await().untilAsserted(() -> {
         assertThat(getPlatformMBeanServer().queryNames(getInstance("GemFire:*"), null))
             .as("GemFire mbeans on locator2")
+            .containsAll(expectedLocatorMXBeans(locator1Name))
             .containsAll(expectedLocatorMXBeans(locator2Name));
       });
+      dumpFederationComponents();
     });
+  }
+
+  private void dumpFederationComponents() {
+    SystemManagementService managementService =
+        (SystemManagementService) ManagementService.getManagementService(LOCATOR.get().getCache());
+
+    logger.info("KIRK: JMX federation components: {}",
+        managementService.getLocalManager().getFedComponents());
   }
 
   @Test
@@ -506,7 +522,12 @@ public class JMXMBeanReconnectDUnitTest implements Serializable {
 
   private static void startLocator(String name, File workingDirectory, int locatorPort, int jmxPort,
       String locators) {
+    String logFile = new File(workingDirectory, name + ".log").getAbsolutePath();
+
+    logger.info("KIRK starting locator with log-file {}", logFile);
+
     LOCATOR.set(new LocatorLauncher.Builder()
+        .setDeletePidFileOnStop(true)
         .setMemberName(name)
         .setPort(locatorPort)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
@@ -531,13 +552,18 @@ public class JMXMBeanReconnectDUnitTest implements Serializable {
   }
 
   private static void startServer(String name, File workingDirectory, String locators) {
+    String logFile = new File(workingDirectory, name + ".log").getAbsolutePath();
+
+    logger.info("KIRK starting server with log-file {}", logFile);
+
     SERVER.set(new ServerLauncher.Builder()
+        .setDeletePidFileOnStop(true)
         .setDisableDefaultServer(true)
         .setMemberName(name)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
         .set(HTTP_SERVICE_PORT, "0")
         .set(LOCATORS, locators)
-        .set(LOG_FILE, new File(workingDirectory, name + ".log").getAbsolutePath())
+        .set(LOG_FILE, logFile)
         .set(MAX_WAIT_TIME_RECONNECT, "1000")
         .set(MEMBER_TIMEOUT, "2000")
         .build());
