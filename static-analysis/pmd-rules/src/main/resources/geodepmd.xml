@@ -26,6 +26,7 @@
     </description>
     <rule ref="org/apache/geode/pmd/staticfinal.xml/StaticFieldsMustBeFinal" />
     <rule ref="org/apache/geode/pmd/staticimmutable.xml/StaticFieldsMustBeImmutable" />
+    <rule ref="org/apache/geode/pmd/threadsleep.xml/AvoidThreadSleepRule" />
 
     <!-- Your rules will come here -->
 

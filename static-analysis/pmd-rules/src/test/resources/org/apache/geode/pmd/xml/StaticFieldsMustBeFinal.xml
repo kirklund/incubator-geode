@@ -21,7 +21,7 @@
         xsi:schemaLocation="http://pmd.sourceforge.net/rule-tests https://pmd.sourceforge.io/rule-tests_1_0_0.xsd">
 
     <test-code>
-        <description>All final fields must be static</description>
+        <description>All static fields must be final</description>
         <expected-problems>1</expected-problems>
         <code><![CDATA[
     public class NonFinalStatic {

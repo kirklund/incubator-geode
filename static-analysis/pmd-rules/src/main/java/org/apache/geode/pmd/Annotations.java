@@ -14,13 +14,21 @@
  */
 package org.apache.geode.pmd;
 
+import net.sourceforge.pmd.lang.java.ast.ASTBlockStatement;
 import net.sourceforge.pmd.lang.java.ast.ASTFieldDeclaration;
 
 public class Annotations {
+
   static boolean hasDocumentedAnnotation(ASTFieldDeclaration node) {
     return node.isAnnotationPresent("org.apache.geode.annotations.Immutable") ||
         node.isAnnotationPresent("org.apache.geode.annotations.internal.MakeNotStatic") ||
         node.isAnnotationPresent("org.apache.geode.annotations.internal.MakeImmutable") ||
         node.isAnnotationPresent("org.apache.geode.annotations.internal.MutableForTesting");
+  }
+
+  static boolean hasThreadSleepAnnotation(ASTBlockStatement node) {
+    return false;
+    // return node.isAnnotationPresent("org.apache.geode.annotations.Immutable") ||
+    // node.isAnnotationPresent("org.apache.geode.annotations.internal.MakeNotStatic");
   }
 }

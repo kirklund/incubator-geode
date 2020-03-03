@@ -65,7 +65,7 @@ public class MembershipChangeListener implements MembershipListener, PersistentS
 
     while (!membershipChanged && !cancelCondition.getAsBoolean() && now().isBefore(timeoutTime)) {
       warnOnceAfter(warningTime);
-      wait(POLL_INTERVAL_MILLIS);
+      Thread.sleep(Long.MAX_VALUE); // wait(POLL_INTERVAL_MILLIS);
     }
 
     membershipChanged = false;
