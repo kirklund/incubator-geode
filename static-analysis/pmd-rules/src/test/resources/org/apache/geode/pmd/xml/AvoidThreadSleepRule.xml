@@ -56,8 +56,24 @@ public class MultipleThreadSleeps {
   public void doSleep1() {
     Thread.sleep(100);
   }
-  public void doSleep1() {
+  public void doSleep2() {
     Thread.sleep(100);
+  }
+}
+         ]]></code>
+    </test-code>
+
+    <test-code>
+        <description>Should skip inner-class method annotated with AllowThreadSleep</description>
+        <expected-problems>0</expected-problems>
+        <code><![CDATA[
+import org.apache.geode.annotations.internal.AllowThreadSleep;
+public class HasInnerClassWithSleep {
+  public static class InnerClassWithSleep {
+    @AllowThreadSleep
+    public void doSleep() {
+      Thread.sleep(100);
+    }
   }
 }
          ]]></code>
@@ -88,8 +104,24 @@ public class MultipleThreadSleeps {
   public void doSleep1() {
     Thread.sleep(100);
   }
-  public void doSleep1() {
+  public void doSleep2() {
     Thread.sleep(100);
+  }
+}
+         ]]></code>
+    </test-code>
+
+    <test-code>
+        <description>Should skip inner-class method annotated with RemoveThreadSleep</description>
+        <expected-problems>0</expected-problems>
+        <code><![CDATA[
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
+public class HasInnerClassWithSleep {
+  public static class InnerClassWithSleep {
+    @RemoveThreadSleep
+    public void doSleep() {
+      Thread.sleep(100);
+    }
   }
 }
          ]]></code>

@@ -27,6 +27,7 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.annotations.internal.AllowThreadSleep;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
@@ -75,6 +76,7 @@ public class PartitionedRegionDestroyDUnitTest extends CacheTestCase {
   }
 
   @Test
+  @AllowThreadSleep
   public void testDestroyRegion() throws Exception {
     vm0.invoke(() -> createPartitionedRegions());
     vm1.invoke(() -> createPartitionedRegions());

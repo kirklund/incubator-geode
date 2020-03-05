@@ -29,6 +29,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.PoolManager;
@@ -97,6 +98,7 @@ public class ClientDestroyRegionNotificationRegressionTest implements Serializab
    * This tests whether the region destroy are not received by the sender
    */
   @Test
+  @RemoveThreadSleep
   public void senderDoesNotReceiveRegionDestroy() throws Exception {
     server1.invoke(() -> {
       await().until(() -> cacheRule.getCache().getRegion(regionName) == null);

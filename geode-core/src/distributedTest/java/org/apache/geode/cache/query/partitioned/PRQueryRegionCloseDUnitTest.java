@@ -29,6 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.annotations.internal.AllowThreadSleep;
 import org.apache.geode.cache.query.data.PortfolioData;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
@@ -98,6 +99,7 @@ public class PRQueryRegionCloseDUnitTest extends CacheTestCase {
    * 7. Verifies the size, type, and contents of both the resultSets obtained
    */
   @Test
+  @AllowThreadSleep
   public void testPRWithRegionCloseInOneDatastoreWithoutDelay() throws Exception {
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRAccessorCreate(
         PARTITIONED_REGION_NAME, REDUNDANCY, PortfolioData.class));

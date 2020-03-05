@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.PartitionAttributes;
@@ -58,6 +59,7 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends JUnit4CacheTestCa
   }
 
   @Test
+  @RemoveThreadSleep
   public void testNoRecovery() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -283,6 +285,7 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends JUnit4CacheTestCa
     });
   }
 
+  @RemoveThreadSleep
   private long waitForBucketRecovery(VM vm2, final int numBuckets, final long begin) {
     // wait for the bucket to be copied
     Long elapsed = (Long) vm2.invoke(new SerializableCallable("putData") {

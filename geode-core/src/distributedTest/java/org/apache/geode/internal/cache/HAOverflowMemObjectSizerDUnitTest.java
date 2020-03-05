@@ -27,6 +27,7 @@ import java.util.Set;
 
 import org.junit.Test;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -99,6 +100,7 @@ public class HAOverflowMemObjectSizerDUnitTest extends JUnit4DistributedTestCase
     serverVM.invoke(() -> HAOverflowMemObjectSizerDUnitTest.closeCache());
   }
 
+  @RemoveThreadSleep
   public static void cleanUp(Long limit) {
     ConflationDUnitTestHelper.unsetIsSlowStart();
     if (region != null) {

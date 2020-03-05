@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
@@ -77,6 +78,7 @@ public class TCPConduitDUnitTest extends DistributedTestCase {
    * We set the lease time to 1000, which in that case would cause the socket to break in 1 second.
    */
   @Test
+  @RemoveThreadSleep
   public void basicAcceptConnection() throws Exception {
     final VM vm1 = VM.getVM(1);
     final VM vm2 = VM.getVM(2);

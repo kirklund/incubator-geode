@@ -38,6 +38,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.annotations.internal.AllowThreadSleep;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.DataPolicy;
@@ -174,6 +175,7 @@ public class HARegionQueueExpiryRegressionTest extends CacheTestCase {
    * Client is waiting for afterCreate to be invoked number of PUT_COUNT times before proceeding
    * with validation.
    */
+  @AllowThreadSleep
   private void generateEvents() throws InterruptedException {
     Region<String, String> region = getCache().getRegion(uniqueName);
     for (int i = 0; i < PUT_COUNT - 1; i++) {

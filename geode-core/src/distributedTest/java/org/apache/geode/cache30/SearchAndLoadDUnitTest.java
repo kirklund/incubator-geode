@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheLoader;
@@ -177,6 +178,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
 
     vm0.invoke("create region " + name + " in vm0", new CacheSerializableRunnable() {
       @Override
+      @RemoveThreadSleep
       public void run2() {
         remoteLoaderInvoked = false;
         loaderInvoked = false;
@@ -242,6 +244,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
       vm0.invoke(
           "Concurrently invoke the loader on the same key - t2", new CacheSerializableRunnable() {
             @Override
+            @RemoveThreadSleep
             public void run2() {
               final Region<Object, Object> region = getCache().getRegion("root/" + name);
               final Object[] valueHolder = new Object[1];

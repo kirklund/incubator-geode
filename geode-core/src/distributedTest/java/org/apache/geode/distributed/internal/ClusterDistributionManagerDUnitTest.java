@@ -49,6 +49,7 @@ import org.apache.geode.admin.AdminDistributedSystem;
 import org.apache.geode.admin.AdminDistributedSystemFactory;
 import org.apache.geode.admin.AlertLevel;
 import org.apache.geode.admin.DistributedSystemConfig;
+import org.apache.geode.annotations.internal.AllowThreadSleep;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.DataPolicy;
@@ -375,6 +376,7 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
 
     return new CacheListenerAdapter<String, String>() {
       @Override
+      @AllowThreadSleep
       public void afterCreate(EntryEvent event) {
         try {
           if (playDead) {

@@ -29,6 +29,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -202,6 +203,7 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
     return txManager.suspend();
   }
 
+  @RemoveThreadSleep
   private void resumeTransaction(TransactionId txId, int numOfOperations)
       throws InterruptedException {
     Region region = clientCacheRule.getClientCache().getRegion(regionName);
@@ -354,6 +356,7 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
     }
   }
 
+  @RemoveThreadSleep
   private void unregisterClientMultipleTimes(ClientProxyMembershipID clientProxyMembershipID)
       throws InterruptedException {
     int numOfUnregisterClients = 4;

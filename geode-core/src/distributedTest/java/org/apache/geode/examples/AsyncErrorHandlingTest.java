@@ -12,13 +12,22 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.pmd;
+package org.apache.geode.examples;
 
-import net.sourceforge.pmd.testframework.SimpleAggregatorTst;
+import org.junit.Rule;
+import org.junit.Test;
 
-public class StaticFieldsMustBeFinalTest extends SimpleAggregatorTst {
-  @Override
-  protected void setUp() {
-    addRule("pmdmain.xml", "StaticFieldsMustBeFinal");
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
+
+public class AsyncErrorHandlingTest {
+
+  @Rule
+  public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
+
+  @Test
+  public void foo() {
+    executorServiceRule.submit(() -> {
+      throw new Exception("Bad thing happened");
+    });
   }
 }

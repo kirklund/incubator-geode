@@ -50,6 +50,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.EntryOperation;
 import org.apache.geode.cache.PartitionAttributes;
@@ -718,6 +719,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
   }
 
   @Test
+  @RemoveThreadSleep
   public void testRemoteMultiKeyExecutionHA_CacheClose() throws Exception {
     VM accessor = getHost(0).getVM(3);
     VM datastore0 = getHost(0).getVM(0);
@@ -770,6 +772,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
   }
 
   @Test
+  @RemoveThreadSleep
   public void testRemoteMultiKeyExecutionHA_Disconnect() throws Exception {
     VM accessor = getHost(0).getVM(3);
     VM datastore0 = getHost(0).getVM(0);

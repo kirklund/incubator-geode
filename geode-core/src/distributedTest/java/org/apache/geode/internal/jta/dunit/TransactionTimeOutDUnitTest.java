@@ -39,6 +39,7 @@ import javax.transaction.UserTransaction;
 
 import org.junit.Test;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
@@ -263,6 +264,7 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
+  @RemoveThreadSleep
   private void transactionCanBeCommittedBeforeTimedOut() {
     try {
       Context ctx = cache.getJNDIContext();
@@ -281,6 +283,7 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
+  @RemoveThreadSleep
   private void transactionUpdatingExternalDataSourceIsCommittedBeforeTimedOut() {
     try {
       Context ctx = cache.getJNDIContext();

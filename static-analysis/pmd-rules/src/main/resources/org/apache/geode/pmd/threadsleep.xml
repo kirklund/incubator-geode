@@ -13,24 +13,26 @@
   ~ or implied. See the License for the specific language governing permissions and limitations under
   ~ the License.
   -->
-<ruleset name="Custom Rules"
+<ruleset name="Avoid Thread Sleep Rule"
          xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
 
     <description>
-        My custom rules
+        Reports violations of tests using Thread.sleep.
     </description>
     <rule name="AvoidThreadSleepRule"
-          message="Tests must use GeodeAwaitility or similar awaiting instead of Thread.sleeps. Thread.sleep is not allowed."
+          message="Tests should use GeodeAwaitility or similar awaiting instead of Thread.sleep."
           language="java"
           class="org.apache.geode.pmd.AvoidThreadSleepRule">
         <description>
-            Geode does not allow Thread.sleep statements within the test code.
+            Geode does not unconditionally allow Thread.sleep statements within test code.
 
             If the use of Thread.sleep is necessary within a callback to simulate slow processing,
-            you can annotate the statement with @AllowThreadSleep, and it will be ignored by this
-            rule.
+            you can annotate the containing method with @AllowThreadSleep. If the test code is old,
+            then annotate the containing method with @RemoveThreadSleep to indicate that we intend
+            to replace it with GeodeAwaitility. Either annotation will cause it to be ignored by
+            this rule.
         </description>
         <priority>3</priority>
         <example>

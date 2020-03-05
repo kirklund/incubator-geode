@@ -28,6 +28,7 @@ import java.util.Set;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.FunctionService;
@@ -97,6 +98,7 @@ public class ClusterConfigServerRestartWithJarDeployDUnitTest {
     return functionJar;
   }
 
+  @RemoveThreadSleep
   private void callFunction(MemberVM member) {
     member.invoke(() -> {
       while (true) {

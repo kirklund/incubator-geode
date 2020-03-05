@@ -18,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
 import org.apache.geode.internal.offheap.MemoryBlock;
@@ -26,6 +27,7 @@ import org.apache.geode.internal.offheap.ReferenceCountHelper;
 
 public class OffHeapTestUtil {
 
+  @RemoveThreadSleep
   public static void checkOrphans(InternalCache cache) {
     MemoryAllocatorImpl allocator;
     try {

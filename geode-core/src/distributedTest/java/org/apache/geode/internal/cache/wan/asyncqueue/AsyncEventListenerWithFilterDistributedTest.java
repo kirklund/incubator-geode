@@ -50,6 +50,7 @@ import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.internal.AllowThreadSleep;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Declarable;
@@ -428,6 +429,7 @@ public class AsyncEventListenerWithFilterDistributedTest implements Serializable
     }
 
     @Override
+    @AllowThreadSleep
     public boolean beforeEnqueue(final GatewayQueueEvent event) {
       if (event.getOperation().isRemoveAll()) {
         new Thread(() -> cache.close()).start();

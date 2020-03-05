@@ -40,6 +40,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.annotations.internal.AllowThreadSleep;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheListener;
@@ -107,6 +108,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
         if (addListener) {
           CacheListener cl = new CacheListenerAdapter() {
             @Override
+            @AllowThreadSleep
             public void afterUpdate(EntryEvent event) {
               // make the slow receiver event slower!
               try {

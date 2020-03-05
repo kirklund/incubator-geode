@@ -31,6 +31,7 @@ import java.util.Set;
 import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -348,6 +349,7 @@ public class RedundancyLevelTestBase extends JUnit4DistributedTestCase {
     if (!FailOverDetectionByCCU) {
       oldBo = ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
         @Override
+        @RemoveThreadSleep
         public void beforeFailoverByCacheClientUpdater(ServerLocation epFailed) {
           try {
             Thread.sleep(300000);

@@ -25,6 +25,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -145,6 +146,7 @@ public class StatsBugDUnitTest extends JUnit4DistributedTestCase {
    * primary and secondary.
    */
   @Test
+  @RemoveThreadSleep
   public void testBug36109() throws Exception {
     LogWriterUtils.getLogWriter().info("testBug36109 : BEGIN");
     client1.invoke(() -> StatsBugDUnitTest.createClientCacheForInvalidates(

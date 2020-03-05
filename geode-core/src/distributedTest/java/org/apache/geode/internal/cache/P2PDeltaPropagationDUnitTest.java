@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DeltaTestImpl;
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -89,6 +90,7 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
    */
 
   @Test
+  @RemoveThreadSleep
   public void testP2PDeltaPropagationEnableScopeDAck() throws Exception {
     Object args[] =
         new Object[] {Boolean.TRUE, DataPolicy.REPLICATE, Scope.DISTRIBUTED_ACK, Boolean.FALSE};
@@ -108,6 +110,7 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
    */
 
   @Test
+  @RemoveThreadSleep
   public void testP2PDeltaPropagationEnableScopeGlobal() throws Exception {
     Object args[] = new Object[] {Boolean.TRUE, DataPolicy.REPLICATE, Scope.GLOBAL, Boolean.FALSE};
     server1.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", args);
@@ -123,6 +126,7 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
    * Full object gets resend in P2P D-ACK if delta can not be applied.
    */
   @Test
+  @RemoveThreadSleep
   public void testP2PDACKInvalidDeltaException() throws Exception {
     server1.invoke(() -> P2PDeltaPropagationDUnitTest.createServerCache(Boolean.TRUE));
     server2.invoke(() -> P2PDeltaPropagationDUnitTest.createServerCache(Boolean.TRUE));
@@ -142,6 +146,7 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
    * Full object will be send in case of P2P D-ACK(direct-ack = true).
    */
   @Test
+  @RemoveThreadSleep
   public void testP2PDeltaPropagationEnableDirectAckTrue() throws Exception {
 
     Object args[] =

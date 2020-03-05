@@ -36,6 +36,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Execution;
@@ -866,6 +867,7 @@ public class PRClientServerRegionFunctionExecutionSelectorNoSingleHopDUnitTest
 
   }
 
+  @RemoveThreadSleep
   private static void serverMultiKeyExecutionNoResult(Boolean isByName) {
     Region<String, Integer> region = cache.getRegion(PartitionedRegionName);
     assertNotNull(region);

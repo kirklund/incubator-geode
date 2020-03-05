@@ -14,10 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static java.lang.Thread.sleep;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
-import static org.apache.geode.internal.cache.tier.sockets.InterestRegrListenerDUnitTest.getListenerMapTask;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.junit.Assert.assertEquals;
@@ -32,6 +30,7 @@ import java.util.Properties;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.ClientSession;
@@ -259,6 +258,7 @@ public class InterestRegrListenerDUnitTest extends JUnit4DistributedTestCase {
   }
 
   @Test
+  @RemoveThreadSleep
   public void testDurableClientExit_ClientExpressedInterest() throws Exception {
     final Host host = Host.getHost(0);
     VM serverVM = host.getVM(0);
@@ -334,6 +334,7 @@ public class InterestRegrListenerDUnitTest extends JUnit4DistributedTestCase {
   }
 
   @Test
+  @RemoveThreadSleep
   public void testDurableClientExit_ServerExpressedInterest() throws Exception {
     final Host host = Host.getHost(0);
     VM serverVM = host.getVM(0);
@@ -403,6 +404,7 @@ public class InterestRegrListenerDUnitTest extends JUnit4DistributedTestCase {
   }
 
   @Test
+  @RemoveThreadSleep
   public void testDurableClientExit_ServerExpressedInterest_NonDurableInterest() throws Exception {
     final Host host = getHost(0);
     final VM serverVM = host.getVM(0);
@@ -452,7 +454,7 @@ public class InterestRegrListenerDUnitTest extends JUnit4DistributedTestCase {
     clientVM_2.invoke(() -> closeClientCacheTask(false));
     clientVM_3.invoke(() -> closeClientCacheTask(false));
 
-    sleep(2);
+    Thread.sleep(2);
 
     WaitCriterion wc = new WaitCriterion() {
       int registerCount = 0;
@@ -485,7 +487,7 @@ public class InterestRegrListenerDUnitTest extends JUnit4DistributedTestCase {
 
     getLogWriter().info(
         "Sleeping till durable client queue are expired and unregister event is called on to listener");
-    sleep((DURABLE_CLIENT_TIMEOUT_TEST + 5) * 1000);
+    Thread.sleep((DURABLE_CLIENT_TIMEOUT_TEST + 5) * 1000);
     serverVM.invoke(() -> closeCacheTask());
   }
 

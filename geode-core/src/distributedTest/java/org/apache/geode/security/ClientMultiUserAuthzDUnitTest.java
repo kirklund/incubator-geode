@@ -38,6 +38,7 @@ import java.util.Properties;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.operations.OperationContext.OperationCode;
@@ -128,6 +129,7 @@ public class ClientMultiUserAuthzDUnitTest extends ClientAuthorizationTestCase {
    * Test query/function execute
    */
   @Test
+  @RemoveThreadSleep
   public void testOps2() throws Exception {
     AuthzCredentialGenerator gen = getXmlAuthzGenerator();
     CredentialGenerator cGen = gen.getCredentialGenerator();

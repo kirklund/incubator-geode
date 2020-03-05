@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
@@ -149,6 +150,7 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
   }
 
   @Test
+  @RemoveThreadSleep
   public void createIndexesAndUpdatesAndThenValidate() throws InterruptedException {
     Integer[] intArr = new Integer[2];
     Host host = Host.getHost(0);

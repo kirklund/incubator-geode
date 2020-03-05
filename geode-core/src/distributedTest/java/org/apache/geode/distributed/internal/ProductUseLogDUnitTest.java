@@ -27,6 +27,7 @@ import java.util.Properties;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
@@ -60,6 +61,7 @@ public class ProductUseLogDUnitTest extends JUnit4CacheTestCase {
   }
 
   @Test
+  @RemoveThreadSleep
   public void testMembershipMonitoring() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);

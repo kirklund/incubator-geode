@@ -27,6 +27,7 @@ import java.util.concurrent.TimeoutException;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheEvent;
@@ -278,6 +279,7 @@ public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
       final DUnitBlackboard bb = getBlackboard();
       DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
         @Override
+        @RemoveThreadSleep
         public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage msg) {
           if (msg instanceof DistributedCacheOperation.CacheOperationMessage) {
             try {

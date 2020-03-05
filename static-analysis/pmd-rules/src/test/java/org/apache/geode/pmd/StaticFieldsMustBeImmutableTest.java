@@ -19,7 +19,7 @@ import net.sourceforge.pmd.testframework.SimpleAggregatorTst;
 public class StaticFieldsMustBeImmutableTest extends SimpleAggregatorTst {
   @Override
   protected void setUp() {
-    addRule("geodepmd.xml", "StaticFieldsMustBeImmutable");
+    addRule("pmdmain.xml", "StaticFieldsMustBeImmutable");
   }
 
 }

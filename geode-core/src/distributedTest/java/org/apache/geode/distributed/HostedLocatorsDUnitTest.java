@@ -33,6 +33,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.shell.support.util.FileUtils;
 
+import org.apache.geode.annotations.internal.AllowThreadSleep;
 import org.apache.geode.distributed.AbstractLauncher.Status;
 import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.LocatorState;
@@ -321,6 +322,7 @@ public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
         }, timeout, interval);
   }
 
+  @AllowThreadSleep
   protected static void assertEventuallyTrue(final String message, final Callable<Boolean> callable,
       final int timeout, final int interval) throws Exception {
     boolean done = false;

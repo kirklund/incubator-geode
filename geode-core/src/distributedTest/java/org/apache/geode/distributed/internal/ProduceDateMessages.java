@@ -17,6 +17,7 @@ package org.apache.geode.distributed.internal;
 import java.util.Date;
 import java.util.Properties;
 
+import org.apache.geode.annotations.internal.AllowThreadSleep;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.Assert;
 
@@ -25,6 +26,7 @@ import org.apache.geode.internal.Assert;
  */
 public class ProduceDateMessages {
 
+  @AllowThreadSleep
   public static void main(String[] args) throws InterruptedException {
     InternalDistributedSystem system =
         (InternalDistributedSystem) DistributedSystem.connect(new Properties());

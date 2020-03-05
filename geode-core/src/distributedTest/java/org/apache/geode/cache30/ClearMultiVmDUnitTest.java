@@ -28,6 +28,7 @@ import java.util.Properties;
 
 import org.junit.Test;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
@@ -279,6 +280,7 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
   }// end of testClearExceptions
 
   @Test
+  @RemoveThreadSleep
   public void testGiiandClear() throws Throwable {
     if (false) {
       getSystem().getLogWriter().severe("testGiiandClear skipped because of bug 34963");

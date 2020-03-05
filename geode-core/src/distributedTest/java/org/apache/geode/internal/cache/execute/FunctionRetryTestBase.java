@@ -32,6 +32,7 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import util.TestException;
 
+import org.apache.geode.annotations.internal.AllowThreadSleep;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.PoolFactory;
@@ -368,6 +369,7 @@ public class FunctionRetryTestBase implements Serializable {
     }
 
     @Override
+    @AllowThreadSleep
     public void execute(final FunctionContext<Integer> context) {
       LogService.getLogger().info("Function Executing on server.");
       final int thinkTimeMillis = context.getArguments();

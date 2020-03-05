@@ -17,7 +17,6 @@
 apply plugin: 'pmd'
 pmd {
   sourceSets = []
-  ruleSetFiles = files("${project.projectDir}/../static-analysis/pmd-rules/src/main/resources/geodepmd.xml")
   ruleSets = []
   consoleOutput = true
 }
@@ -25,7 +24,21 @@ dependencies {
   pmd  project(":static-analysis:pmd-rules")
 }
 
+project.tasks.pmdMain {
+//  sourceSets = [sourceSets.main]
+  ruleSetFiles = files("${project.projectDir}/../static-analysis/pmd-rules/src/main/resources/pmdmain.xml")
+}
+
+project.tasks.pmdDistributedTest {
+//  sourceSets = [sourceSets.distributedTest]
+  ruleSetFiles = files("${project.projectDir}/../static-analysis/pmd-rules/src/main/resources/pmddistributedtest.xml")
+}
+
 pmdMain {
   //Exclude generated OQL classes
   exclude '**/org/apache/geode/cache/query/internal/parse/**'
+}
+
+pmdDistributedTest {
+
 }

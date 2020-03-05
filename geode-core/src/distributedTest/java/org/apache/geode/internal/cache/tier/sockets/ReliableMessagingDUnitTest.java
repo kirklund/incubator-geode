@@ -31,6 +31,7 @@ import java.util.Properties;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -227,6 +228,7 @@ public class ReliableMessagingDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
+  @RemoveThreadSleep
   private static void sleep(int ms) {
     try {
       Thread.sleep(ms);

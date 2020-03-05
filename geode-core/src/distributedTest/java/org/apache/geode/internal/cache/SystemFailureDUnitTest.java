@@ -29,6 +29,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.CancelException;
 import org.apache.geode.LogWriter;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.EntryEvent;
@@ -328,6 +329,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
     return ((Boolean) vm.invoke(() -> this.verifyDisconnected())).booleanValue();
   }
 
+  @RemoveThreadSleep
   protected static Boolean verifyDisconnected() {
     if (SystemFailure.getFailure() == null) {
       fail("No system failure present!");

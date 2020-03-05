@@ -32,6 +32,7 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -249,6 +250,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
   }
 
   @Test
+  @RemoveThreadSleep
   public void testPRGatherCancellation() throws Throwable {
     // create region on the server
     final VM server1 = VM.getVM(0);
@@ -313,6 +315,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
     });
   }
 
+  @RemoveThreadSleep
   private void setHeapToCriticalAndReleaseLatch(VM server1) {
     server1.invoke("vm hits critical heap and counts down latch.", () -> {
       InternalResourceManager resourceManager =

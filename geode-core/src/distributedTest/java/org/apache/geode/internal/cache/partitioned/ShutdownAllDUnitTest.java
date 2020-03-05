@@ -37,6 +37,7 @@ import org.apache.geode.admin.AdminDistributedSystemFactory;
 import org.apache.geode.admin.AdminException;
 import org.apache.geode.admin.DistributedSystemConfig;
 import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
@@ -339,6 +340,7 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
 
   // shutdownAll, then restart to verify
   @Test
+  @RemoveThreadSleep
   public void testCleanStop() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -384,6 +386,7 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
 
   // shutdownAll, then restart to verify
   @Test
+  @RemoveThreadSleep
   public void testCleanStopWithConflictCachePort() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);

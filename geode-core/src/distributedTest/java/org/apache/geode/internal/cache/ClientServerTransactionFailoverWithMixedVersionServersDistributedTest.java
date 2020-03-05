@@ -37,6 +37,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
@@ -319,6 +320,7 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
     }
   }
 
+  @RemoveThreadSleep
   private void resumeTransaction(TransactionId txId, int numOfOperations) throws Exception {
     Region region = clientCacheRule.getClientCache().getRegion(regionName);
     TXManagerImpl txManager =
@@ -338,6 +340,7 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
     txManager.commit();
   }
 
+  @RemoveThreadSleep
   private void unregisterClientMultipleTimes(ClientProxyMembershipID clientProxyMembershipID)
       throws Exception {
     int numOfUnregisterClients = 4;

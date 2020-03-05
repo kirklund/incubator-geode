@@ -31,6 +31,8 @@ import java.util.Properties;
 
 import org.junit.Test;
 
+import org.apache.geode.annotations.internal.AllowThreadSleep;
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
@@ -151,6 +153,8 @@ public class PutAllGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
   // test methods
 
   @Test
+  @AllowThreadSleep
+  @RemoveThreadSleep
   public void testputAllGlobalRemoteVM() throws Throwable {
     // Test Fails: AssertionError: Should have thrown TimeoutException
     Host host = Host.getHost(0);
@@ -174,7 +178,7 @@ public class PutAllGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
           } catch (IOException ioe) {
             // ignored - will time out using 'endTime'
             try {
-              Thread.sleep(500);
+              Thread.sleep(500); // allow
             } catch (InterruptedException ie) {
               fail("Interrupted while waiting for async1 invocation");
             }
@@ -185,7 +189,7 @@ public class PutAllGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
         }
         long startTime = 0;
         try {
-          Thread.sleep(500);
+          Thread.sleep(500); // remove
           LogWriterUtils.getLogWriter().info("async2 proceeding with put operation");
           startTime = System.currentTimeMillis();
           region.put(new Integer(1), "mapVal");
@@ -284,6 +288,7 @@ public class PutAllGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
 
   static class BeforeCreateCallback extends CacheWriterAdapter {
     @Override
+    @AllowThreadSleep
     public void beforeCreate(EntryEvent event) {
       LogWriterUtils.getLogWriter().info("beforeCreate invoked for " + event.getKey());
       try {

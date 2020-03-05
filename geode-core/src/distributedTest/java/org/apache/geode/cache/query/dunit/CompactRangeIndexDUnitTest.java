@@ -22,6 +22,7 @@ import java.util.Properties;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.QueryTestUtils;
@@ -89,6 +90,7 @@ public class CompactRangeIndexDUnitTest extends JUnit4DistributedTestCase {
 
 
   @Test
+  @RemoveThreadSleep
   public void testCompactRangeIndexForIndexElemArray() throws Exception {
     doPut(200);// around 66 entries for a key in the index (< 100 so does not create a
                // ConcurrentHashSet)
@@ -166,6 +168,7 @@ public class CompactRangeIndexDUnitTest extends JUnit4DistributedTestCase {
 
   }
 
+  @RemoveThreadSleep
   public void doDestroy(final int entries) throws Exception {
     vm0.invokeAsync(new CacheSerializableRunnable("Destroying values") {
       @Override
@@ -190,6 +193,7 @@ public class CompactRangeIndexDUnitTest extends JUnit4DistributedTestCase {
   }
 
   @Override
+  @RemoveThreadSleep
   public final void preTearDown() throws Exception {
     Thread.sleep(5000);
     removeHook();

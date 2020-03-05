@@ -39,6 +39,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
@@ -217,6 +218,7 @@ public class TxnManagerMultiThreadDUnitTest extends JUnit4DistributedTestCase {
     conn.close();
   }
 
+  @RemoveThreadSleep
   public static void destroyTable(String tblName) throws NamingException, SQLException {
     // the sleep below is given to give the time to threads to start and perform
     // before destroyTable is called.
@@ -347,6 +349,7 @@ public class TxnManagerMultiThreadDUnitTest extends JUnit4DistributedTestCase {
    * catch (Exception e) { fail (" failed during tear down of this test..." + e); } finally {
    * closeCache(); ds.disconnect(); } }//end of destroyTable
    */
+  @RemoveThreadSleep
   public static void getNumberOfRows() {
     // the sleep below is given to give the time to threads to start and perform
     // before getNumberOfRows is called.

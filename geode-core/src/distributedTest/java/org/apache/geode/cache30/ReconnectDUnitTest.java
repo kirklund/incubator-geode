@@ -65,6 +65,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelException;
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheException;
@@ -1170,6 +1171,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
       final String startupMessage) {
     return new CacheSerializableRunnable("second RoleA player") {
       @Override
+      @RemoveThreadSleep
       public void run2() throws CacheException {
         System.out.println(startupMessage);
         // closeCache();
@@ -1216,6 +1218,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
       final int locPort, final String regionName, final String startupMessage) {
     return new CacheSerializableRunnable("first RoleA player") {
       @Override
+      @RemoveThreadSleep
       public void run2() throws CacheException {
         // closeCache();
         // getSystem().disconnect();
@@ -1271,6 +1274,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     InternalDistributedSystem.addReconnectListener(reconlis);
   }
 
+  @RemoveThreadSleep
   private void waitTimeout() throws InterruptedException {
     Thread.sleep(500);
 

@@ -32,6 +32,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DeltaTestImpl;
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.operations.OperationContext.OperationCode;
 import org.apache.geode.internal.cache.TestObjectWithIdentifier;
@@ -58,6 +59,7 @@ public class DeltaClientAuthorizationDUnitTest extends ClientAuthorizationTestCa
   }
 
   @Test
+  @RemoveThreadSleep
   public void testAllowPutsGets() throws Exception {
     AuthzCredentialGenerator gen = this.getXmlAuthzGenerator();
     CredentialGenerator cGen = gen.getCredentialGenerator();

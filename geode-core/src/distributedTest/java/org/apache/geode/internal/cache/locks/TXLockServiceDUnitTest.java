@@ -34,6 +34,7 @@ import java.util.Set;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -190,6 +191,7 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
 
 
   @Test
+  @RemoveThreadSleep
   public void testTXGrantorMigration() throws Exception {
     // first make sure some other VM is the grantor
     Host.getHost(0).getVM(0).invoke("become lock grantor", () -> {

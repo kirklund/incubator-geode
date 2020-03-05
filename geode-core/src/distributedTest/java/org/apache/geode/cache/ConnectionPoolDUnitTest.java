@@ -48,6 +48,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.LogWriter;
+import org.apache.geode.annotations.internal.AllowThreadSleep;
 import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
@@ -3592,6 +3593,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       this.delay = 25;
     }
 
+    @AllowThreadSleep
     private void delay() {
       try {
         Thread.sleep(this.delay);

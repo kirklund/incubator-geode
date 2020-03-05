@@ -38,6 +38,7 @@ import java.util.concurrent.locks.Lock;
 
 import org.junit.Test;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.CacheException;
@@ -426,6 +427,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     assertLimitedAccessDoesNotThrow(region);
   }
 
+  @RemoveThreadSleep
   protected void sleep(long millis) {
     try {
       Thread.sleep(millis);

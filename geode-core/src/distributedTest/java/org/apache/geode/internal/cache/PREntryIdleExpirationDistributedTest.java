@@ -30,6 +30,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.annotations.internal.AllowThreadSleep;
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
@@ -95,13 +97,15 @@ public class PREntryIdleExpirationDistributedTest implements Serializable {
   }
 
   @Test
+  @AllowThreadSleep
+  @RemoveThreadSleep
   public void readsInOtherMemberShouldPreventExpiration() throws Exception {
     AsyncInvocation<?> memberReading = member3.invokeAsync(() -> {
       Region<String, String> region = cacheRule.getCache().getRegion(regionName);
       region.put(KEY, VALUE);
       while (KEEP_READING.get()) {
         region.get(KEY);
-        Thread.sleep(10);
+        Thread.sleep(10); // allow
       }
     });
 
@@ -119,7 +123,7 @@ public class PREntryIdleExpirationDistributedTest implements Serializable {
       ExpiryTask.permitExpiration();
       Stopwatch stopwatch = Stopwatch.createStarted();
       while (stopwatch.elapsed(SECONDS) <= 5 && region.containsKey(KEY)) {
-        Thread.sleep(10);
+        Thread.sleep(10); // remove
       }
       assertThat(region.containsKey(KEY)).isTrue();
     });

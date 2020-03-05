@@ -40,6 +40,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 import org.apache.geode.DataSerializable;
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.DataPolicy;
@@ -1076,6 +1077,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
 
   }
 
+  @RemoveThreadSleep
   private static void serverMultiKeyExecutionNoResult(Boolean isByName) throws Exception {
     Region<String, Integer> region = cache.getRegion(PartitionedRegionName);
     assertNotNull(region);

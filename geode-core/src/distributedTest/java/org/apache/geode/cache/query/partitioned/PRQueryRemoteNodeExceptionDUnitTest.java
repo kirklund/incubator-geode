@@ -29,6 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.annotations.internal.AllowThreadSleep;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.Query;
@@ -334,6 +335,7 @@ public class PRQueryRemoteNodeExceptionDUnitTest extends CacheTestCase {
   class SleepingQueryObserver extends QueryObserverAdapter {
 
     @Override
+    @AllowThreadSleep
     public void afterIterationEvaluation(Object result) {
       for (int i = 0; i <= 10; i++) {
         Region region = PRQueryDUnitHelper.getCache().getRegion(PARTITIONED_REGION_NAME);

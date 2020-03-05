@@ -35,6 +35,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
@@ -157,6 +158,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
    * functions this is true, however, at this point the function stats may not have been updated yet
    * thus any code which checks stats after calling getResult() may get wrong data.
    */
+  @RemoveThreadSleep
   private void waitNoFunctionsRunning(FunctionServiceStats stats) {
     int count = 100;
     while (stats.getFunctionExecutionsRunning() > 0 && count > 0) {

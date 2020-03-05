@@ -41,6 +41,7 @@ import org.junit.experimental.categories.Category;
 import org.mockito.AdditionalAnswers;
 
 import org.apache.geode.LogWriter;
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
@@ -404,6 +405,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
   /**
    * verifies the data has been populated correctly after GII
    */
+  @RemoveThreadSleep
   private static void verifyMapsAndData() {
     try {
       HARegion r1 = (HARegion) hrq.getRegion();
@@ -755,6 +757,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
    * TODO: this test runs too long! Shorten run time. 1m 40s on new Mac.
    */
   @Test
+  @RemoveThreadSleep
   public void testNPEDueToHARegionQueueEscapeInConstructor() {
     // changing EXPIRY_TIME to 5 doesn't change how long the test runs!
     final int EXPIRY_TIME = 30; // test will run for this many seconds

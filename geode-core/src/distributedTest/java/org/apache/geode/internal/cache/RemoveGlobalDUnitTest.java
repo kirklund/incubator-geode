@@ -26,6 +26,7 @@ import java.util.Properties;
 
 import org.junit.Test;
 
+import org.apache.geode.annotations.internal.AllowThreadSleep;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
@@ -248,6 +249,7 @@ public class RemoveGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
 
   static class CacheWriterCallBack extends CacheWriterAdapter {
     @Override
+    @AllowThreadSleep
     public void beforeDestroy(EntryEvent event) {
 
       synchronized (RemoveGlobalDUnitTest.class) {

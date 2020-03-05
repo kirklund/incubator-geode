@@ -43,6 +43,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.GemFireException;
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -497,6 +498,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
    * be decremented by one, and makes it visible to the client-messages-region.
    */
   @Test
+  @RemoveThreadSleep
   public void testRefCountForDestroy() throws Exception {
     // slow start for dispatcher
     serverVM0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("30000"));
@@ -655,6 +657,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
    * up the references to their respective ClientUpdateMessageImpl instances.
    */
   @Test
+  @RemoveThreadSleep
   public void testHAEventWrapperDoesNotHoldCUMOnceInsideCMR() throws Exception {
     // slow start for dispatcher
     serverVM0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("30000"));
@@ -690,6 +693,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
    * when its cache server is stopped.
    */
   @Test
+  @RemoveThreadSleep
   public void testCMRNotCreatedForNoneEvictionPolicy() throws Exception {
     serverVM0.invoke(HARQueueNewImplDUnitTest::closeCache);
     serverVM1.invoke(HARQueueNewImplDUnitTest::closeCache);
@@ -802,6 +806,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
    */
   @Ignore("TODO")
   @Test
+  @RemoveThreadSleep
   public void testMemoryFootprintOfHARegionQueuesWithAndWithoutOverflow() throws Exception {
     serverVM0.invoke(HARQueueNewImplDUnitTest::closeCache);
     serverVM1.invoke(HARQueueNewImplDUnitTest::closeCache);

@@ -45,6 +45,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
@@ -137,6 +138,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
   private static volatile boolean stop_testFairness;
 
   @Test
+  @RemoveThreadSleep
   public void testFairness() throws InterruptedException, ExecutionException {
     final int[] vmThreads = new int[] {1, 4, 8, 16};
     final int numVms = vmThreads.length;
@@ -381,6 +383,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
   }
 
   @Test
+  @RemoveThreadSleep
   public void testLockFailover() {
     final int originalGrantorVM = 0;
     final int oneVM = 1;
@@ -500,6 +503,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
   }
 
   @Test
+  @RemoveThreadSleep
   public void testLockThenBecomeLockGrantor() {
     final int originalGrantorVM = 0;
     final int becomeGrantorVM = 1;
@@ -856,6 +860,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
   }
 
   @Test
+  @RemoveThreadSleep
   public void testLockExpireUnlock() throws Exception {
     long leaseMs = 200;
     long waitBeforeLockingMs = 210;
@@ -905,6 +910,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
   }
 
   @Test
+  @RemoveThreadSleep
   public void testLockRecursionWithExpiration() throws Exception {
     long leaseMs = 500;
     long waitBeforeLockingMs = 750;
@@ -974,6 +980,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     leaseExpiresTest(true);
   }
 
+  @RemoveThreadSleep
   private void leaseExpiresTest(boolean tryToLockBeforeExpiration) throws InterruptedException {
     long leaseMs = 100;
     long waitBeforeLockingMs = tryToLockBeforeExpiration ? 50 : 110;
@@ -1033,6 +1040,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
   }
 
   @Test
+  @RemoveThreadSleep
   public void testSuspendLockingAfterExpiration() throws Exception {
     final long leaseMillis = 100;
     final long suspendWaitMillis = 10000;
@@ -1126,6 +1134,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
   private volatile boolean wasFlagSet = false;
 
   @Test
+  @RemoveThreadSleep
   public void testLockIsNotInterruptible() throws Exception {
     // Lock entire service in first thread
     if (logger.isDebugEnabled()) {
@@ -1547,6 +1556,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
   }
 
   @Test
+  @RemoveThreadSleep
   public void testSuspendLockingInterruptiblyIsInterruptible() throws Exception {
 
     started = false;
@@ -1593,6 +1603,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
   }
 
   @Test
+  @RemoveThreadSleep
   public void testSuspendLockingIsNotInterruptible() throws Exception {
 
     started = false;
@@ -1665,6 +1676,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
   }
 
   @Test
+  @RemoveThreadSleep
   public void testDepartedLastOwnerWithLease() {
     final String serviceName = this.getUniqueName();
 
@@ -1697,6 +1709,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
   }
 
   @Test
+  @RemoveThreadSleep
   public void testDepartedLastOwnerNoLease() {
     final String serviceName = this.getUniqueName();
 
@@ -1836,6 +1849,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
    * causes the Client to send a release msg to the grantor.
    */
   @Test
+  @RemoveThreadSleep
   public void testReleaseOrphanedGrant_Local() throws Exception {
     DLockRequestProcessor.setDebugReleaseOrphanedGrant(true);
     DLockRequestProcessor.setWaitToProcessDLockResponse(false);
@@ -1939,6 +1953,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     doTestReleaseOrphanedGrant_Remote(true);
   }
 
+  @RemoveThreadSleep
   private void doTestReleaseOrphanedGrant_Remote(final boolean destroyLockService)
       throws InterruptedException {
     final VM vm1 = VM.getVM(0);
@@ -2220,6 +2235,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     return locked;
   }
 
+  @RemoveThreadSleep
   private void doOneGetsAndOthersTimeOut(int numVMs, int numThreadsPerVM) throws Exception {
 
     final String serviceName = getUniqueName() + "-" + numVMs + "-" + numThreadsPerVM;
@@ -2280,6 +2296,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
   }
 
   // 2, 2... expect 4, but get 3
+  @RemoveThreadSleep
   private void doOneGetsThenOtherGets(int numVMs, int numThreadsPerVM) throws Exception {
 
     final String serviceName = getUniqueName() + "-" + numVMs + "-" + numThreadsPerVM;
@@ -2781,6 +2798,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     System.out.println("Created " + newService);
   }
 
+  @RemoveThreadSleep
   private static Boolean getLockAndIncrement(String serviceName, Object objectName, long timeout,
       long holdTime) throws Exception {
     System.out.println("[getLockAndIncrement] In getLockAndIncrement");

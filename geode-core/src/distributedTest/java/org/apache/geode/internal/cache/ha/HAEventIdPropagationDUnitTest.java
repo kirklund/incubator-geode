@@ -31,6 +31,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
@@ -478,6 +479,7 @@ public class HAEventIdPropagationDUnitTest extends JUnit4DistributedTestCase {
    * does an update and return the eventid generated. Eventid is caught in the listener and stored
    * in a static variable*
    */
+  @RemoveThreadSleep
   public static Object[] putAll() {
     try {
       Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);

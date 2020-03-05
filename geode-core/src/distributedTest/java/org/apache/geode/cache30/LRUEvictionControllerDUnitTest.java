@@ -26,6 +26,7 @@ import java.util.Properties;
 import org.junit.Test;
 
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
@@ -360,6 +361,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
     feeder.invoke(new CacheSerializableRunnable(
         "put " + numEntries + " entries and assert " + maxEntries + " max entries") {
       @Override
+      @RemoveThreadSleep
       public void run2() throws CacheException {
         Cache c = getCache();
         CacheTransactionManager txm = c.getCacheTransactionManager();

@@ -63,6 +63,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.apache.geode.annotations.internal.AllowThreadSleep;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
@@ -2523,6 +2524,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
         .setParallel(true)
         .create("parallelQueue", new AsyncEventListener() {
           @Override
+          @AllowThreadSleep
           public boolean processEvents(List<AsyncEvent> events) {
             try {
               Thread.sleep(100);

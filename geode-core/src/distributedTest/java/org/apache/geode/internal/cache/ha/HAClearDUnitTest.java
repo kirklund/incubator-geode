@@ -26,6 +26,7 @@ import java.util.Properties;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
@@ -118,6 +119,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
    * client1 4. verify the result of operation for other clients and other servers.
    */
   @Test
+  @RemoveThreadSleep
   public void testClearWithOperationFromClient() throws Exception {
     createClientServerConfigurationForClearTest();
     gotClearCallback = false;
@@ -186,6 +188,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
    * server1 4. verify the result of operation for other clients and other servers.
    */
   @Test
+  @RemoveThreadSleep
   public void testClearWithOperationFromServer() throws Exception {
     createClientServerConfigurationForClearTest();
     gotClearCallback = false;
@@ -271,6 +274,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
    * from client1 4. verify the result of operation for other clients and other servers.
    */
   @Test
+  @RemoveThreadSleep
   public void testDestroyRegionWithOperationFromClient() throws Exception {
     createClientServerConfigurationForClearTest();
     gotDestroyRegionCallback = false;
@@ -342,6 +346,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
    * from server1 4. verify the result of operation for other clients and other servers.
    */
   @Test
+  @RemoveThreadSleep
   public void testDestroyRegionWithOperationFromServer() throws Exception {
     createClientServerConfigurationForClearTest();
     gotDestroyRegionCallback = false;

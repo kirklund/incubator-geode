@@ -30,6 +30,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Operation;
@@ -330,6 +331,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
    * distributed-GC. This could be moved to a JUnit test class.
    */
   @Test
+  @RemoveThreadSleep
   public void testAggressiveTombstoneReaping() throws InterruptedException {
     final String name = this.getUniqueName() + "-CC";
 

@@ -21,6 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import java.io.PrintStream;
 import java.util.Properties;
 
+import org.apache.geode.annotations.internal.AllowThreadSleep;
 import org.apache.geode.internal.ExitCode;
 
 /**
@@ -47,6 +48,7 @@ public class DistributedSystemConnectPerf {
     ExitCode.FATAL.doSystemExit();
   }
 
+  @AllowThreadSleep
   public static void main(String[] args) throws Exception {
     int port = -1;
     int iterations = -1;

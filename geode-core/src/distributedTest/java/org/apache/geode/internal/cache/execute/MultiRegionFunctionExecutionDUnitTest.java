@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.annotations.internal.AllowThreadSleep;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -177,6 +178,7 @@ public class MultiRegionFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
 
     Object result = InternalFunctionService.onRegions(regions).execute(new FunctionAdapter() {
       @Override
+      @AllowThreadSleep
       public void execute(FunctionContext context) {
         MultiRegionFunctionContext mrContext = (MultiRegionFunctionContext) context;
         Set<Region> regions = mrContext.getRegions();
@@ -216,6 +218,7 @@ public class MultiRegionFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
     assertThatThrownBy(() -> {
       InternalFunctionService.onRegions(regions).execute(new FunctionAdapter() {
         @Override
+        @AllowThreadSleep
         public void execute(FunctionContext context) {
           MultiRegionFunctionContext mrContext = (MultiRegionFunctionContext) context;
           Set<Region> regions = mrContext.getRegions();

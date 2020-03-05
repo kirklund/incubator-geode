@@ -37,6 +37,7 @@ import org.junit.rules.ExpectedException;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
@@ -336,6 +337,7 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
    * Test the a result collector will timeout using the timeout provided
    */
   @Test
+  @RemoveThreadSleep
   public void resultCollectorHonorsFunctionTimeout() throws InterruptedException {
     Function sleepingFunction = context -> {
       try {

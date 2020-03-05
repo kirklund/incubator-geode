@@ -31,6 +31,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.InterestPolicy;
 import org.apache.geode.cache.InterestResultPolicy;
@@ -97,6 +98,7 @@ public class AcceptorImplClientQueueDistributedTest implements Serializable {
   }
 
   @Test
+  @RemoveThreadSleep
   public void clientSubscriptionQueueInitializationShouldNotBlockNewConnections() throws Exception {
     VM vm0 = getVM(0);
     VM vm1 = getVM(1);

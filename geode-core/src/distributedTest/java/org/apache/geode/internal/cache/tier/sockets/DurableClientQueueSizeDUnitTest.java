@@ -28,6 +28,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.annotations.internal.AllowThreadSleep;
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.EntryEvent;
@@ -168,6 +170,7 @@ public class DurableClientQueueSizeDUnitTest extends JUnit4DistributedTestCase {
   }
 
   @Test
+  @RemoveThreadSleep
   public void testSinglePoolClientReconnectsAfterTimeOut() throws Exception {
     int num = 10;
     long timeoutSeconds = 10;
@@ -248,6 +251,7 @@ public class DurableClientQueueSizeDUnitTest extends JUnit4DistributedTestCase {
 
   @Ignore("TODO: test is disabled due to #51854")
   @Test
+  @RemoveThreadSleep
   public void testMultiPoolClientReconnectsAfterTimeOut() throws Exception {
     int num = 10;
     long timeout = 10;
@@ -460,6 +464,7 @@ public class DurableClientQueueSizeDUnitTest extends JUnit4DistributedTestCase {
   private class SlowListener implements CacheListener, Serializable {
 
     @Override
+    @AllowThreadSleep
     public void afterCreate(final EntryEvent event) {
       try {
         Thread.sleep(100);

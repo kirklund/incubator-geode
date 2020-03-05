@@ -1,22 +1,21 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.pmd;
 
 import net.sourceforge.pmd.lang.ast.Node;
+import net.sourceforge.pmd.lang.java.ast.ASTClassOrInterfaceType;
 import net.sourceforge.pmd.lang.java.ast.ASTMethodDeclaration;
 import net.sourceforge.pmd.lang.java.ast.ASTPrimaryPrefix;
 import net.sourceforge.pmd.lang.java.rule.AbstractJavaRule;
@@ -38,16 +37,20 @@ import net.sourceforge.pmd.lang.java.rule.AbstractJavaRule;
 public class AvoidThreadSleepRule extends AbstractJavaRule {
 
   @Override
-  public Object visit(ASTPrimaryPrefix node, Object data) {
-    if (isThreadSleep(node)) {
+  public Object visit(ASTClassOrInterfaceType node, Object data) {
+    if (isThreadSleepViolation(node)) {
       addViolation(data, node);
     }
     return super.visit(node, data);
   }
 
-  private boolean isThreadSleep(ASTPrimaryPrefix node) {
+  private boolean isThreadSleepViolation(ASTClassOrInterfaceType node) {
+    if (node.jjtGetNumChildren() <= 0) {
+      return false;
+    }
     Node name = node.jjtGetChild(0);
-    if ("Thread.sleep".equals(name.getImage())) {
+     if ("Thread.sleep".equals(name.getImage())) {
+//    if (name.getImage() != null && name.getImage().contains("Thread.sleep")) {
       ASTMethodDeclaration parentMethod = node.getFirstParentOfType(ASTMethodDeclaration.class);
       return !parentMethod.isAnnotationPresent("AllowThreadSleep") &&
           !parentMethod.isAnnotationPresent("RemoveThreadSleep");

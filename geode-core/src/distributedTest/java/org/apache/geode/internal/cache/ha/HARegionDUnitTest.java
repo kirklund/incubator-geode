@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.AdditionalAnswers;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
@@ -195,6 +196,7 @@ public class HARegionDUnitTest extends JUnit4DistributedTestCase {
    *
    */
   @Test
+  @RemoveThreadSleep
   public void testQRM() {
     vm0.invoke(() -> HARegionDUnitTest.createRegionQueue());
     vm1.invoke(() -> HARegionDUnitTest.createRegionQueue());

@@ -27,6 +27,7 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
@@ -136,6 +137,7 @@ public class PRBasicQueryDUnitTest extends CacheTestCase {
    * 5. Attempt the query while the regions are being recovered
    */
   @Test
+  @RemoveThreadSleep
   public void testColocatedPRQueryDuringRecovery() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);

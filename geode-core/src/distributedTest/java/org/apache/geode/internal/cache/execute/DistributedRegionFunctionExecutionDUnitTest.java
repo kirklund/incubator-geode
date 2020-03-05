@@ -50,6 +50,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.annotations.internal.AllowThreadSleep;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
@@ -235,6 +236,7 @@ public class DistributedRegionFunctionExecutionDUnitTest implements Serializable
   }
 
   @Test
+  @AllowThreadSleep
   public void testDistributedRegionFunctionExecutionOnDataPolicyReplicateNotTimedOut()
       throws Exception {
     for (VM vm : toArray(empty, normal, replicate1, replicate2, replicate3)) {

@@ -23,6 +23,7 @@ import java.util.concurrent.locks.Lock;
 
 import org.junit.Test;
 
+import org.apache.geode.annotations.internal.RemoveThreadSleep;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
@@ -158,6 +159,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
    * entry get the right value.
    */
   @Test
+  @RemoveThreadSleep
   public void testSynchronousIncrements() throws InterruptedException {
 
     final String name = this.getUniqueName();

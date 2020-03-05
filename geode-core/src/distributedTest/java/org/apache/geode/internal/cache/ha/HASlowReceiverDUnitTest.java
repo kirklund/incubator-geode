@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.LogWriter;
+import org.apache.geode.annotations.internal.AllowThreadSleep;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -166,6 +167,7 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
     if (addListener.booleanValue()) {
       factory.addCacheListener(new CacheListenerAdapter() {
         @Override
+        @AllowThreadSleep
         public void afterUpdate(EntryEvent event) {
 
           if (event.getNewValue().equals("v20")) {
