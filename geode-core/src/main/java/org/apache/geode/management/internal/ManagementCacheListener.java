@@ -55,9 +55,7 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
       proxyHelper.createProxy(event.getDistributedMember(), objectName, event.getRegion(),
           newObject);
     } catch (Exception e) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Proxy Create failed for {} with exception {}", objectName, e.getMessage(), e);
-      }
+      logger.warn("Proxy Create failed for {} with exception {}", objectName, e.getMessage(), e);
     }
 
   }
@@ -71,10 +69,8 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
       Object oldObject = event.getOldValue();
       proxyHelper.removeProxy(event.getDistributedMember(), objectName, oldObject);
     } catch (Exception e) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Proxy Destroy failed for {} with exception {}", objectName, e.getMessage(),
-            e);
-      }
+      logger.warn("Proxy Destroy failed for {} with exception {}", objectName, e.getMessage(),
+          e);
     }
 
   }
@@ -101,9 +97,7 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
       }
 
     } catch (Exception e) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Proxy Update failed for {} with exception {}", objectName, e.getMessage(), e);
-      }
+      logger.warn("Proxy Update failed for {} with exception {}", objectName, e.getMessage(), e);
 
     }
 

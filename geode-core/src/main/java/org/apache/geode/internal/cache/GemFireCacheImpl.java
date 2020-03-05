@@ -1087,6 +1087,10 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     clientMetadataService = clientMetadataServiceFactory.apply(this);
   }
 
+  public ManagementListener managementListener() {
+    return (ManagementListener) resourceEventsListener;
+  }
+
   /**
    * This is for debugging cache-open issues such as {@link CacheExistsException}.
    */
@@ -1324,6 +1328,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public void initialize() {
+    logger.info("KIRK: initializing {}", this);
     for (CacheLifecycleListener listener : cacheLifecycleListeners) {
       listener.cacheCreated(this);
     }

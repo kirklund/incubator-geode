@@ -224,6 +224,11 @@ public class SystemManagementService extends BaseManagementService {
   @Override
   public <T> void federate(ObjectName objectName, Class<T> interfaceClass,
       boolean notificationEmitter) {
+    if (objectName.toString().contains("cluster_config") ||
+        objectName.toString().contains("__CLUSTER_CONFIG_LS")) {
+      logger.info("KIRK:cp1 federating {}", objectName);
+    }
+
     verifyManagementService();
 
     if (!objectName.getDomain().equalsIgnoreCase(ManagementConstants.OBJECTNAME__DEFAULTDOMAIN)) {
@@ -236,6 +241,11 @@ public class SystemManagementService extends BaseManagementService {
       throw new ManagementException("MBean Does Not Have Notification Support");
     }
 
+    if (objectName.toString().contains("cluster_config") ||
+        objectName.toString().contains("__CLUSTER_CONFIG_LS")) {
+      logger.info("KIRK:cp2 federating {}", objectName);
+    }
+
     // All validation Passed. Now create the federation Component
     Object object = jmxAdapter.getMBeanObject(objectName);
     FederationComponent federationComponent =
@@ -246,7 +256,16 @@ public class SystemManagementService extends BaseManagementService {
     localManager.markForFederation(objectName, federationComponent);
 
     if (isManager()) {
+      if (objectName.toString().contains("cluster_config") ||
+          objectName.toString().contains("__CLUSTER_CONFIG_LS")) {
+        logger.info("KIRK:cp3 federating {}", objectName);
+      }
       afterCreateProxy(objectName, interfaceClass, object, federationComponent);
+    }
+
+    if (objectName.toString().contains("cluster_config") ||
+        objectName.toString().contains("__CLUSTER_CONFIG_LS")) {
+      logger.info("KIRK:cp4 federating {}", objectName);
     }
   }
 

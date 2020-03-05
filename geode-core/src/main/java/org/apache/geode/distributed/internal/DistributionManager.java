@@ -465,5 +465,5 @@ public interface DistributionManager extends ReplySender {
    */
   void unregisterTestHook(MembershipTestHook mth);
 
-
+  String getRedundancyZone(InternalDistributedMember member);
 }

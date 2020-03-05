@@ -48,7 +48,6 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.ServerLauncher;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionStats;
@@ -193,12 +192,8 @@ public class MemberMBeanBridge {
 
     dm = system.getDistributionManager();
 
-    if (dm instanceof ClusterDistributionManager) {
-      ClusterDistributionManager distManager =
-          (ClusterDistributionManager) system.getDistributionManager();
-      redundancyZone = distManager
-          .getRedundancyZone(cache.getInternalDistributedSystem().getDistributedMember());
-    }
+    redundancyZone = system.getDistributionManager()
+        .getRedundancyZone(cache.getInternalDistributedSystem().getDistributedMember());
 
     config = system.getConfig();
     try {
@@ -232,16 +227,13 @@ public class MemberMBeanBridge {
     osBean = ManagementFactory.getOperatingSystemMXBean();
 
     // Initialize all the Stats Monitors
-    monitor =
-        new MBeanStatsMonitor("MemberMXBeanMonitor");
+    monitor = new MBeanStatsMonitor("MemberMXBeanMonitor");
     diskMonitor = new MemberLevelDiskMonitor(MEMBER_LEVEL_DISK_MONITOR);
     regionMonitor = new AggregateRegionStatsMonitor(MEMBER_LEVEL_REGION_MONITOR);
     gcMonitor = new GCStatsMonitor("GCStatsMonitor");
-    vmStatsMonitor =
-        new VMStatsMonitor("VMStatsMonitor");
+    vmStatsMonitor = new VMStatsMonitor("VMStatsMonitor");
 
-    systemStatsMonitor =
-        new MBeanStatsMonitor("SystemStatsManager");
+    systemStatsMonitor = new MBeanStatsMonitor("SystemStatsManager");
 
     // Initialize Process related information
 
@@ -258,8 +250,7 @@ public class MemberMBeanBridge {
       }
     }
 
-    QueryDataFunction qDataFunction = new QueryDataFunction();
-    FunctionService.registerFunction(qDataFunction);
+    FunctionService.registerFunction(new QueryDataFunction());
 
     resourceManagerStats = cache.getInternalResourceManager().getStats();
   }

@@ -14,6 +14,11 @@
  */
 package org.apache.geode.management.internal.beans;
 
+import static java.util.Collections.synchronizedList;
+
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -96,6 +101,12 @@ public class ManagementListener implements ResourceEventsListener {
     return !currentCache.isClosed();
   }
 
+  private final List<ResourceEvent> orderedEvents = synchronizedList(new LinkedList<>());
+
+  public List<ResourceEvent> orderedEvents() {
+    return Collections.unmodifiableList(orderedEvents);
+  }
+
   /**
    * Handles various GFE resource life-cycle methods vis-a-vis Management and Monitoring
    *
@@ -106,6 +117,7 @@ public class ManagementListener implements ResourceEventsListener {
    */
   @Override
   public void handleEvent(ResourceEvent event, Object resource) {
+    orderedEvents.add(event);
     if (!shouldProceed(event)) {
       return;
     }

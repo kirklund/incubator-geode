@@ -2084,6 +2084,10 @@ public class InternalDistributedSystem extends DistributedSystem
    * @param resource the actual resource object.
    */
   private void notifyResourceEventListeners(ResourceEvent event, Object resource) {
+    logger.info("KIRK: notifyResourceEventListeners {} {}", event, resource);
+    if (resourceListeners.isEmpty()) {
+      logger.warn("KIRK: resourceListeners is empty");
+    }
     for (ResourceEventsListener listener : resourceListeners) {
       try {
         listener.handleEvent(event, resource);
