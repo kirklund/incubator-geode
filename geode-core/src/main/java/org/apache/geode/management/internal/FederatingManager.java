@@ -272,13 +272,13 @@ public class FederatingManager extends Manager {
           logger.warn("ExecutionException during Management GII", e);
 
         } catch (CancellationException e) {
-            logger.warn("InterruptedException while creating Monitoring resource with error",
-                new ManagementException(e));
+          logger.warn("InterruptedException while creating Monitoring resource with error",
+              new ManagementException(e));
         }
       }
     } catch (InterruptedException e) {
-        logger.warn("InterruptedException while creating Monitoring resource with error",
-            new ManagementException(e));
+      logger.warn("InterruptedException while creating Monitoring resource with error",
+          new ManagementException(e));
 
     } finally {
       if (isDebugEnabled) {

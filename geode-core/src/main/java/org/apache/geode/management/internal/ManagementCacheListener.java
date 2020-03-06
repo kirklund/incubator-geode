@@ -44,7 +44,9 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
 
   @Override
   public void afterCreate(EntryEvent<String, Object> event) {
+    logger.warn("KIRK:ManagementCacheListener:afterCreate: {}", event);
     if (!readyForEvents) {
+      logger.warn("KIRK:ManagementCacheListener:afterCreate: not readyForEvents: {}", event);
       return;
     }
     ObjectName objectName = null;
@@ -55,13 +57,16 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
       proxyHelper.createProxy(event.getDistributedMember(), objectName, event.getRegion(),
           newObject);
     } catch (Exception e) {
-      logger.warn("Proxy Create failed for {} with exception {}", objectName, e.getMessage(), e);
+      logger.warn(
+          "KIRK:ManagementCacheListener:afterCreate: Proxy Create failed for {} with exception {}",
+          objectName, e.getMessage(), e);
     }
 
   }
 
   @Override
   public void afterDestroy(EntryEvent<String, Object> event) {
+    logger.warn("KIRK:ManagementCacheListener:afterDestroy: {}", event);
     ObjectName objectName = null;
 
     try {
@@ -69,7 +74,9 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
       Object oldObject = event.getOldValue();
       proxyHelper.removeProxy(event.getDistributedMember(), objectName, oldObject);
     } catch (Exception e) {
-      logger.warn("Proxy Destroy failed for {} with exception {}", objectName, e.getMessage(),
+      logger.warn(
+          "KIRK:ManagementCacheListener:afterDestroy: Proxy Destroy failed for {} with exception {}",
+          objectName, e.getMessage(),
           e);
     }
 
@@ -77,9 +84,11 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
 
   @Override
   public void afterUpdate(EntryEvent<String, Object> event) {
+    logger.warn("KIRK:ManagementCacheListener:afterUpdate: {}", event);
     ObjectName objectName = null;
     try {
       if (!readyForEvents) {
+        logger.warn("KIRK:ManagementCacheListener:afterUpdate: not readyForEvents: {}", event);
         return;
       }
       objectName = ObjectName.getInstance(event.getKey());
@@ -97,13 +106,16 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
       }
 
     } catch (Exception e) {
-      logger.warn("Proxy Update failed for {} with exception {}", objectName, e.getMessage(), e);
+      logger.warn(
+          "KIRK:ManagementCacheListener:afterUpdate: Proxy Update failed for {} with exception {}",
+          objectName, e.getMessage(), e);
 
     }
 
   }
 
   void markReady() {
+    logger.warn("KIRK:ManagementCacheListener:markReady");
     readyForEvents = true;
   }
 
