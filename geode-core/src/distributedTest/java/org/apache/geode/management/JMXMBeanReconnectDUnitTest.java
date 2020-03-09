@@ -36,6 +36,7 @@ import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.VM.getVMId;
 import static org.apache.geode.test.dunit.VM.toArray;
+import static org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder.When.FAILS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -119,7 +120,7 @@ public class JMXMBeanReconnectDUnitTest implements Serializable {
   public DistributedRule distributedRule = new DistributedRule();
   @Rule
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder()
-      .copyTo(new File(getClass().getSimpleName()));
+      .copyTo(new File(getClass().getSimpleName())).when(FAILS);
   @Rule
   public SharedErrorCollector errorCollector = new SharedErrorCollector();
   @Rule
