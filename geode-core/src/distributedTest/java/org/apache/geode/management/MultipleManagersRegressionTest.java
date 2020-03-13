@@ -46,7 +46,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.awaitility.core.ConditionTimeoutException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -57,7 +59,7 @@ import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.management.internal.ManagementCacheListener;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.dunit.rules.SharedErrorCollector;
@@ -67,7 +69,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
 @Category(JMXTest.class)
 @SuppressWarnings("serial")
 public class MultipleManagersRegressionTest implements Serializable {
-  private static final Logger logger = LogService.getLogger();
+  private static final Logger logger = LogManager.getLogger();
 
   private static final LocatorLauncher DUMMY_LOCATOR = mock(LocatorLauncher.class);
 
@@ -143,7 +145,7 @@ public class MultipleManagersRegressionTest implements Serializable {
 
     List<ResourceEvent> eventsOnLocator2 = locator2VM.invoke(() -> {
       GemFireCacheImpl cache = (GemFireCacheImpl) LOCATOR.get().getCache();
-      await().atMost(10, MINUTES).untilAsserted(() -> {
+      await().atMost(2, MINUTES).untilAsserted(() -> {
         assertThat(getPlatformMBeanServer().queryNames(getInstance("GemFire:*"), null))
             .as("GemFire mbeans on locator2. Management events on locator1: " + eventsOnLocator1)
             .containsAll(expectedLocatorMXBeans(locator2Name))
@@ -151,6 +153,38 @@ public class MultipleManagersRegressionTest implements Serializable {
             .containsAll(expectedDistributedMXBeans());
       });
       return cache.managementListener().orderedEvents();
+    });
+  }
+
+  @Test
+  public void locatorHasMemberTypeMXBeansForBothLocators2() {
+    locator1VM.invoke(() -> {
+      await().untilAsserted(() -> {
+        assertThat(getPlatformMBeanServer().queryNames(getInstance("GemFire:*"), null))
+            .as("GemFire mbeans on locator1")
+            .containsAll(expectedLocatorMXBeans(locator1Name))
+            .containsAll(expectedLocatorMXBeans(locator2Name))
+            .containsAll(expectedDistributedMXBeans());
+      });
+    });
+
+    locator2VM.invoke(() -> {
+      GemFireCacheImpl cache = (GemFireCacheImpl) LOCATOR.get().getCache();
+      try {
+        await().atMost(2, MINUTES).untilAsserted(() -> {
+          assertThat(getPlatformMBeanServer().queryNames(getInstance("GemFire:*"), null))
+              .containsAll(expectedLocatorMXBeans(locator2Name))
+              .containsAll(expectedLocatorMXBeans(locator1Name))
+              .containsAll(expectedDistributedMXBeans());
+        });
+      } catch (ConditionTimeoutException e) {
+        String message = "MISSED_CREATE: " + ManagementCacheListener.MISSED_CREATE.get() + " " +
+            "MISSED_UPDATE: " + ManagementCacheListener.MISSED_CREATE.get();
+        throw new AssertionError(message, e);
+      }
+      String message = "MISSED_CREATE: " + ManagementCacheListener.MISSED_CREATE.get() + " " +
+          "MISSED_UPDATE: " + ManagementCacheListener.MISSED_CREATE.get();
+      System.out.println("KVL: " + message);
     });
   }
 

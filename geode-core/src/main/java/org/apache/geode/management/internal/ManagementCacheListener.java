@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.management.ObjectName;
 
 import org.apache.logging.log4j.Logger;
@@ -33,7 +35,11 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
 
   private static final Logger logger = LogService.getLogger();
 
-  private MBeanProxyFactory proxyHelper;
+  public static final AtomicInteger MARKED_READY = new AtomicInteger();
+  public static final AtomicInteger MISSED_CREATE = new AtomicInteger();
+  public static final AtomicInteger MISSED_UPDATE = new AtomicInteger();
+
+  private final MBeanProxyFactory proxyHelper;
 
   private volatile boolean readyForEvents;
 
@@ -46,7 +52,10 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
   public void afterCreate(EntryEvent<String, Object> event) {
     logger.warn("KIRK:ManagementCacheListener:afterCreate: {}", event);
     if (!readyForEvents) {
+      MISSED_CREATE.incrementAndGet();
       logger.warn("KIRK:ManagementCacheListener:afterCreate: not readyForEvents: {}", event);
+      if (true)
+        throw new IllegalStateException("Not ready for events");
       return;
     }
     ObjectName objectName = null;
@@ -88,7 +97,10 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
     ObjectName objectName = null;
     try {
       if (!readyForEvents) {
+        MISSED_UPDATE.incrementAndGet();
         logger.warn("KIRK:ManagementCacheListener:afterUpdate: not readyForEvents: {}", event);
+        if (true)
+          throw new IllegalStateException("Not ready for events");
         return;
       }
       objectName = ObjectName.getInstance(event.getKey());
@@ -115,7 +127,15 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
   }
 
   void markReady() {
+    if (true)
+      return;
     logger.warn("KIRK:ManagementCacheListener:markReady");
+    try {
+      MARKED_READY.incrementAndGet();
+      Thread.sleep(1000);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    }
     readyForEvents = true;
   }
 
