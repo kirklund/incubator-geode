@@ -12,13 +12,13 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.assertj.internal;
+package org.apache.geode.test.logging.error;
 
 import org.apache.logging.log4j.Level;
 import org.assertj.core.error.BasicErrorMessageFactory;
 import org.assertj.core.error.ErrorMessageFactory;
 
-class ShouldBeLessSpecificThan extends BasicErrorMessageFactory {
+public class ShouldBeLessSpecificThan extends BasicErrorMessageFactory {
 
   /**
    * Creates a new {@code ShouldBeLessSpecificThan}.
@@ -27,7 +27,8 @@ class ShouldBeLessSpecificThan extends BasicErrorMessageFactory {
    * @param level the value that actual is being compared to in the failed assertion.
    * @return the created {@code ErrorMessageFactory}.
    */
-  static ErrorMessageFactory shouldBeLessSpecificThan(final Level actual, final Level level) {
+  public static ErrorMessageFactory shouldBeLessSpecificThan(final Level actual,
+      final Level level) {
     return new ShouldBeLessSpecificThan(actual, level);
   }
 
