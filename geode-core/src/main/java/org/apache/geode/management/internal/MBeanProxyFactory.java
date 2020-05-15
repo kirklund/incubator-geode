@@ -64,6 +64,7 @@ public class MBeanProxyFactory {
    */
   void createProxy(DistributedMember member, ObjectName objectName,
       Region<String, Object> monitoringRegion, Object newValue) {
+    logger.info("KIRK:MBeanProxyFactory:createProxy: {}", objectName);
     try {
       FederationComponent federation = (FederationComponent) newValue;
       String interfaceClassName = federation.getMBeanInterfaceClass();
@@ -88,6 +89,7 @@ public class MBeanProxyFactory {
         logger.debug("Proxy Created for : {}", objectName);
       }
 
+      logger.info("KIRK:MBeanProxyFactory:createProxy: created proxy for {}", objectName);
     } catch (ClassNotFoundException e) {
       throw new ManagementException(e);
     }
