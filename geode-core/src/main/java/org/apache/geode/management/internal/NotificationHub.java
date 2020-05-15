@@ -14,8 +14,12 @@
  */
 package org.apache.geode.management.internal;
 
+import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
+import static java.util.Collections.unmodifiableMap;
+
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.ListenerNotFoundException;
@@ -24,22 +28,15 @@ import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
-import org.apache.geode.LogWriter;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.management.ManagementException;
 
 /**
  * This class acts as a central point hub for collecting all notifications originated from VM and
  * sending across to Managing Node
- *
- *
  */
 public class NotificationHub {
-
-  /**
-   * logger
-   */
-  private LogWriter logger;
 
   /**
    * This is a single window to manipulate region resources for management
@@ -49,13 +46,14 @@ public class NotificationHub {
   /**
    * Platform MBean Server
    */
-  private MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
+  private final MBeanServer mbeanServer = getPlatformMBeanServer();
 
-  private Map<ObjectName, NotificationHubListener> listenerObjectMap;
+  private final Map<ObjectName, NotificationHubListener> listenerObjectMap;
 
-
-  /** Member Name **/
-  private String memberSource;
+  /**
+   * Member Name
+   */
+  private final String memberSource;
 
   /**
    * public constructor
@@ -64,21 +62,16 @@ public class NotificationHub {
    */
   public NotificationHub(ManagementResourceRepo repo) {
     this.repo = repo;
-    logger = InternalDistributedSystem.getLogger();
-    this.listenerObjectMap = new HashMap<ObjectName, NotificationHubListener>();
+    listenerObjectMap = new HashMap<>();
     memberSource = MBeanJMXAdapter
         .getMemberNameOrUniqueId(
             InternalDistributedSystem.getConnectedInstance().getDistributedMember());
-
-
   }
 
   /**
    * Adds a NotificationHubListener
-   *
    */
   public void addHubNotificationListener(String memberName, ObjectName objectName) {
-
     try {
       synchronized (listenerObjectMap) {
         NotificationHubListener listener = listenerObjectMap.get(objectName);
@@ -99,7 +92,6 @@ public class NotificationHub {
 
   /**
    * Removes a NotificationHubListener
-   *
    */
   public void removeHubNotificationListener(String memberName, ObjectName objectName) {
     try {
@@ -115,9 +107,7 @@ public class NotificationHub {
           }
         }
       }
-    } catch (ListenerNotFoundException e) {
-      // No op
-    } catch (InstanceNotFoundException e) {
+    } catch (ListenerNotFoundException | InstanceNotFoundException e) {
       // No op
     }
   }
@@ -135,10 +125,7 @@ public class NotificationHub {
         if (listener != null) {
           try {
             mbeanServer.removeNotificationListener(objectName, listener);
-          } catch (ListenerNotFoundException e) {
-            // Do nothing. Already have been un-registered ( For listeners which
-            // are on other MBeans apart from MemberMXBean)
-          } catch (InstanceNotFoundException e) {
+          } catch (ListenerNotFoundException | InstanceNotFoundException e) {
             // Do nothing. Already have been un-registered ( For listeners which
             // are on other MBeans apart from MemberMXBean)
           }
@@ -149,42 +136,41 @@ public class NotificationHub {
     listenerObjectMap.clear();
   }
 
+  @VisibleForTesting
   public Map<ObjectName, NotificationHubListener> getListenerObjectMap() {
-    return this.listenerObjectMap;
+    return unmodifiableMap(listenerObjectMap);
   }
 
   /**
    * This class is the managed node counterpart to listen to notifications from MBeans for which it
-   * is resistered
-   *
-   *
+   * is registered
    */
   public class NotificationHubListener implements NotificationListener {
+
     /**
      * MBean for which this listener is added
      */
-    private ObjectName name;
+    private final ObjectName name;
 
     /**
      * Counter to indicate how many listener are attached to this MBean
      */
-    private int numCounter = 0;
-
+    private final AtomicInteger numCounter = new AtomicInteger();
 
     protected NotificationHubListener(ObjectName name) {
       this.name = name;
     }
 
     public int incNumCounter() {
-      return ++numCounter;
+      return numCounter.incrementAndGet();
     }
 
     public int decNumCounter() {
-      return --numCounter;
+      return numCounter.decrementAndGet();
     }
 
     public int getNumCounter() {
-      return this.numCounter;
+      return numCounter.get();
     }
 
     @Override
@@ -193,7 +179,5 @@ public class NotificationHub {
       notification.setUserData(memberSource);
       repo.putEntryInLocalNotificationRegion(key, notification);
     }
-
   }
-
 }
