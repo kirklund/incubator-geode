@@ -12,11 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.assertj;
+package org.apache.geode.test.logging;
 
 import org.apache.logging.log4j.Level;
 
-import org.apache.geode.test.assertj.internal.AbstractLogLevelAssert;
+import org.apache.geode.test.management.internal.AbstractLogLevelAssert;
 
 /**
  * {@code AssertJ} assertions for {@code Level}.
