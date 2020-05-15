@@ -75,7 +75,7 @@ public class MBeanProxyInvocationHandler implements InvocationHandler {
     Class[] interfaces;
     if (notificationBroadcaster) {
       interfaces =
-          new Class[] {interfaceClass, ProxyInterface.class, NotificationBroadCasterProxy.class};
+          new Class[] {interfaceClass, ProxyInterface.class, NotificationBroadcasterProxy.class};
     } else {
       interfaces = new Class[] {interfaceClass, ProxyInterface.class};
     }

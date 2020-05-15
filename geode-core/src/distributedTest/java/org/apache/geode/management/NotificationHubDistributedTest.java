@@ -40,6 +40,7 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.management.InstanceNotFoundException;
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
 import javax.management.NotificationListener;
@@ -57,7 +58,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.NotificationHub;
 import org.apache.geode.management.internal.NotificationHub.NotificationHubListener;
 import org.apache.geode.management.internal.SystemManagementService;
-import org.apache.geode.management.internal.beans.MemberMBean;
 import org.apache.geode.management.internal.beans.SequenceNumber;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
@@ -65,11 +65,8 @@ import org.apache.geode.test.dunit.rules.SharedErrorCollector;
 import org.apache.geode.test.junit.categories.ManagementTest;
 
 /**
- * Distributed tests for {@link DistributedSystemMXBean} notifications. Extracted from
- * {@link DistributedSystemMXBeanDistributedTest}.
- *
- * <p>
- * TODO: test all notifications emitted by DistributedSystemMXBean:
+ * Validates the NotificationHub's ability to send notifications which are manually sent by the
+ * tests rather than from actual Geode code.
  *
  * <pre>
  * a) gemfire.distributedsystem.member.joined
@@ -80,7 +77,7 @@ import org.apache.geode.test.junit.categories.ManagementTest;
  */
 @Category(ManagementTest.class)
 @SuppressWarnings("serial")
-public class DistributedSystemMXBeanWithNotificationsDistributedTest implements Serializable {
+public class NotificationHubDistributedTest implements Serializable {
 
   private static final long TIMEOUT = getTimeout().toMillis();
   private static final String MANAGER_NAME = "managerVM";
@@ -111,7 +108,6 @@ public class DistributedSystemMXBeanWithNotificationsDistributedTest implements 
 
   @Rule
   public DistributedRule distributedRule = new DistributedRule();
-
   @Rule
   public SharedErrorCollector errorCollector = new SharedErrorCollector();
 
@@ -153,8 +149,7 @@ public class DistributedSystemMXBeanWithNotificationsDistributedTest implements 
           () -> assertThat(distributedSystemMXBean.listMemberObjectNames()).hasSize(CLUSTER_SIZE));
 
       for (ObjectName objectName : distributedSystemMXBean.listMemberObjectNames()) {
-        getPlatformMBeanServer().addNotificationListener(objectName, notificationListener, null,
-            null);
+        addNotificationListener(objectName, notificationListener);
       }
     });
 
@@ -177,7 +172,8 @@ public class DistributedSystemMXBeanWithNotificationsDistributedTest implements 
         Notification notification =
             new Notification(REGION_CREATED, getMemberNameOrUniqueId(distributedMember),
                 SequenceNumber.next(), System.currentTimeMillis(), REGION_CREATED_PREFIX + "/test");
-        NotificationBroadcasterSupport notifier = (MemberMBean) managementService.getMemberMXBean();
+        NotificationBroadcasterSupport notifier =
+            (NotificationBroadcasterSupport) managementService.getMemberMXBean();
         notifier.sendNotification(notification);
       });
     }
@@ -227,7 +223,6 @@ public class DistributedSystemMXBeanWithNotificationsDistributedTest implements 
     distributedMember = cache.getDistributionManager().getId();
     managementService = (SystemManagementService) ManagementService.getManagementService(cache);
     notificationListener = spy(NotificationListener.class);
-
     distributedSystemMXBean = managementService.getDistributedSystemMXBean();
   }
 
@@ -239,5 +234,10 @@ public class DistributedSystemMXBeanWithNotificationsDistributedTest implements 
     cache = (InternalCache) new CacheFactory(config).create();
     distributedMember = cache.getDistributionManager().getId();
     managementService = (SystemManagementService) ManagementService.getManagementService(cache);
+  }
+
+  private static void addNotificationListener(ObjectName objectName, NotificationListener listener)
+      throws InstanceNotFoundException {
+    getPlatformMBeanServer().addNotificationListener(objectName, listener, null, null);
   }
 }
