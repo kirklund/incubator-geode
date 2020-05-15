@@ -20,6 +20,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import javax.management.Notification;
 
+/**
+ * Thread-safe builder of {@code javax.management.Notification}s for testing.
+ */
 public class NotificationBuilder implements Serializable {
 
   private final AtomicReference<String> message = new AtomicReference<>();
@@ -59,6 +62,9 @@ public class NotificationBuilder implements Serializable {
     return this;
   }
 
+  /**
+   * Creates new instance of {@code javax.management.Notification}.
+   */
   public Notification create() {
     Notification notification = new Notification(type.get(), source.get(), sequenceNumber.get(),
         timeStamp.get(), message.get());
