@@ -82,7 +82,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  */
 @Category({ManagementTest.class, AlertingTest.class})
 @SuppressWarnings("serial")
-public class DistributedSystemMXBeanWithAlertsDistributedTest implements Serializable {
+public class DistributedSystemMXBeanAlertsDistributedTest implements Serializable {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -114,10 +114,8 @@ public class DistributedSystemMXBeanWithAlertsDistributedTest implements Seriali
 
   @Rule
   public DistributedRule distributedRule = new DistributedRule();
-
   @Rule
   public SerializableTestName testName = new SerializableTestName();
-
   @Rule
   public SharedErrorCollector errorCollector = new SharedErrorCollector();
 
@@ -136,8 +134,9 @@ public class DistributedSystemMXBeanWithAlertsDistributedTest implements Seriali
     memberVM2 = getVM(2);
     memberVM3 = getVM(3);
 
+    addIgnoredException("Cannot form connection to alert listener");
+
     managerMember = managerVM.invoke(() -> createManager());
-    IgnoredException.addIgnoredException("Cannot form connection to alert listener");
 
     for (VM memberVM : toArray(memberVM1, memberVM2, memberVM3)) {
       memberVM.invoke(() -> {
