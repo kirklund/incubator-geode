@@ -93,6 +93,7 @@ WHERE <args>:
                         log4j-core.jar
                         log4j-api.jar
                         log4j-jul.jar
+                        log4j-war.jar
                         fastutil.jar
                         javax.transactions-api.jar
                         jgroups.jar
@@ -273,6 +274,7 @@ OTHER_JARS=(${GEODE}/lib/geode-core-${VERSION}.jar \
     ${GEODE}/lib/log4j-core-@LOG4J_VERSION@.jar \
     ${GEODE}/lib/log4j-api-@LOG4J_VERSION@.jar \
     ${GEODE}/lib/log4j-jul-@LOG4J_VERSION@.jar \
+    ${GEODE}/lib/log4j-web-@LOG4J_VERSION@.jar \
     ${GEODE}/lib/fastutil-@FASTUTIL_VERSION@.jar \
     ${GEODE}/lib/javax.transaction-api-@TX_VERSION@.jar \
     ${GEODE}/lib/jetty-http-@JETTY_VERSION@.jar \

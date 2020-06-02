@@ -209,6 +209,7 @@ class DependencyConstraints implements Plugin<Project> {
       entry('log4j-jcl')
       entry('log4j-jul')
       entry('log4j-slf4j-impl')
+      entry('log4j-web')
     }
 
     dependencySet(group: 'org.apache.lucene', version: '6.6.6') {

@@ -48,8 +48,10 @@ dependencies {
   implementation('org.springframework:spring-beans')
 
   // Needed to fully use log4j instead of commons-logging.
-  implementation('org.apache.logging.log4j:log4j-jcl')
   implementation('org.apache.logging.log4j:log4j-api')
+  runtimeOnly('org.apache.logging.log4j:log4j-jcl')
+  runtimeOnly('org.apache.logging.log4j:log4j-slf4j-impl')
+  runtimeOnly('org.apache.logging.log4j:log4j-web')
 
   implementation('commons-beanutils:commons-beanutils')
   implementation('commons-collections:commons-collections')
@@ -91,8 +93,6 @@ dependencies {
   compileOnly('org.mortbay.jetty:servlet-api')
 
   runtimeOnly('org.springframework:spring-expression')
-
-  runtimeOnly('org.apache.logging.log4j:log4j-slf4j-impl')
 
   providedCompile('commons-logging:commons-logging')
 
