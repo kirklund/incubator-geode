@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.test.junit.rules;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,8 +25,8 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
-@Category({GfshTest.class})
-public class GfshRuleTest {
+@Category(GfshTest.class)
+public class GfshRuleIntegrationTest {
 
   @Rule
   public GfshRule gfsh130 = new GfshRule("1.3.0");
