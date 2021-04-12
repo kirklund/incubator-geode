@@ -50,6 +50,7 @@ import org.apache.geode.internal.cache.InitialImageOperation.Entry;
 import org.apache.geode.internal.cache.InternalCacheEvent;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.RegionClearedException;
+import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.TXManagerImpl;
@@ -96,7 +97,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
  *
  * @since GemFire 3.5.1
  */
-public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Object> {
+public abstract class AbstractRegionEntry implements RegionEntry {
   private static final Logger logger = LogService.getLogger();
 
   /**

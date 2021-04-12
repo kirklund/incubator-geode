@@ -24,6 +24,7 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
 import org.apache.geode.internal.cache.InitialImageOperation.Entry;
+import org.apache.geode.internal.cache.entries.HashRegionEntry;
 import org.apache.geode.internal.cache.eviction.EvictionList;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
@@ -46,7 +47,7 @@ import org.apache.geode.internal.serialization.KnownVersion;
  *
  * @since GemFire 3.5.1
  */
-public interface RegionEntry {
+public interface RegionEntry extends HashRegionEntry<Object, Object> {
 
   /**
    * returns the time of last modification. Prior to v7.0 this only reflected creation time of an

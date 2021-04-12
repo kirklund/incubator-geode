@@ -14,8 +14,7 @@
  */
 package org.apache.geode.internal.cache.entries;
 
-import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 
-public interface HashRegionEntry<K, V> extends RegionEntry, HashEntry<K, V> {
+public interface HashRegionEntry<K, V> extends HashEntry<K, V> {
 }
