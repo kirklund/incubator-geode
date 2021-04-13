@@ -219,8 +219,7 @@ public class PartitionedRegionClear implements PartitionedRegionClearMembershipC
             for (BucketRegion localPrimaryBucketRegion : partitionedRegion.getDataStore()
                 .getAllLocalPrimaryBucketRegions()) {
               if (localPrimaryBucketRegion.size() > 0) {
-                RegionEventImpl
-                    bucketRegionEvent =
+                RegionEventImpl bucketRegionEvent =
                     new RegionEventImpl(localPrimaryBucketRegion, Operation.REGION_CLEAR, null,
                         false, partitionedRegion.getMyId(), regionEvent.getEventId());
                 localPrimaryBucketRegion.cmnClearRegion(bucketRegionEvent, false, true);
