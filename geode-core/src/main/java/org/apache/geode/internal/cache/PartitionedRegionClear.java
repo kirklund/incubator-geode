@@ -14,15 +14,18 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.OperationAbortedException;
@@ -32,37 +35,94 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.PartitionedRegion.RetryTimeKeeper;
+import org.apache.geode.internal.cache.PartitionedRegionClearMessage.OperationType;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
-public class PartitionedRegionClear {
-
+public class PartitionedRegionClear implements PartitionedRegionClearMembershipCallbacks {
   private static final Logger logger = LogService.getLogger();
 
-  protected static final String CLEAR_OPERATION = "_clearOperation";
-
-  private final int retryTime = 2 * 60 * 1000;
+  @VisibleForTesting
+  static final String CLEAR_OPERATION = "_clearOperation";
 
   private final PartitionedRegion partitionedRegion;
+  private final Duration retryTime;
+  private final LockForListenerAndClientNotification lockForListenerAndClientNotification;
 
-  protected final LockForListenerAndClientNotification lockForListenerAndClientNotification =
-      new LockForListenerAndClientNotification();
+  private volatile PartitionedRegionClearListener partitionedRegionClearListener;
+  private volatile boolean membershipChange;
 
-  private volatile boolean membershipChange = false;
-
-  protected final PartitionedRegionClearListener partitionedRegionClearListener =
-      new PartitionedRegionClearListener();
-
-  public PartitionedRegionClear(PartitionedRegion partitionedRegion) {
-    this.partitionedRegion = partitionedRegion;
-    partitionedRegion.getDistributionManager()
-        .addMembershipListener(partitionedRegionClearListener);
+  static PartitionedRegionClear create(PartitionedRegion partitionedRegion) {
+    return new PartitionedRegionClear(partitionedRegion)
+        .init();
   }
 
-  public boolean isLockedForListenerAndClientNotification() {
+  private PartitionedRegionClear(PartitionedRegion partitionedRegion) {
+    this(partitionedRegion, Duration.ofMinutes(2), new LockForListenerAndClientNotification());
+  }
+
+  /**
+   * Use {@link #create(PartitionedRegion)} to construct and initialize a new instance of
+   * {@code PartitionedRegionClear}.
+   */
+  private PartitionedRegionClear(PartitionedRegion partitionedRegion, Duration retryTime,
+      LockForListenerAndClientNotification lockForListenerAndClientNotification) {
+    this.partitionedRegion = partitionedRegion;
+    this.retryTime = retryTime;
+    this.lockForListenerAndClientNotification = lockForListenerAndClientNotification;
+  }
+
+  /**
+   * Initialize after constructing to avoid escaping reference to this before construction has
+   * completed.
+   */
+  private PartitionedRegionClear init() {
+    if (partitionedRegionClearListener != null) {
+      throw new IllegalStateException(this + " has already been initialized.");
+    }
+
+    partitionedRegionClearListener = new PartitionedRegionClearListener(this);
+    partitionedRegion.getDistributionManager()
+        .addMembershipListener(partitionedRegionClearListener);
+    return this;
+  }
+
+  @Override
+  public void handleClearFromDepartedMember(InternalDistributedMember departedMember) {
+    if (departedMember.equals(lockForListenerAndClientNotification.getLockOwner())) {
+      synchronized (lockForListenerAndClientNotification) {
+        if (lockForListenerAndClientNotification.getLockOwner() != null) {
+          releaseClearLockLocal();
+        }
+      }
+    }
+  }
+
+  @Override
+  public void setMembershipChange(boolean membershipChange) {
+    this.membershipChange = membershipChange;
+  }
+
+  @Override
+  public String toString() {
+    return new StringBuilder("PartitionedRegionClear{")
+        .append("partitionedRegion=").append(partitionedRegion)
+        .append(", retryTime=").append(retryTime)
+        .append(", lockForListenerAndClientNotification=")
+        .append(lockForListenerAndClientNotification)
+        .append(", partitionedRegionClearListener=").append(partitionedRegionClearListener)
+        .append(", membershipChange=").append(membershipChange)
+        .append('}')
+        .toString();
+  }
+
+  @VisibleForTesting
+  boolean isLockedForListenerAndClientNotification() {
     return lockForListenerAndClientNotification.isLocked();
   }
 
+  @VisibleForTesting
   void acquireDistributedClearLock(String clearLock) {
     try {
       partitionedRegion.getPartitionedRegionLockService().lock(clearLock, -1, -1);
@@ -72,6 +132,7 @@ public class PartitionedRegionClear {
     }
   }
 
+  @VisibleForTesting
   void releaseDistributedClearLock(String clearLock) {
     try {
       partitionedRegion.getPartitionedRegionLockService().unlock(clearLock);
@@ -82,37 +143,36 @@ public class PartitionedRegionClear {
     }
   }
 
-  protected PartitionedRegionClearListener getPartitionedRegionClearListener() {
-    return partitionedRegionClearListener;
-  }
-
   /**
    * only called if there are any listeners or clients interested.
    */
+  @VisibleForTesting
   void obtainLockForClear(RegionEventImpl event) {
     obtainClearLockLocal(partitionedRegion.getDistributionManager().getId());
     sendPartitionedRegionClearMessage(event,
-        PartitionedRegionClearMessage.OperationType.OP_LOCK_FOR_PR_CLEAR);
+        OperationType.OP_LOCK_FOR_PR_CLEAR);
   }
 
   /**
    * only called if there are any listeners or clients interested.
    */
+  @VisibleForTesting
   void releaseLockForClear(RegionEventImpl event) {
     releaseClearLockLocal();
     sendPartitionedRegionClearMessage(event,
-        PartitionedRegionClearMessage.OperationType.OP_UNLOCK_FOR_PR_CLEAR);
+        OperationType.OP_UNLOCK_FOR_PR_CLEAR);
   }
 
   /**
    * clears local primaries and send message to remote primaries to clear
    */
+  @VisibleForTesting
   Set<Integer> clearRegion(RegionEventImpl regionEvent) {
     // this includes all local primary buckets and their remote secondaries
     Set<Integer> localPrimaryBuckets = clearRegionLocal(regionEvent);
     // this includes all remote primary buckets and their secondaries
     Set<Integer> remotePrimaryBuckets = sendPartitionedRegionClearMessage(regionEvent,
-        PartitionedRegionClearMessage.OperationType.OP_PR_CLEAR);
+        OperationType.OP_PR_CLEAR);
 
     Set<Integer> allBucketsCleared = new HashSet<>();
     allBucketsCleared.addAll(localPrimaryBuckets);
@@ -120,7 +180,8 @@ public class PartitionedRegionClear {
     return allBucketsCleared;
   }
 
-  protected void waitForPrimary(PartitionedRegion.RetryTimeKeeper retryTimer) {
+  @VisibleForTesting
+  void waitForPrimary(RetryTimeKeeper retryTimer) {
     boolean retry;
     do {
       retry = false;
@@ -143,23 +204,23 @@ public class PartitionedRegionClear {
    * this clears all local primary buckets (each will distribute the clear operation to its
    * secondary members) and all of their remote secondaries
    */
-  public Set<Integer> clearRegionLocal(RegionEventImpl regionEvent) {
-    Set<Integer> clearedBuckets = new HashSet<>();
+  Set<Integer> clearRegionLocal(RegionEventImpl regionEvent) {
     long clearStartTime = System.nanoTime();
     setMembershipChange(false);
     // Synchronized to handle the requester departure.
+    Set<Integer> clearedBuckets = new HashSet<>();
     synchronized (lockForListenerAndClientNotification) {
       if (partitionedRegion.getDataStore() != null) {
         partitionedRegion.getDataStore().lockBucketCreationForRegionClear();
         try {
           boolean retry;
           do {
-            waitForPrimary(new PartitionedRegion.RetryTimeKeeper(retryTime));
-            RegionEventImpl bucketRegionEvent;
+            waitForPrimary(new RetryTimeKeeper((int) retryTime.toMillis()));
             for (BucketRegion localPrimaryBucketRegion : partitionedRegion.getDataStore()
                 .getAllLocalPrimaryBucketRegions()) {
               if (localPrimaryBucketRegion.size() > 0) {
-                bucketRegionEvent =
+                RegionEventImpl
+                    bucketRegionEvent =
                     new RegionEventImpl(localPrimaryBucketRegion, Operation.REGION_CLEAR, null,
                         false, partitionedRegion.getMyId(), regionEvent.getEventId());
                 localPrimaryBucketRegion.cmnClearRegion(bucketRegionEvent, false, true);
@@ -193,7 +254,8 @@ public class PartitionedRegionClear {
     return clearedBuckets;
   }
 
-  protected void doAfterClear(RegionEventImpl regionEvent) {
+  @VisibleForTesting
+  void doAfterClear(RegionEventImpl regionEvent) {
     if (partitionedRegion.hasAnyClientsInterested()) {
       notifyClients(regionEvent);
     }
@@ -203,7 +265,7 @@ public class PartitionedRegionClear {
     }
   }
 
-  void notifyClients(RegionEventImpl event) {
+  private void notifyClients(RegionEventImpl event) {
     // Set client routing information into the event
     // The clear operation in case of PR is distributed differently
     // hence the FilterRoutingInfo is set here instead of
@@ -231,7 +293,7 @@ public class PartitionedRegionClear {
   /**
    * obtain locks for all local buckets
    */
-  protected void obtainClearLockLocal(InternalDistributedMember requester) {
+  void obtainClearLockLocal(InternalDistributedMember requester) {
     synchronized (lockForListenerAndClientNotification) {
       // Check if the member is still part of the distributed system
       if (!partitionedRegion.getDistributionManager().isCurrentMember(requester)) {
@@ -253,9 +315,9 @@ public class PartitionedRegionClear {
     }
   }
 
-  protected void releaseClearLockLocal() {
+  void releaseClearLockLocal() {
     synchronized (lockForListenerAndClientNotification) {
-      if (lockForListenerAndClientNotification.getLockRequester() == null) {
+      if (lockForListenerAndClientNotification.getLockOwner() == null) {
         // The member has left.
         return;
       }
@@ -281,14 +343,15 @@ public class PartitionedRegionClear {
     }
   }
 
-  protected Set<Integer> sendPartitionedRegionClearMessage(RegionEventImpl event,
-      PartitionedRegionClearMessage.OperationType op) {
+  @VisibleForTesting
+  Set<Integer> sendPartitionedRegionClearMessage(RegionEventImpl event,
+      OperationType op) {
     RegionEventImpl eventForLocalClear = (RegionEventImpl) event.clone();
     eventForLocalClear.setOperation(Operation.REGION_LOCAL_CLEAR);
 
     do {
       try {
-        return attemptToSendPartitionedRegionClearMessage(event, op);
+        return tryToSendPartitionedRegionClearMessage(event, op);
       } catch (ForceReattemptException reattemptException) {
         // retry
       }
@@ -298,8 +361,8 @@ public class PartitionedRegionClear {
   /**
    * @return buckets that are cleared. empty set if any exception happened
    */
-  protected Set<Integer> attemptToSendPartitionedRegionClearMessage(RegionEventImpl event,
-      PartitionedRegionClearMessage.OperationType op)
+  @VisibleForTesting
+  Set<Integer> tryToSendPartitionedRegionClearMessage(RegionEventImpl event, OperationType op)
       throws ForceReattemptException {
     Set<Integer> bucketsOperated = new HashSet<>();
 
@@ -362,12 +425,12 @@ public class PartitionedRegionClear {
   /**
    * This method returns a boolean to indicate if all server versions support Partition Region clear
    */
-  public void allServerVersionsSupportPartitionRegionClear() {
+  private void allServerVersionsSupportPartitionRegionClear() {
     List<String> memberNames = new ArrayList<>();
     for (int i = 0; i < partitionedRegion.getTotalNumberOfBuckets(); i++) {
       InternalDistributedMember internalDistributedMember = partitionedRegion.getBucketPrimary(i);
-      if ((internalDistributedMember != null)
-          && (internalDistributedMember.getVersion().isOlderThan(KnownVersion.GEODE_1_14_0))) {
+      if (internalDistributedMember != null
+          && internalDistributedMember.getVersion().isOlderThan(KnownVersion.GEODE_1_14_0)) {
         if (!memberNames.contains(internalDistributedMember.getName())) {
           memberNames.add(internalDistributedMember.getName());
         }
@@ -381,13 +444,12 @@ public class PartitionedRegionClear {
     }
   }
 
-
   void doClear(RegionEventImpl regionEvent, boolean cacheWrite) {
     String lockName = CLEAR_OPERATION + partitionedRegion.getName();
-    long clearStartTime = 0;
 
     allServerVersionsSupportPartitionRegionClear();
 
+    long clearStartTime = 0;
     try {
       // distributed lock to make sure only one clear op is in progress in the cluster.
       acquireDistributedClearLock(lockName);
@@ -405,7 +467,7 @@ public class PartitionedRegionClear {
       // locks needs to be taken on all local and remote primary buckets in order to
       // preserve the ordering of client events (for concurrent operations on the region).
       boolean acquireClearLockForNotification =
-          (partitionedRegion.hasAnyClientsInterested() || partitionedRegion.hasListener());
+          partitionedRegion.hasAnyClientsInterested() || partitionedRegion.hasListener();
       if (acquireClearLockForNotification) {
         obtainLockForClear(regionEvent);
       }
@@ -438,7 +500,8 @@ public class PartitionedRegionClear {
     }
   }
 
-  protected void invokeCacheWriter(RegionEventImpl regionEvent) {
+  @VisibleForTesting
+  void invokeCacheWriter(RegionEventImpl regionEvent) {
     try {
       partitionedRegion.cacheWriteBeforeRegionClear(regionEvent);
     } catch (OperationAbortedException operationAbortedException) {
@@ -446,61 +509,81 @@ public class PartitionedRegionClear {
     }
   }
 
-  protected void assignAllPrimaryBuckets() {
+  @VisibleForTesting
+  void assignAllPrimaryBuckets() {
     PartitionedRegion leader = ColocationHelper.getLeaderRegion(partitionedRegion);
     PartitionRegionHelper.assignBucketsToPartitions(leader);
   }
 
-  protected void handleClearFromDepartedMember(InternalDistributedMember departedMember) {
-    if (departedMember.equals(lockForListenerAndClientNotification.getLockRequester())) {
-      synchronized (lockForListenerAndClientNotification) {
-        if (lockForListenerAndClientNotification.getLockRequester() != null) {
-          releaseClearLockLocal();
-        }
-      }
-    }
-  }
-
-  class LockForListenerAndClientNotification {
-
-    private boolean locked = false;
-
-    private InternalDistributedMember lockRequester;
-
-    synchronized void setLocked(InternalDistributedMember member) {
-      locked = true;
-      lockRequester = member;
-    }
-
-    synchronized void setUnLocked() {
-      locked = false;
-      lockRequester = null;
-    }
-
-    synchronized boolean isLocked() {
-      return locked;
-    }
-
-    synchronized InternalDistributedMember getLockRequester() {
-      return lockRequester;
-    }
-  }
-
-  protected void setMembershipChange(boolean membershipChange) {
-    this.membershipChange = membershipChange;
-  }
-
-  protected boolean getMembershipChange() {
+  @VisibleForTesting
+  boolean getMembershipChange() {
     return membershipChange;
   }
 
-  protected class PartitionedRegionClearListener implements MembershipListener {
+  @VisibleForTesting
+  void setLocked(InternalDistributedMember lockOwner) {
+    lockForListenerAndClientNotification.setLocked(lockOwner);
+  }
+
+  @VisibleForTesting
+  InternalDistributedMember getLockOwner() {
+    return lockForListenerAndClientNotification.getLockOwner();
+  }
+
+  @VisibleForTesting
+  PartitionedRegionClearListener getPartitionedRegionClearListener() {
+    return partitionedRegionClearListener;
+  }
+
+  private static class LockForListenerAndClientNotification {
+
+    private final AtomicReference<InternalDistributedMember> lockOwner = new AtomicReference<>();
+
+    @Override
+    public String toString() {
+      return "LockForListenerAndClientNotification@" + Integer.toHexString(hashCode()) +
+          "{" +
+          "lockOwner=" + lockOwner +
+          "}";
+    }
+
+    private void setLocked(InternalDistributedMember lockOwner) {
+      this.lockOwner.set(lockOwner);
+    }
+
+    private void setUnLocked() {
+      lockOwner.set(null);
+    }
+
+    private boolean isLocked() {
+      return lockOwner.get() != null;
+    }
+
+    private InternalDistributedMember getLockOwner() {
+      return lockOwner.get();
+    }
+  }
+
+  @VisibleForTesting
+  static class PartitionedRegionClearListener implements MembershipListener {
+
+    private final PartitionedRegionClearMembershipCallbacks partitionedRegionClearMembershipCallbacks;
+
+    private PartitionedRegionClearListener(
+        PartitionedRegionClearMembershipCallbacks partitionedRegionClearMembershipCallbacks) {
+      this.partitionedRegionClearMembershipCallbacks = partitionedRegionClearMembershipCallbacks;
+    }
 
     @Override
     public synchronized void memberDeparted(DistributionManager distributionManager,
-        InternalDistributedMember id, boolean crashed) {
-      setMembershipChange(true);
-      handleClearFromDepartedMember(id);
+        InternalDistributedMember member, boolean crashed) {
+      partitionedRegionClearMembershipCallbacks.setMembershipChange(true);
+      partitionedRegionClearMembershipCallbacks.handleClearFromDepartedMember(member);
+    }
+
+    @Override
+    public String toString() {
+      return "PartitionedRegionClearListener@" + Integer.toHexString(hashCode());
     }
   }
 }
