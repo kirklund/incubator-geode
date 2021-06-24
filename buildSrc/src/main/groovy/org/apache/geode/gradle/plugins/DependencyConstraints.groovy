@@ -38,14 +38,14 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("commons-lang3.version", "3.12.0")
     deps.put("commons-validator.version", "1.7")
     deps.put("fastutil.version", "8.5.4")
+    deps.put("jackson.version", "2.12.3")
     deps.put("javax.transaction-api.version", "1.3")
+    deps.put("jboss-modules.version", "1.11.0.Final")
     deps.put("jgroups.version", "3.6.14.Final")
     deps.put("log4j.version", "2.14.1")
     deps.put("micrometer.version", "1.7.0")
     deps.put("shiro.version", "1.7.1")
     deps.put("slf4j-api.version", "1.7.30")
-    deps.put("jboss-modules.version", "1.11.0.Final")
-    deps.put("jackson.version", "2.12.3")
     deps.put("springshell.version", "1.2.0.RELEASE")
     deps.put("springframework.version", "5.3.8")
 
@@ -64,8 +64,8 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("jetty.version", "9.4.42.v20210604")
 
     // These versions are referenced in test.gradle, which is aggressively injected into all projects.
-    deps.put("junit.version", "4.13.2")
     deps.put("cglib.version", "3.3.0")
+    deps.put("junit.version", "4.13.2")
     return deps
   }
 
