@@ -44,6 +44,7 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("jgroups.version", "3.6.14.Final")
     deps.put("log4j.version", "2.14.1")
     deps.put("micrometer.version", "1.7.0")
+    deps.put("picocli.version", "4.6.1")
     deps.put("shiro.version", "1.7.1")
     deps.put("slf4j-api.version", "1.7.30")
     deps.put("springshell.version", "1.2.0.RELEASE")
@@ -110,6 +111,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'commons-logging', name: 'commons-logging', version: '1.2')
         api(group: 'commons-modeler', name: 'commons-modeler', version: '2.0.1')
         api(group: 'commons-validator', name: 'commons-validator', version: get('commons-validator.version'))
+        api(group: 'info.picocli', name: 'picocli', version: get('picocli.version'))
         // Careful when upgrading this dependency: see GEODE-7370 and GEODE-8150.
         api(group: 'io.github.classgraph', name: 'classgraph', version: '4.8.108')
         api(group: 'io.github.resilience4j', name: 'resilience4j-retry', version: '1.7.0')
@@ -190,6 +192,10 @@ class DependencyConstraints implements Plugin<Project> {
     dependencySet(group: 'com.pholser', version: '1.0') {
       entry('junit-quickcheck-core')
       entry('junit-quickcheck-generators')
+    }
+
+    dependencySet(group: 'info.picocli', version: '4.6.1') {
+      entry('picocli')
     }
 
     dependencySet(group: 'io.springfox', version: '2.9.2') {

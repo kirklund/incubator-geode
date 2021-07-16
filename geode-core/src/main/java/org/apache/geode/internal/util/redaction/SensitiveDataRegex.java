@@ -12,22 +12,22 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.util;
+package org.apache.geode.internal.util.redaction;
 
-import static org.apache.geode.internal.util.ArgumentRedactorRegex.Group.ARGUMENT;
-import static org.apache.geode.internal.util.ArgumentRedactorRegex.Group.ASSIGNMENT;
-import static org.apache.geode.internal.util.ArgumentRedactorRegex.Group.OPTION;
-import static org.apache.geode.internal.util.ArgumentRedactorRegex.Group.PREFIX;
+import static org.apache.geode.internal.util.redaction.SensitiveDataRegex.Group.ARGUMENT;
+import static org.apache.geode.internal.util.redaction.SensitiveDataRegex.Group.ASSIGNMENT;
+import static org.apache.geode.internal.util.redaction.SensitiveDataRegex.Group.OPTION;
+import static org.apache.geode.internal.util.redaction.SensitiveDataRegex.Group.PREFIX;
 
 import java.util.regex.Pattern;
 
 /**
  * Regex with named capture groups that can be used to match strings containing an
- * option with an argument value.
+ * option with a argument value.
  *
  * <p>
  * This method returns the {@link Pattern} given below, used to capture
- * command-line options that accept an argument. For clarity, the regex is given here without
+ * command-line options that accept a argument. For clarity, the regex is given here without
  * the escape characters required by Java's string handling.
  *
  * <p>
@@ -58,10 +58,11 @@ import java.util.regex.Pattern;
  * Note that at time of writing, the argument (capture group 4) is not consumed by this class's
  * logic, but its capture has proven repeatedly useful during iteration and testing.
  */
-public class ArgumentRedactorRegex {
+public class SensitiveDataRegex {
 
-  private static final String REGEX = "" + PREFIX + OPTION + Boundary.SPACE_OR_EQUALS + ASSIGNMENT
-      + Boundary.NEGATIVE_TO_PREVENT_NEXT_OPTION_AS_THIS_ARGUMENT + ARGUMENT;
+  private static final String REGEX =
+      String.valueOf(PREFIX) + OPTION + "(?:" + Boundary.SPACE_OR_EQUALS + ASSIGNMENT +
+          Boundary.NEGATIVE_TO_PREVENT_NEXT_OPTION_AS_THIS_ARGUMENT + ARGUMENT + ")*";
 
   private static final Pattern PATTERN = Pattern.compile(REGEX);
 
@@ -74,22 +75,23 @@ public class ArgumentRedactorRegex {
   }
 
   private static final String beginningOfLineOrSpace = "(?:^| )";
-  private static final String optionalTwoDashesJEquals = "(?:--J=)?";
-  private static final String oneOrTwoDashes = "--?";
+  private static final String hyphensJD = "--J=-D"; // "(?:--J)?"
+  private static final String hyphenD = "-D"; // "(?:-D)?"
+  private static final String twoHyphens = "--"; // "(?:--?)?" oneOrTwoHyphens
   private static final String noSpaces = "[^\\s=]+";
   private static final String equalsWithOptionalSpaces = " *[ =] *";
   private static final String anythingBetweenQuotes = "\"[^\"]*\"";
-  private static final String noSpacesWithoutQuotes = "\\S+";
+  private static final String noSpacesWithoutQuotes = "\\S+"; // one or more white space characters
 
   public enum Group {
-    PREFIX(1, "prefix",
-        "(?<prefix>" + beginningOfLineOrSpace + optionalTwoDashesJEquals + oneOrTwoDashes + ")"),
-    OPTION(2, "option",
-        "(?<option>" + noSpaces + ")"),
-    ASSIGNMENT(3, "assignment",
-        "(?<assignment>" + equalsWithOptionalSpaces + ")"),
-    ARGUMENT(4, "argument",
-        "(?<argument>(?:" + anythingBetweenQuotes + "|" + noSpacesWithoutQuotes + "))");
+    PREFIX(1, "PREFIX",
+        "(?<PREFIX>" + beginningOfLineOrSpace + hyphensJD + "|" + hyphenD + "|" + twoHyphens + ")"),
+    OPTION(2, "OPTION",
+        "(?<OPTION>" + noSpaces + ")"),
+    ASSIGNMENT(3, "ASSIGNMENT",
+        "(?<ASSIGNMENT>" + equalsWithOptionalSpaces + ")"),
+    ARGUMENT(4, "ARGUMENT",
+        "(?<ARGUMENT>" + anythingBetweenQuotes + "|" + noSpacesWithoutQuotes + ")");
 
     private final int index;
     private final String name;
@@ -121,7 +123,8 @@ public class ArgumentRedactorRegex {
 
   public enum Boundary {
     SPACE_OR_EQUALS("(?=[ =])"),
-    NEGATIVE_TO_PREVENT_NEXT_OPTION_AS_THIS_ARGUMENT("(?! *-)");
+    NEGATIVE_TO_PREVENT_NEXT_OPTION_AS_THIS_ARGUMENT(
+        "(?! +" + hyphensJD + "|" + hyphenD + "|" + twoHyphens + ")"); // "(?! *-)");
 
     private final String regex;
 

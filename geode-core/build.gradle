@@ -246,6 +246,8 @@ dependencies {
         ext.optional = true
     }
 
+    implementation('info.picocli:picocli')
+
     //micrometer is used for micrometer based metrics from geode geode
     api('io.micrometer:micrometer-core')
 

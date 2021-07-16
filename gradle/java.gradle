@@ -27,11 +27,13 @@ apply plugin: 'java-library'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 compileJava.options.encoding = 'UTF-8'
+compileJava.options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
 
 dependencies {
   // log4j-core has an annotation processor that is passed on the compile-classpath via geode-core and others.
   // Fix Gradle warning here until we clean up our own classpath
   annotationProcessor 'org.apache.logging.log4j:log4j-core:' + DependencyConstraints.get('log4j.version')
+  annotationProcessor 'info.picocli:picocli-codegen:' + DependencyConstraints.get('picocli.version')
 }
 
 String javaVersion = System.properties['java.version']

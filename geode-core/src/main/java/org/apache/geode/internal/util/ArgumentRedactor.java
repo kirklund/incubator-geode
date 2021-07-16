@@ -14,36 +14,14 @@
  */
 package org.apache.geode.internal.util;
 
-import static java.util.Collections.unmodifiableList;
-import static java.util.stream.Collectors.toList;
-import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PREFIX;
-import static org.apache.geode.distributed.internal.DistributionConfig.SSL_SYSTEM_PROPS_NAME;
-import static org.apache.geode.distributed.internal.DistributionConfig.SYS_PROP_NAME;
-import static org.apache.geode.internal.util.ArrayUtils.asList;
-
 import java.util.Collection;
 import java.util.List;
-import java.util.regex.Matcher;
 
-import org.apache.geode.annotations.Immutable;
+import org.apache.geode.internal.util.redaction.ArgumentValueRedaction;
 
 public class ArgumentRedactor {
 
-  public static final String REDACTED = "********";
-
-  /**
-   * Taboo for an argument (option=argument) to contain this list of strings.
-   */
-  @Immutable
-  private static final List<String> TABOO_TO_CONTAIN =
-      unmodifiableList(asList("password"));
-
-  /**
-   * Taboo for an option (option=argument) to contain this list of strings.
-   */
-  @Immutable
-  private static final List<String> TABOO_FOR_OPTION_TO_START_WITH =
-      unmodifiableList(asList(SYS_PROP_NAME, SSL_SYSTEM_PROPS_NAME, SECURITY_PREFIX));
+  private static final ArgumentValueRedaction DELEGATE = new ArgumentValueRedaction();
 
   private ArgumentRedactor() {
     // do not instantiate
@@ -60,56 +38,25 @@ public class ArgumentRedactor {
    * - Options and arguments may be separated by an equals sign '=' or any number of spaces.<br>
    *
    * <p>
-   * Examples:<br>
-   * "--password=secret"<br>
-   * "--user me --password secret"<br>
-   * "-Dflag -Dopt=arg"<br>
-   * "--classpath=."<br>
-   *
-   * <p>
-   * See {@link ArgumentRedactorRegex} for more information on the regular expression used.
+   * Examples:
+   * <ol>
+   * <li>"--password=secret"</li>
+   * <li>"--user me --password secret"</li>
+   * <li>"-Dflag -Dopt=arg"</li>
+   * <li>"--classpath=."</li>
+   * <li>"password=secret"</li>
+   * </ol>
    *
    * @param line The argument input to be parsed
-   * @param permitFirstPairWithoutHyphen When true, prepends the line with a "-", which is later
-   *        removed. This allows the use on, e.g., "password=secret" rather than "--password=secret"
    *
    * @return A redacted string that has sensitive information obscured.
    */
-  public static String redact(String line, boolean permitFirstPairWithoutHyphen) {
-    boolean wasPaddedWithHyphen = false;
-    if (!line.trim().startsWith("-") && permitFirstPairWithoutHyphen) {
-      line = "-" + line.trim();
-      wasPaddedWithHyphen = true;
-    }
-
-    Matcher matcher = ArgumentRedactorRegex.getPattern().matcher(line);
-    while (matcher.find()) {
-      String option = matcher.group(2);
-      if (!isTaboo(option)) {
-        continue;
-      }
-
-      String leadingBoundary = matcher.group(1);
-      String separator = matcher.group(3);
-      String withRedaction = leadingBoundary + option + separator + REDACTED;
-      line = line.replace(matcher.group(), withRedaction);
-    }
-
-    if (wasPaddedWithHyphen) {
-      line = line.substring(1);
-    }
-    return line;
-  }
-
-  /**
-   * Alias for {@code redact(line, true)}.
-   */
   public static String redact(String line) {
-    return redact(line, true);
+    return DELEGATE.redact(line);
   }
 
-  public static String redact(final Iterable<String> args) {
-    return redact(String.join(" ", args));
+  public static String redact(Iterable<String> lines) {
+    return DELEGATE.redact(lines);
   }
 
   /**
@@ -123,42 +70,25 @@ public class ArgumentRedactor {
    *         provided argument.
    */
   public static String redactArgumentIfNecessary(String option, String argument) {
-    if (isTaboo(option)) {
-      return REDACTED;
-    }
-    return argument;
+    return DELEGATE.redactArgumentIfNecessary(option, argument);
+  }
+
+  public static List<String> redactEachInList(Collection<String> lines) {
+    return DELEGATE.redactEachInList(lines);
   }
 
   /**
-   * Determine whether a option's argument should be redacted.
+   * Determine whether an option's argument value should be redacted.
    *
    * @param option The option in question.
    *
-   * @return true if the value should be redacted, otherwise false.
+   * @return true if the argument's value should be redacted, otherwise false.
    */
-  static boolean isTaboo(String option) {
-    if (option == null) {
-      return false;
-    }
-    for (String taboo : TABOO_FOR_OPTION_TO_START_WITH) {
-      // If a parameter is passed with -Dsecurity-option=argument, the option option is
-      // "Dsecurity-option".
-      // With respect to taboo words, also check for the addition of the extra D
-      if (option.toLowerCase().startsWith(taboo) || option.toLowerCase().startsWith("d" + taboo)) {
-        return true;
-      }
-    }
-    for (String taboo : TABOO_TO_CONTAIN) {
-      if (option.toLowerCase().contains(taboo)) {
-        return true;
-      }
-    }
-    return false;
+  public static boolean isSensitive(String option) {
+    return DELEGATE.isSensitive(option);
   }
 
-  public static List<String> redactEachInList(Collection<String> argList) {
-    return argList.stream()
-        .map(ArgumentRedactor::redact)
-        .collect(toList());
+  public static String getRedacted() {
+    return DELEGATE.getRedacted();
   }
 }
