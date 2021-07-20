@@ -25,28 +25,29 @@ import java.util.List;
 import org.apache.geode.annotations.VisibleForTesting;
 
 /**
- * Redacts argument values for options that are detected as sensitive data.
+ * Redacts value strings for keys that are identified as sensitive data.
  */
-public class ArgumentValueRedaction implements SensitiveDataDictionary {
+public class StringRedaction implements SensitiveDataDictionary {
 
   private final String redacted;
   private final SensitiveDataDictionary sensitiveDataDictionary;
   private final RedactionStrategy redactionStrategy;
 
-  public ArgumentValueRedaction() {
-    this(REDACTED, new CombinedSensitiveDataDictionary(
-        new SensitivePrefixDictionary(SENSITIVE_PREFIXES),
-        new SensitiveSubstringDictionary(SENSITIVE_SUBSTRINGS)));
+  public StringRedaction() {
+    this(REDACTED,
+        new CombinedSensitiveDictionary(
+            new SensitivePrefixDictionary(SENSITIVE_PREFIXES),
+            new SensitiveSubstringDictionary(SENSITIVE_SUBSTRINGS)));
   }
 
-  private ArgumentValueRedaction(String redacted, SensitiveDataDictionary sensitiveDataDictionary) {
+  private StringRedaction(String redacted, SensitiveDataDictionary sensitiveDataDictionary) {
     this(redacted,
         sensitiveDataDictionary,
         new RegexRedactionStrategy(sensitiveDataDictionary::isSensitive, redacted));
   }
 
   @VisibleForTesting
-  ArgumentValueRedaction(String redacted, SensitiveDataDictionary sensitiveDataDictionary,
+  StringRedaction(String redacted, SensitiveDataDictionary sensitiveDataDictionary,
       RedactionStrategy redactionStrategy) {
     this.redacted = redacted;
     this.sensitiveDataDictionary = sensitiveDataDictionary;
@@ -54,28 +55,31 @@ public class ArgumentValueRedaction implements SensitiveDataDictionary {
   }
 
   /**
-   * Parse a string to find option/argument pairs and redact the arguments if sensitive.
+   * Parse a string to find key/value pairs and redact the values if identified as sensitive.
    *
    * <p>
    * The following format is expected:<br>
-   * - Each option/argument pair should be separated by spaces.<br>
-   * - The option of each pair must be preceded by at least one hyphen '-'.<br>
-   * - Parameters may or may not be wrapped in quotation marks.<br>
-   * - Options and arguments may be separated by an equals sign '=' or any number of spaces.<br>
+   * - Each key/value pair should be separated by spaces.<br>
+   * - The key must be preceded by '--', '-D', or '--J=-D'.<br>
+   * - The value may optionally be wrapped in quotation marks.<br>
+   * - The value is assigned to a key with '=', '=' padded with any number of optional spaces, or
+   * any number of spaces without '='.<br>
+   * - The value must not contain spaces without being wrapped in quotation marks.<br>
+   * - The value may contain spaces or any other symbols when wrapped in quotation marks.
    *
    * <p>
    * Examples:
    * <ol>
-   * <li>"--password=secret"</li>
-   * <li>"--user me --password secret"</li>
-   * <li>"-Dflag -Dopt=arg"</li>
-   * <li>"--classpath=."</li>
-   * <li>"password=secret"</li>
+   * <li>"--password=secret"
+   * <li>"--user me --password secret"
+   * <li>"-Dflag -Dopt=arg"
+   * <li>"--classpath=."
+   * <li>"password=secret"
    * </ol>
    *
    * @param string The string input to be parsed
    *
-   * @return A redacted string that has sensitive information obscured.
+   * @return A string that has sensitive data redacted.
    */
   public String redact(String string) {
     return redactionStrategy.redact(string);
@@ -86,20 +90,20 @@ public class ArgumentValueRedaction implements SensitiveDataDictionary {
   }
 
   /**
-   * Return the redaction string if the provided option's argument value should be redacted.
-   * Otherwise, return the provided argument unchanged.
+   * Return the redacted value string if the provided key is identified as sensitive, otherwise
+   * return the original value.
    *
-   * @param option A string such as a system property, jvm argument or command-line option.
-   * @param argument A string that is the argument value for the option.
+   * @param key A string such as a system property, java option, or command-line key.
+   * @param value The string value for the key.
    *
-   * @return A redacted string if the option indicates it should be redacted, otherwise the
-   *         provided argument.
+   * @return The redacted string if the key is identified as sensitive, otherwise the original
+   *         value.
    */
-  public String redactArgumentIfNecessary(String option, String argument) {
-    if (isSensitive(option)) {
+  public String redactArgumentIfNecessary(String key, String value) {
+    if (isSensitive(key)) {
       return redacted;
     }
-    return argument;
+    return value;
   }
 
   public List<String> redactEachInList(Collection<String> lines) {
@@ -109,8 +113,8 @@ public class ArgumentValueRedaction implements SensitiveDataDictionary {
   }
 
   @Override
-  public boolean isSensitive(String string) {
-    return sensitiveDataDictionary.isSensitive(string);
+  public boolean isSensitive(String key) {
+    return sensitiveDataDictionary.isSensitive(key);
   }
 
   public String getRedacted() {

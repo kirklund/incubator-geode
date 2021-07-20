@@ -32,22 +32,22 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
-public class ArgumentValueRedactionTest {
+public class StringRedactionTest {
 
   private static final String REDACTED = "redacted";
 
   private SensitiveDataDictionary sensitiveDataDictionary;
   private RedactionStrategy redactionStrategy;
 
-  private ArgumentValueRedaction argumentValueRedaction;
+  private StringRedaction stringRedaction;
 
   @Before
   public void setUp() {
     sensitiveDataDictionary = mock(SensitiveDataDictionary.class);
     redactionStrategy = mock(RedactionStrategy.class);
 
-    argumentValueRedaction =
-        new ArgumentValueRedaction(REDACTED, sensitiveDataDictionary, redactionStrategy);
+    stringRedaction =
+        new StringRedaction(REDACTED, sensitiveDataDictionary, redactionStrategy);
   }
 
   @Test
@@ -57,7 +57,7 @@ public class ArgumentValueRedactionTest {
 
     when(redactionStrategy.redact(input)).thenReturn(expected);
 
-    String result = argumentValueRedaction.redact(input);
+    String result = stringRedaction.redact(input);
 
     verify(redactionStrategy).redact(input);
     assertThat(result).isEqualTo(expected);
@@ -67,7 +67,7 @@ public class ArgumentValueRedactionTest {
   public void redact_delegatesNullString() {
     String input = null;
 
-    argumentValueRedaction.redact(input);
+    stringRedaction.redact(input);
 
     verify(redactionStrategy).redact(input);
   }
@@ -76,7 +76,7 @@ public class ArgumentValueRedactionTest {
   public void redact_delegatesEmptyString() {
     String input = "";
 
-    argumentValueRedaction.redact(input);
+    stringRedaction.redact(input);
 
     verify(redactionStrategy).redact(input);
   }
@@ -95,7 +95,7 @@ public class ArgumentValueRedactionTest {
 
     when(redactionStrategy.redact(joinedLine)).thenReturn(expected);
 
-    String result = argumentValueRedaction.redact(input);
+    String result = stringRedaction.redact(input);
 
     verify(redactionStrategy).redact(joinedLine);
     assertThat(result).isEqualTo(expected);
@@ -106,7 +106,7 @@ public class ArgumentValueRedactionTest {
     Collection<String> input = null;
 
     Throwable thrown = catchThrowable(() -> {
-      argumentValueRedaction.redact(input);
+      stringRedaction.redact(input);
     });
 
     assertThat(thrown).isInstanceOf(NullPointerException.class);
@@ -119,7 +119,7 @@ public class ArgumentValueRedactionTest {
 
     when(sensitiveDataDictionary.isSensitive(option)).thenReturn(true);
 
-    String result = argumentValueRedaction.redactArgumentIfNecessary(option, argument);
+    String result = stringRedaction.redactArgumentIfNecessary(option, argument);
 
     verify(sensitiveDataDictionary).isSensitive(option);
     assertThat(result).isEqualTo(REDACTED);
@@ -132,7 +132,7 @@ public class ArgumentValueRedactionTest {
 
     when(sensitiveDataDictionary.isSensitive(option)).thenReturn(false);
 
-    String result = argumentValueRedaction.redactArgumentIfNecessary(option, argument);
+    String result = stringRedaction.redactArgumentIfNecessary(option, argument);
 
     verify(sensitiveDataDictionary).isSensitive(option);
     assertThat(result).isEqualTo(argument);
@@ -142,7 +142,7 @@ public class ArgumentValueRedactionTest {
   public void redactArgumentIfNecessary_delegatesNullOptionToTabooDetection() {
     String option = null;
 
-    argumentValueRedaction.redactArgumentIfNecessary(option, "argument");
+    stringRedaction.redactArgumentIfNecessary(option, "argument");
 
     verify(sensitiveDataDictionary).isSensitive(option);
   }
@@ -151,7 +151,7 @@ public class ArgumentValueRedactionTest {
   public void redactArgumentIfNecessary_delegatesEmptyOptionToTabooDetection() {
     String option = "";
 
-    argumentValueRedaction.redactArgumentIfNecessary(option, "argument");
+    stringRedaction.redactArgumentIfNecessary(option, "argument");
 
     verify(sensitiveDataDictionary).isSensitive(option);
   }
@@ -160,7 +160,7 @@ public class ArgumentValueRedactionTest {
   public void redactArgumentIfNecessary_returnsNullStringArgument() {
     String argument = null;
 
-    String result = argumentValueRedaction.redactArgumentIfNecessary("option", argument);
+    String result = stringRedaction.redactArgumentIfNecessary("option", argument);
 
     assertThat(result).isEqualTo(argument);
   }
@@ -169,7 +169,7 @@ public class ArgumentValueRedactionTest {
   public void redactArgumentIfNecessary_returnsEmptyStringArgument() {
     String argument = "";
 
-    String result = argumentValueRedaction.redactArgumentIfNecessary("option", argument);
+    String result = stringRedaction.redactArgumentIfNecessary("option", argument);
 
     assertThat(result).isEqualTo(argument);
   }
@@ -186,7 +186,7 @@ public class ArgumentValueRedactionTest {
 
     when(redactionStrategy.redact(anyString())).then(returnsFirstArg());
 
-    List<String> result = argumentValueRedaction.redactEachInList(input);
+    List<String> result = stringRedaction.redactEachInList(input);
 
     verify(redactionStrategy).redact(line1);
     verify(redactionStrategy).redact(line2);
@@ -200,7 +200,7 @@ public class ArgumentValueRedactionTest {
 
     when(redactionStrategy.redact(anyString())).then(returnsFirstArg());
 
-    List<String> result = argumentValueRedaction.redactEachInList(input);
+    List<String> result = stringRedaction.redactEachInList(input);
 
     verifyNoInteractions(redactionStrategy);
     assertThat(result).isEqualTo(input);
@@ -213,7 +213,7 @@ public class ArgumentValueRedactionTest {
     when(redactionStrategy.redact(anyString())).then(returnsFirstArg());
 
     Throwable thrown = catchThrowable(() -> {
-      argumentValueRedaction.redactEachInList(input);
+      stringRedaction.redactEachInList(input);
     });
 
     assertThat(thrown).isInstanceOf(NullPointerException.class);
@@ -225,7 +225,7 @@ public class ArgumentValueRedactionTest {
 
     when(sensitiveDataDictionary.isSensitive(anyString())).thenReturn(true);
 
-    boolean result = argumentValueRedaction.isSensitive(input);
+    boolean result = stringRedaction.isSensitive(input);
 
     assertThat(result).isTrue();
   }
@@ -236,7 +236,7 @@ public class ArgumentValueRedactionTest {
 
     when(sensitiveDataDictionary.isSensitive(isNull())).thenReturn(true);
 
-    boolean result = argumentValueRedaction.isSensitive(input);
+    boolean result = stringRedaction.isSensitive(input);
 
     assertThat(result).isTrue();
   }
@@ -247,7 +247,7 @@ public class ArgumentValueRedactionTest {
 
     when(sensitiveDataDictionary.isSensitive(anyString())).thenReturn(true);
 
-    boolean result = argumentValueRedaction.isSensitive(input);
+    boolean result = stringRedaction.isSensitive(input);
 
     assertThat(result).isTrue();
   }

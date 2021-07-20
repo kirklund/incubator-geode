@@ -14,14 +14,28 @@
  */
 package org.apache.geode.internal.util.redaction;
 
-import java.util.function.Function;
-import java.util.function.Supplier;
+import static java.util.Arrays.stream;
+
+import java.util.stream.Collectors;
 
 /**
- * TODO:KIRK delete RedactionStrategyFactory
+ * Delegates to two instances of SensitiveDataDictionary.
  */
-@FunctionalInterface
-interface RedactionStrategyFactory {
+class CombinedSensitiveDictionary implements SensitiveDataDictionary {
 
-  RedactionStrategy create(Function<String, Boolean> isTaboo, Supplier<String> redacted);
+  private final Iterable<SensitiveDataDictionary> dictionaries;
+
+  CombinedSensitiveDictionary(SensitiveDataDictionary... dictionaries) {
+    this.dictionaries = stream(dictionaries).collect(Collectors.toSet());
+  }
+
+  @Override
+  public boolean isSensitive(String string) {
+    for (SensitiveDataDictionary dictionary : dictionaries) {
+      if (dictionary.isSensitive(string)) {
+        return true;
+      }
+    }
+    return false;
+  }
 }

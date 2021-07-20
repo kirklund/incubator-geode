@@ -17,39 +17,42 @@ package org.apache.geode.internal.util;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.geode.internal.util.redaction.ArgumentValueRedaction;
+import org.apache.geode.internal.util.redaction.StringRedaction;
 
 public class ArgumentRedactor {
 
-  private static final ArgumentValueRedaction DELEGATE = new ArgumentValueRedaction();
+  private static final StringRedaction DELEGATE = new StringRedaction();
 
   private ArgumentRedactor() {
     // do not instantiate
   }
 
   /**
-   * Parse a string to find option/argument pairs and redact the arguments if necessary.
+   * Parse a string to find key/value pairs and redact the values if identified as sensitive.
    *
    * <p>
    * The following format is expected:<br>
-   * - Each option/argument pair should be separated by spaces.<br>
-   * - The option of each pair must be preceded by at least one hyphen '-'.<br>
-   * - Arguments may or may not be wrapped in quotation marks.<br>
-   * - Options and arguments may be separated by an equals sign '=' or any number of spaces.<br>
+   * - Each key/value pair should be separated by spaces.<br>
+   * - The key must be preceded by '--', '-D', or '--J=-D'.<br>
+   * - The value may optionally be wrapped in quotation marks.<br>
+   * - The value is assigned to a key with '=', '=' padded with any number of optional spaces, or
+   * any number of spaces without '='.<br>
+   * - The value must not contain spaces without being wrapped in quotation marks.<br>
+   * - The value may contain spaces or any other symbols when wrapped in quotation marks.
    *
    * <p>
    * Examples:
    * <ol>
-   * <li>"--password=secret"</li>
-   * <li>"--user me --password secret"</li>
-   * <li>"-Dflag -Dopt=arg"</li>
-   * <li>"--classpath=."</li>
-   * <li>"password=secret"</li>
+   * <li>"--password=secret"
+   * <li>"--user me --password secret"
+   * <li>"-Dflag -Dopt=arg"
+   * <li>"--classpath=."
+   * <li>"password=secret"
    * </ol>
    *
-   * @param line The argument input to be parsed
+   * @param string The string input to be parsed
    *
-   * @return A redacted string that has sensitive information obscured.
+   * @return A string that has sensitive data redacted.
    */
   public static String redact(String line) {
     return DELEGATE.redact(line);
@@ -60,14 +63,14 @@ public class ArgumentRedactor {
   }
 
   /**
-   * Return the redaction string if the provided option's argument should be redacted.
-   * Otherwise, return the provided argument unchanged.
+   * Return the redacted value string if the provided key is identified as sensitive, otherwise
+   * return the original value.
    *
-   * @param option A string such as a system property, jvm parameter or command-line option.
-   * @param argument A string that is the argument assigned to the option.
+   * @param key A string such as a system property, java option, or command-line key.
+   * @param value The string value for the key.
    *
-   * @return A redacted string if the option indicates it should be redacted, otherwise the
-   *         provided argument.
+   * @return The redacted string if the key is identified as sensitive, otherwise the original
+   *         value.
    */
   public static String redactArgumentIfNecessary(String option, String argument) {
     return DELEGATE.redactArgumentIfNecessary(option, argument);
@@ -78,14 +81,15 @@ public class ArgumentRedactor {
   }
 
   /**
-   * Determine whether an option's argument value should be redacted.
+   * Returns true if a string identifies sensitive data. For example, a string containing
+   * the word "password" identifies data that is sensitive and should be secured.
    *
-   * @param option The option in question.
+   * @param string The string to be evaluated.
    *
-   * @return true if the argument's value should be redacted, otherwise false.
+   * @return true if the string identifies sensitive data.
    */
-  public static boolean isSensitive(String option) {
-    return DELEGATE.isSensitive(option);
+  public static boolean isSensitive(String key) {
+    return DELEGATE.isSensitive(key);
   }
 
   public static String getRedacted() {

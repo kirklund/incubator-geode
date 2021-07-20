@@ -29,7 +29,7 @@ public class RegexRedactionStrategyTest {
 
   @Before
   public void setUp() {
-    SensitiveDataDictionary sensitiveDataDictionary = new CombinedSensitiveDataDictionary(
+    SensitiveDataDictionary sensitiveDataDictionary = new CombinedSensitiveDictionary(
         new SensitivePrefixDictionary(SENSITIVE_PREFIXES),
         new SensitiveSubstringDictionary(SENSITIVE_SUBSTRINGS));
 

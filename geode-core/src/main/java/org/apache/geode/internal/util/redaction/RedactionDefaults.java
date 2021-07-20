@@ -25,7 +25,7 @@ import java.util.List;
 import org.apache.geode.annotations.Immutable;
 
 /**
- * Default string values for identifying and redacting sensitive data.
+ * Default strings that indicate sensitive data requiring redaction.
  */
 class RedactionDefaults {
 

@@ -15,18 +15,18 @@
 package org.apache.geode.internal.util.redaction;
 
 /**
- * Evaluates strings to determine if they commonly indicate sensitive data.
+ * Evaluates strings to determine if they identify sensitive data.
  */
 @FunctionalInterface
 interface SensitiveDataDictionary {
 
   /**
-   * Returns true if a string commonly indicates sensitive data. For example, a string containing
-   * the word "password" commonly indicates data that should be secured.
+   * Returns true if a string identifies sensitive data. For example, a string containing
+   * the word "password" identifies data that is sensitive and should be secured.
    *
    * @param string The string to be evaluated.
    *
-   * @return true if the string commonly indicates sensitive data.
+   * @return true if the string identifies sensitive data.
    */
   boolean isSensitive(String string);
 }
