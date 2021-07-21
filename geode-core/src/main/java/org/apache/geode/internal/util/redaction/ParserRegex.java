@@ -28,9 +28,7 @@ import java.util.regex.Pattern;
  * <p>
  * The raw regex string is:
  *
- * <pre>
- * (?<prefix>--J=-D|-D|--)(?<key>[^\s=]+)(?:(?! (?:--J=-D|-D|--))(?<assign> *[ =] *)(?! (?:--J=-D|-D|--))(?<value>"[^"]*"|\S+))?
- * </pre>
+ * {@code (?<prefix>--J=-D|-D|--)(?<key>[^\s=]+)(?:(?! (?:--J=-D|-D|--))(?<assign> *[ =] *)(?! (?:--J=-D|-D|--))(?<value>"[^"]*"|\S+))?}
  */
 public class ParserRegex {
 

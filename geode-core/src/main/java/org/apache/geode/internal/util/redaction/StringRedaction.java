@@ -106,8 +106,8 @@ public class StringRedaction implements SensitiveDataDictionary {
     return value;
   }
 
-  public List<String> redactEachInList(Collection<String> lines) {
-    return lines.stream()
+  public List<String> redactEachInList(Collection<String> strings) {
+    return strings.stream()
         .map(this::redact)
         .collect(toList());
   }

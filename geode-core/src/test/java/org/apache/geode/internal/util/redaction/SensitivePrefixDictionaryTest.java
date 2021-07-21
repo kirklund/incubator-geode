@@ -29,6 +29,21 @@ public class SensitivePrefixDictionaryTest {
   }
 
   @Test
+  public void startsWithSyspropHyphenIsTrue() {
+    assertThat(dictionary.isSensitive("sysprop-something")).isTrue();
+  }
+
+  @Test
+  public void startsWithJavaxNetSslIsTrue() {
+    assertThat(dictionary.isSensitive("javax.net.ssl.something")).isTrue();
+  }
+
+  @Test
+  public void startsWithSecurityHyphenIsTrue() {
+    assertThat(dictionary.isSensitive("security-something")).isTrue();
+  }
+
+  @Test
   public void nullStringIsFalse() {
     assertThat(dictionary.isSensitive(null)).isFalse();
   }
@@ -79,11 +94,6 @@ public class SensitivePrefixDictionaryTest {
   }
 
   @Test
-  public void startsWithSyspropHyphenIsTrue() {
-    assertThat(dictionary.isSensitive("sysprop-something")).isTrue();
-  }
-
-  @Test
   public void startsWithSyspropWithoutHyphenIsFalse() {
     assertThat(dictionary.isSensitive("syspropsomething")).isFalse();
   }
@@ -101,11 +111,6 @@ public class SensitivePrefixDictionaryTest {
   @Test
   public void syspropIsFalse() {
     assertThat(dictionary.isSensitive("sysprop")).isFalse();
-  }
-
-  @Test
-  public void startsWithJavaxNetSslIsTrue() {
-    assertThat(dictionary.isSensitive("javax.net.ssl.something")).isTrue();
   }
 
   @Test
@@ -131,11 +136,6 @@ public class SensitivePrefixDictionaryTest {
   @Test
   public void endsWithJavaxNetSslIsFalse() {
     assertThat(dictionary.isSensitive("my.javax.net.ssl")).isFalse();
-  }
-
-  @Test
-  public void startsWithSecurityHyphenIsTrue() {
-    assertThat(dictionary.isSensitive("security-something")).isTrue();
   }
 
   @Test

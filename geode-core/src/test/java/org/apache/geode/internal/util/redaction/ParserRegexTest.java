@@ -27,7 +27,7 @@ import org.apache.geode.internal.util.redaction.ParserRegex.Group;
 public class ParserRegexTest {
 
   @Test
-  public void capturesOptionWhenAssignIsEquals() {
+  public void capturesOption() {
     String input = "--option=argument";
     Matcher matcher = getPattern().matcher(input);
 

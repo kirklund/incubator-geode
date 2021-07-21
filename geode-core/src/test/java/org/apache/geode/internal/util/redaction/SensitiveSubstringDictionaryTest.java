@@ -29,16 +29,6 @@ public class SensitiveSubstringDictionaryTest {
   }
 
   @Test
-  public void nullStringIsFalse() {
-    assertThat(dictionary.isSensitive(null)).isFalse();
-  }
-
-  @Test
-  public void emptyStringIsFalse() {
-    assertThat(dictionary.isSensitive("")).isFalse();
-  }
-
-  @Test
   public void passwordLowerCaseIsTrue() {
     assertThat(dictionary.isSensitive("password")).isTrue();
   }
@@ -71,6 +61,16 @@ public class SensitiveSubstringDictionaryTest {
   @Test
   public void passwordWithTrailingHyphenIsTrue() {
     assertThat(dictionary.isSensitive("password-")).isTrue();
+  }
+
+  @Test
+  public void nullStringIsFalse() {
+    assertThat(dictionary.isSensitive(null)).isFalse();
+  }
+
+  @Test
+  public void emptyStringIsFalse() {
+    assertThat(dictionary.isSensitive("")).isFalse();
   }
 
   @Test

@@ -51,7 +51,7 @@ public class StringRedactionTest {
   }
 
   @Test
-  public void redact_delegatesString() {
+  public void redactDelegatesString() {
     String input = "line";
     String expected = "expected";
 
@@ -64,7 +64,7 @@ public class StringRedactionTest {
   }
 
   @Test
-  public void redact_delegatesNullString() {
+  public void redactDelegatesNullString() {
     String input = null;
 
     stringRedaction.redact(input);
@@ -73,7 +73,7 @@ public class StringRedactionTest {
   }
 
   @Test
-  public void redact_delegatesEmptyString() {
+  public void redactDelegatesEmptyString() {
     String input = "";
 
     stringRedaction.redact(input);
@@ -82,7 +82,7 @@ public class StringRedactionTest {
   }
 
   @Test
-  public void redact_delegatesIterable() {
+  public void redactDelegatesIterable() {
     String line1 = "line1";
     String line2 = "line2";
     String line3 = "line3";
@@ -102,7 +102,7 @@ public class StringRedactionTest {
   }
 
   @Test
-  public void redact_nullIterable_throwsNullPointerException() {
+  public void redactNullIterableThrowsNullPointerException() {
     Collection<String> input = null;
 
     Throwable thrown = catchThrowable(() -> {
@@ -113,89 +113,89 @@ public class StringRedactionTest {
   }
 
   @Test
-  public void redactArgumentIfNecessary_delegatesTabooOptionToTabooDetection() {
-    String option = "option";
-    String argument = "argument";
+  public void redactArgumentIfNecessaryDelegatesSensitiveKey() {
+    String key = "key";
+    String value = "value";
 
-    when(sensitiveDataDictionary.isSensitive(option)).thenReturn(true);
+    when(sensitiveDataDictionary.isSensitive(key)).thenReturn(true);
 
-    String result = stringRedaction.redactArgumentIfNecessary(option, argument);
+    String result = stringRedaction.redactArgumentIfNecessary(key, value);
 
-    verify(sensitiveDataDictionary).isSensitive(option);
+    verify(sensitiveDataDictionary).isSensitive(key);
     assertThat(result).isEqualTo(REDACTED);
   }
 
   @Test
-  public void redactArgumentIfNecessary_delegatesNonTabooOptionToTabooDetection() {
-    String option = "option";
-    String argument = "argument";
+  public void redactArgumentIfNecessaryDelegatesNonSensitiveKey() {
+    String key = "key";
+    String value = "value";
 
-    when(sensitiveDataDictionary.isSensitive(option)).thenReturn(false);
+    when(sensitiveDataDictionary.isSensitive(key)).thenReturn(false);
 
-    String result = stringRedaction.redactArgumentIfNecessary(option, argument);
+    String result = stringRedaction.redactArgumentIfNecessary(key, value);
 
-    verify(sensitiveDataDictionary).isSensitive(option);
-    assertThat(result).isEqualTo(argument);
+    verify(sensitiveDataDictionary).isSensitive(key);
+    assertThat(result).isEqualTo(value);
   }
 
   @Test
-  public void redactArgumentIfNecessary_delegatesNullOptionToTabooDetection() {
-    String option = null;
+  public void redactArgumentIfNecessaryDelegatesNullKey() {
+    String key = null;
 
-    stringRedaction.redactArgumentIfNecessary(option, "argument");
+    stringRedaction.redactArgumentIfNecessary(key, "value");
 
-    verify(sensitiveDataDictionary).isSensitive(option);
+    verify(sensitiveDataDictionary).isSensitive(key);
   }
 
   @Test
-  public void redactArgumentIfNecessary_delegatesEmptyOptionToTabooDetection() {
-    String option = "";
+  public void redactArgumentIfNecessaryDelegatesEmptyKey() {
+    String key = "";
 
-    stringRedaction.redactArgumentIfNecessary(option, "argument");
+    stringRedaction.redactArgumentIfNecessary(key, "value");
 
-    verify(sensitiveDataDictionary).isSensitive(option);
+    verify(sensitiveDataDictionary).isSensitive(key);
   }
 
   @Test
-  public void redactArgumentIfNecessary_returnsNullStringArgument() {
-    String argument = null;
+  public void redactArgumentIfNecessaryReturnsNullValue() {
+    String value = null;
 
-    String result = stringRedaction.redactArgumentIfNecessary("option", argument);
+    String result = stringRedaction.redactArgumentIfNecessary("key", value);
 
-    assertThat(result).isEqualTo(argument);
+    assertThat(result).isEqualTo(value);
   }
 
   @Test
-  public void redactArgumentIfNecessary_returnsEmptyStringArgument() {
-    String argument = "";
+  public void redactArgumentIfNecessaryReturnsEmptyValue() {
+    String value = "";
 
-    String result = stringRedaction.redactArgumentIfNecessary("option", argument);
+    String result = stringRedaction.redactArgumentIfNecessary("key", value);
 
-    assertThat(result).isEqualTo(argument);
+    assertThat(result).isEqualTo(value);
   }
 
   @Test
-  public void redactEachInList_delegatesCollectionOfLines() {
-    String line1 = "line1";
-    String line2 = "line2";
-    String line3 = "line3";
+  public void redactEachInListDelegatesEachStringInIterable() {
+    String string1 = "string1";
+    String string2 = "string2";
+    String string3 = "string3";
     List<String> input = new ArrayList<>();
-    input.add(line1);
-    input.add(line2);
-    input.add(line3);
+    input.add(string1);
+    input.add(string2);
+    input.add(string3);
 
     when(redactionStrategy.redact(anyString())).then(returnsFirstArg());
 
     List<String> result = stringRedaction.redactEachInList(input);
 
-    verify(redactionStrategy).redact(line1);
-    verify(redactionStrategy).redact(line2);
-    verify(redactionStrategy).redact(line3);
+    verify(redactionStrategy).redact(string1);
+    verify(redactionStrategy).redact(string2);
+    verify(redactionStrategy).redact(string3);
     assertThat(result).isEqualTo(input);
   }
 
   @Test
-  public void redactEachInList_delegatesEmptyCollectionOfLines() {
+  public void redactEachInListDoesNotDelegateEmptyIterable() {
     List<String> input = Collections.emptyList();
 
     when(redactionStrategy.redact(anyString())).then(returnsFirstArg());
@@ -207,7 +207,7 @@ public class StringRedactionTest {
   }
 
   @Test
-  public void redactEachInList_delegatesNullCollectionOfLines() {
+  public void redactEachInListNullIterableThrowsNullPointerException() {
     List<String> input = null;
 
     when(redactionStrategy.redact(anyString())).then(returnsFirstArg());
@@ -220,7 +220,7 @@ public class StringRedactionTest {
   }
 
   @Test
-  public void isSensitive_delegatesToTabooDetection() {
+  public void isSensitiveDelegatesString() {
     String input = "input";
 
     when(sensitiveDataDictionary.isSensitive(anyString())).thenReturn(true);
@@ -231,7 +231,7 @@ public class StringRedactionTest {
   }
 
   @Test
-  public void isSensitive_delegatesNullStringToTabooDetection() {
+  public void isSensitiveDelegatesNullString() {
     String input = null;
 
     when(sensitiveDataDictionary.isSensitive(isNull())).thenReturn(true);
@@ -242,7 +242,7 @@ public class StringRedactionTest {
   }
 
   @Test
-  public void isSensitive_delegatesEmptyStringToTabooDetection() {
+  public void isSensitiveDelegatesEmptyString() {
     String input = "";
 
     when(sensitiveDataDictionary.isSensitive(anyString())).thenReturn(true);

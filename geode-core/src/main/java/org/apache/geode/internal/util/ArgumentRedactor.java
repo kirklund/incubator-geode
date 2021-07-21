@@ -54,12 +54,12 @@ public class ArgumentRedactor {
    *
    * @return A string that has sensitive data redacted.
    */
-  public static String redact(String line) {
-    return DELEGATE.redact(line);
+  public static String redact(String string) {
+    return DELEGATE.redact(string);
   }
 
-  public static String redact(Iterable<String> lines) {
-    return DELEGATE.redact(lines);
+  public static String redact(Iterable<String> strings) {
+    return DELEGATE.redact(strings);
   }
 
   /**
@@ -72,19 +72,19 @@ public class ArgumentRedactor {
    * @return The redacted string if the key is identified as sensitive, otherwise the original
    *         value.
    */
-  public static String redactArgumentIfNecessary(String option, String argument) {
-    return DELEGATE.redactArgumentIfNecessary(option, argument);
+  public static String redactArgumentIfNecessary(String key, String value) {
+    return DELEGATE.redactArgumentIfNecessary(key, value);
   }
 
-  public static List<String> redactEachInList(Collection<String> lines) {
-    return DELEGATE.redactEachInList(lines);
+  public static List<String> redactEachInList(Collection<String> strings) {
+    return DELEGATE.redactEachInList(strings);
   }
 
   /**
    * Returns true if a string identifies sensitive data. For example, a string containing
    * the word "password" identifies data that is sensitive and should be secured.
    *
-   * @param string The string to be evaluated.
+   * @param key The string to be evaluated.
    *
    * @return true if the string identifies sensitive data.
    */

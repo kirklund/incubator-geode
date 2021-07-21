@@ -21,57 +21,57 @@ import org.junit.Test;
 public class RedactionDefaultsTest {
 
   @Test
-  public void sensitiveSubstringsIncludesPassword() {
+  public void sensitiveSubstringsContainsOnlyPassword() {
     assertThat(RedactionDefaults.SENSITIVE_SUBSTRINGS).containsOnly("password");
   }
 
   @Test
-  public void sensitivePrefixesIncludesSyspropHyphen() {
+  public void sensitivePrefixesContainsSyspropHyphen() {
     assertThat(RedactionDefaults.SENSITIVE_PREFIXES).contains("sysprop-");
   }
 
   @Test
-  public void sensitivePrefixesIncludesHyphenDSyspropHyphen() {
+  public void sensitivePrefixesContainsHyphenDSyspropHyphen() {
     assertThat(RedactionDefaults.SENSITIVE_PREFIXES).contains("-Dsysprop-");
   }
 
   @Test
-  public void sensitivePrefixesIncludesHyphensJDSyspropHyphen() {
+  public void sensitivePrefixesContainsHyphensJDSyspropHyphen() {
     assertThat(RedactionDefaults.SENSITIVE_PREFIXES).contains("--J=-Dsysprop-");
   }
 
   @Test
-  public void sensitivePrefixesIncludesJavaxDotNetDotSsl() {
+  public void sensitivePrefixesContainsJavaxDotNetDotSsl() {
     assertThat(RedactionDefaults.SENSITIVE_PREFIXES).contains("javax.net.ssl");
   }
 
   @Test
-  public void sensitivePrefixesIncludesHyphenDJavaxDotNetDotSsl() {
+  public void sensitivePrefixesContainsHyphenDJavaxDotNetDotSsl() {
     assertThat(RedactionDefaults.SENSITIVE_PREFIXES).contains("-Djavax.net.ssl");
   }
 
   @Test
-  public void sensitivePrefixesIncludesHyphensJDJavaxDotNetDotSsl() {
+  public void sensitivePrefixesContainsHyphensJDJavaxDotNetDotSsl() {
     assertThat(RedactionDefaults.SENSITIVE_PREFIXES).contains("--J=-Djavax.net.ssl");
   }
 
   @Test
-  public void sensitivePrefixesIncludesSecurityHyphen() {
+  public void sensitivePrefixesContainsSecurityHyphen() {
     assertThat(RedactionDefaults.SENSITIVE_PREFIXES).contains("security-");
   }
 
   @Test
-  public void sensitivePrefixesIncludesHyphenDSecurityHyphen() {
+  public void sensitivePrefixesContainsHyphenDSecurityHyphen() {
     assertThat(RedactionDefaults.SENSITIVE_PREFIXES).contains("-Dsecurity-");
   }
 
   @Test
-  public void sensitivePrefixesIncludesHyphensJDSecurityHyphen() {
+  public void sensitivePrefixesContainsHyphensJDSecurityHyphen() {
     assertThat(RedactionDefaults.SENSITIVE_PREFIXES).contains("--J=-Dsecurity-");
   }
 
   @Test
-  public void sensitivePrefixesIncludesOnly() {
+  public void sensitivePrefixesContainsOnlyExpectedStrings() {
     assertThat(RedactionDefaults.SENSITIVE_PREFIXES)
         .containsOnly("sysprop-", "javax.net.ssl", "security-",
             "-Dsysprop-", "-Djavax.net.ssl", "-Dsecurity-",

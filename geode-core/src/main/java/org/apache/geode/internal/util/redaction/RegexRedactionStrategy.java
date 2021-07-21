@@ -31,8 +31,8 @@ class RegexRedactionStrategy implements RedactionStrategy {
   }
 
   @Override
-  public String redact(String line) {
-    Matcher matcher = ParserRegex.getPattern().matcher(line);
+  public String redact(String string) {
+    Matcher matcher = ParserRegex.getPattern().matcher(string);
     while (matcher.find()) {
       String option = matcher.group(2);
       if (!isSensitive.apply(option)) {
@@ -42,9 +42,9 @@ class RegexRedactionStrategy implements RedactionStrategy {
       String leadingBoundary = matcher.group(1);
       String separator = matcher.group(3);
       String withRedaction = leadingBoundary + option + separator + redacted;
-      line = line.replace(matcher.group(), withRedaction);
+      string = string.replace(matcher.group(), withRedaction);
     }
 
-    return line;
+    return string;
   }
 }

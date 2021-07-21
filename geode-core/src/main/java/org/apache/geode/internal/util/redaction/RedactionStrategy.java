@@ -47,5 +47,5 @@ interface RedactionStrategy {
    *
    * @return A string that has sensitive data redacted.
    */
-  String redact(String line);
+  String redact(String string);
 }
