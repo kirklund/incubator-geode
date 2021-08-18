@@ -88,7 +88,7 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DMStats;
-import org.apache.geode.distributed.internal.DistributedSystemService;
+import org.apache.geode.distributed.internal.SanctionedSerializablesService;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
@@ -377,7 +377,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
    * @param services DistributedSystem services that might have classes to acceptlist
    */
   public static void initialize(DistributionConfig distributionConfig,
-      Collection<DistributedSystemService> services) {
+      Collection<SanctionedSerializablesService> services) {
     logger.info("initializing InternalDataSerializer with {} services", services.size());
     if (distributionConfig.getValidateSerializableObjects()) {
       if (!ClassUtils.isClassAvailable("sun.misc.ObjectInputFilter")
@@ -398,9 +398,9 @@ public abstract class InternalDataSerializer extends DataSerializer {
   }
 
   /**
-   * {@link DistributedSystemService}s that need to acceptlist Serializable objects can use this to
+   * {@link SanctionedSerializablesService}s that need to acceptlist Serializable objects can use this to
    * read them from a file and then return them via
-   * {@link DistributedSystemService#getSerializationAcceptlist}
+   * {@link SanctionedSerializablesService#getSerializationAcceptlist}
    */
   public static Collection<String> loadClassNames(URL sanctionedSerializables) throws IOException {
     ArrayList<String> result = new ArrayList<>(1000);
