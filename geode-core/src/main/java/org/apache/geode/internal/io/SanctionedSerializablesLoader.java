@@ -12,13 +12,25 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal;
+package org.apache.geode.internal.io;
 
-import java.io.ObjectInputStream;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Collection;
 
-public interface InputStreamFilter {
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.classloader.ClassPathLoader;
 
-  /** establish a serialization filter on the given stream */
-  void setFilterOn(ObjectInputStream ois);
+public class SanctionedSerializablesLoader {
 
+  private SanctionedSerializablesLoader() {
+    // do not instantiate
+  }
+
+  public static Collection<String> loadClassNames(Class<?> classInSamePackage, String resourceName)
+      throws IOException {
+    URL sanctionedSerializables = ClassPathLoader.getLatest()
+        .getResource(classInSamePackage, resourceName);
+    return InternalDataSerializer.loadClassNames(sanctionedSerializables);
+  }
 }

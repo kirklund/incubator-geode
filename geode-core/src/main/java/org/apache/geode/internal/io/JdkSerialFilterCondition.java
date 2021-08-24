@@ -12,15 +12,20 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal;
+package org.apache.geode.internal.io;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.io.FilterConfiguration;
+import java.util.function.Supplier;
 
-@FunctionalInterface
-interface ManagementAgentFactory {
+public class JdkSerialFilterCondition implements Supplier<Boolean> {
 
-  ManagementAgent create(DistributionConfig config, InternalCache cache,
-      FilterConfiguration serialFilter);
+  @Override
+  public Boolean get() {
+    // return isJavaVersion(JAVA_1_8) && isNull();
+    return false;
+  }
+
+  private boolean hasJdkSerialFilter() {
+    // ObjectInputFilter.Config.getSerialFilter()
+    return false;
+  }
 }
