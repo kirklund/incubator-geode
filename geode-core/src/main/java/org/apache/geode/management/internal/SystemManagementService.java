@@ -16,6 +16,8 @@ package org.apache.geode.management.internal;
 
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.lang3.JavaVersion.JAVA_9;
+import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -45,6 +47,8 @@ import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
+import org.apache.geode.internal.io.OpenMBeanFilterPattern;
+import org.apache.geode.internal.io.SystemPropertySerialFilter;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -180,7 +184,10 @@ public class SystemManagementService extends BaseManagementService {
 
     if (system.getConfig().getJmxManager()) {
       agent = managementAgentFactory.create(system.getConfig(), cache,
-          new JmxRmiOpenTypesSerialFilter());
+          new SystemPropertySerialFilter()
+              .propertyName("jmx.remote.rmi.server.serial.filter.pattern")
+              .filterPattern(new OpenMBeanFilterPattern().pattern())
+              .condition(() -> isJavaVersionAtLeast(JAVA_9)));
     } else {
       agent = null;
     }

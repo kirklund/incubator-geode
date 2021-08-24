@@ -68,8 +68,11 @@ public class ResourceUtils {
    * @throws ClassNotFoundException wrapped in RuntimeException if the class cannot be located
    */
   public static URL getResource(final String resourceName) {
-    URL resource = getCallerClass(2).getResource(resourceName);
-    assertThat(resource).as(resourceName).isNotNull();
+    Class<?> callerClass = getCallerClass(2);
+    URL resource = callerClass.getResource(resourceName);
+    assertThat(resource)
+        .as("Resource '" + resourceName + "' loaded by class " + callerClass)
+        .isNotNull();
     return resource;
   }
 
@@ -82,7 +85,9 @@ public class ResourceUtils {
    */
   public static URL getResource(final Class<?> classInSamePackage, final String resourceName) {
     URL resource = classInSamePackage.getResource(resourceName);
-    assertThat(resource).as(resourceName).isNotNull();
+    assertThat(resource)
+        .as("Resource '" + resourceName + "' loaded by class " + classInSamePackage)
+        .isNotNull();
     return resource;
   }
 
@@ -95,7 +100,9 @@ public class ResourceUtils {
    */
   public static URL getResource(final ClassLoader classLoader, final String resourceName) {
     URL resource = classLoader.getResource(resourceName);
-    assertThat(resource).as(resourceName).isNotNull();
+    assertThat(resource)
+        .as("Resource '" + resourceName + "' loaded by class loader " + classLoader)
+        .isNotNull();
     return resource;
   }
 

@@ -12,32 +12,14 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+package org.apache.geode.internal.io;
 
 import org.junit.Test;
 
-import org.apache.geode.distributed.internal.InternalLocator;
-
-/**
- * Unit tests for {@link LocatorLauncher}.
- *
- * @since GemFire 7.0
- */
-public class LocatorLauncherTest {
+public class ObjectInputStreamFilterWrapperIntegrationTest {
 
   @Test
-  public void canBeMocked() throws Exception {
-    LocatorLauncher mockLocatorLauncher = mock(LocatorLauncher.class);
-    InternalLocator mockInternalLocator = mock(InternalLocator.class);
+  public void setsFilterOnObjectInputStream() {
 
-    when(mockLocatorLauncher.getLocator()).thenReturn(mockInternalLocator);
-    when(mockLocatorLauncher.getId()).thenReturn("ID");
-
-    assertThat(mockLocatorLauncher.getLocator()).isSameAs(mockInternalLocator);
-    assertThat(mockLocatorLauncher.getId()).isEqualTo("ID");
   }
 }

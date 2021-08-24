@@ -14,6 +14,7 @@
  */
 package org.apache.geode.codeAnalysis;
 
+import static org.apache.geode.test.util.ResourceUtils.getResource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertTrue;
@@ -126,7 +127,8 @@ public abstract class AnalyzeDataSerializablesJUnitTestBase {
   public void findClasses() throws Exception {
     classes = classProvider.getClasses();
 
-    List<String> excludedClasses = loadExcludedClasses(getResourceAsFile(EXCLUDED_CLASSES_TXT));
+    File excludedClassesFile = getResourceAsFile(EXCLUDED_CLASSES_TXT);
+    List<String> excludedClasses = loadExcludedClasses(excludedClassesFile);
     List<String> openBugs = loadOpenBugs(getResourceAsFile(OPEN_BUGS_TXT));
 
     excludedClasses.addAll(openBugs);
@@ -324,14 +326,14 @@ public abstract class AnalyzeDataSerializablesJUnitTestBase {
    * Use this method to get a resource stored in the test's resource directory
    */
   protected File getResourceAsFile(String resourceName) {
-    return new File(getClass().getResource(resourceName).getFile());
+    return new File(getResource(getClass(), resourceName).getFile());
   }
 
   /**
    * Use this method to get a resource that might be in a JAR file
    */
-  protected InputStream getResourceAsStream(Class associatedClass, String resourceName)
+  protected InputStream getResourceAsStream(Class<?> associatedClass, String resourceName)
       throws IOException {
-    return associatedClass.getResource(resourceName).openStream();
+    return getResource(associatedClass, resourceName).openStream();
   }
 }

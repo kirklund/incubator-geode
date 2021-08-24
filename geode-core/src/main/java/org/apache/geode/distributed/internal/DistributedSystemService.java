@@ -18,9 +18,13 @@ import java.io.IOException;
 import java.util.Collection;
 
 public interface DistributedSystemService {
-  void init(InternalDistributedSystem internalDistributedSystem);
 
-  Class getInterface();
+  @SuppressWarnings("unused")
+  default void init(InternalDistributedSystem internalDistributedSystem) {
+    // do nothing by default
+  }
 
-  Collection<String> getSerializationAcceptlist() throws IOException;
+  Class<?> getInterface();
+
+  Collection<String> getSerializationAcceptList() throws IOException;
 }

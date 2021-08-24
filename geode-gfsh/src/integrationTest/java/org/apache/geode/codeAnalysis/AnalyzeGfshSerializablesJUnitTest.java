@@ -14,7 +14,6 @@
  */
 package org.apache.geode.codeAnalysis;
 
-
 import org.apache.geode.gfsh.internal.management.GfshDistributedSystemService;
 
 public class AnalyzeGfshSerializablesJUnitTest extends AnalyzeSerializablesJUnitTestBase {

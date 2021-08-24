@@ -14,16 +14,16 @@
  */
 package org.apache.geode.management;
 
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_8;
+import static org.apache.commons.lang3.JavaVersion.JAVA_9;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtMost;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
-import static org.apache.geode.management.internal.JmxRmiOpenTypesSerialFilter.PROPERTY_NAME;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
 import java.nio.file.Path;
 
-import org.apache.commons.lang3.JavaVersion;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -36,6 +36,7 @@ import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 public class ServerManagerConfiguresJmxSerialFilterAcceptanceTest {
 
   private static final String NAME = "the-server";
+  private static final String JMX_FILTER_PATTERN = "jmx.remote.rmi.server.serial.filter.pattern";
 
   private Path workingDir;
   private int jmxPort;
@@ -60,8 +61,8 @@ public class ServerManagerConfiguresJmxSerialFilterAcceptanceTest {
   }
 
   @Test
-  public void startingServerWithJmxManager_configuresSerialFilter_atLeastJava9() {
-    assumeThat(isJavaVersionAtLeast(JavaVersion.JAVA_9)).isTrue();
+  public void startingServerWithJmxManager_configuresSerialFilter_onJava9orGreater() {
+    assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
 
     String startServerCommand = String.join(" ",
         "start server",
@@ -80,13 +81,13 @@ public class ServerManagerConfiguresJmxSerialFilterAcceptanceTest {
       LogFileAssert.assertThat(serverLogFile.toFile())
           .as(serverLogFile.toFile().getAbsolutePath())
           .exists()
-          .contains("System property " + PROPERTY_NAME + " is now configured with");
+          .contains("System property " + JMX_FILTER_PATTERN + " is now configured with");
     });
   }
 
   @Test
   public void startingServerWithJmxManager_configuresSerialFilter_atMostJava8() {
-    assumeThat(isJavaVersionAtMost(JavaVersion.JAVA_1_8)).isTrue();
+    assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
 
     String startServerCommand = String.join(" ",
         "start server",
@@ -105,7 +106,7 @@ public class ServerManagerConfiguresJmxSerialFilterAcceptanceTest {
       LogFileAssert.assertThat(serverLogFile.toFile())
           .as(serverLogFile.toFile().getAbsolutePath())
           .exists()
-          .doesNotContain("System property " + PROPERTY_NAME + " is now configured with");
+          .doesNotContain("System property " + JMX_FILTER_PATTERN + " is now configured with");
     });
   }
 }

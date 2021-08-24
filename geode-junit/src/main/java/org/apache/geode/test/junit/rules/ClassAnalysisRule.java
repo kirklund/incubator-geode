@@ -14,11 +14,11 @@
  */
 package org.apache.geode.test.junit.rules;
 
+import static java.util.Arrays.stream;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,16 +45,16 @@ import org.apache.geode.test.junit.rules.serializable.SerializableStatement;
  * NOTE: this rule is not thread-safe
  */
 public class ClassAnalysisRule implements TestRule {
-  private static final Map<String, CompiledClass> cachedClasses = new HashMap<>();
+
+  private static final Map<String, CompiledClass> CACHED_CLASSES = new HashMap<>();
 
   private final String moduleName;
-  private Map<String, CompiledClass> classes = new HashMap<>();
+  private final Map<String, CompiledClass> classes = new HashMap<>();
 
   /**
    * @param moduleName The name of the gradle module in which your test resides
    */
   public ClassAnalysisRule(String moduleName) {
-    super();
     this.moduleName = moduleName;
   }
 
@@ -63,9 +63,8 @@ public class ClassAnalysisRule implements TestRule {
   }
 
   public static void clearCache() {
-    cachedClasses.clear();
+    CACHED_CLASSES.clear();
   }
-
 
   @Override
   public Statement apply(final Statement statement, final Description description) {
@@ -73,43 +72,38 @@ public class ClassAnalysisRule implements TestRule {
       @Override
       public void evaluate() throws Throwable {
         before();
-        try {
-          statement.evaluate();
-        } finally {
-          after();
-        }
+        statement.evaluate();
       }
     };
   }
 
   private void before() {
-    if (cachedClasses.isEmpty()) {
+    if (CACHED_CLASSES.isEmpty()) {
       loadClasses();
-      cachedClasses.putAll(classes);
+      CACHED_CLASSES.putAll(classes);
     } else {
-      classes.putAll(cachedClasses);
+      classes.putAll(CACHED_CLASSES);
     }
   }
-
-  private void after() {}
 
   private void loadClasses() {
     String classpath = System.getProperty("java.class.path");
     // System.out.println("java classpath is " + classpath);
 
-    List<File> entries =
-        Arrays.stream(classpath.split(File.pathSeparator)).map(x -> new File(x)).collect(
-            Collectors.toList());
+    List<File> entries = stream(classpath.split(File.pathSeparator))
+        .map(x -> new File(x))
+        .collect(Collectors.toList());
     String gradleBuildDirName =
         Paths.get(getModuleName(), "build", "classes", "java", "main").toString();
     // System.out.println("gradleBuildDirName is " + gradleBuildDirName);
-    String ideaBuildDirName = Paths.get(getModuleName(), "out", "production", "classes").toString();
+    String ideaBuildDirName =
+        Paths.get(getModuleName(), "out", "production", "classes").toString();
     // System.out.println("ideaBuildDirName is " + ideaBuildDirName);
-    String ideaFQCNBuildDirName = Paths.get("out", "production",
-        "geode." + getModuleName() + ".main").toString();
+    String ideaFQCNBuildDirName =
+        Paths.get("out", "production", "geode." + getModuleName() + ".main").toString();
     // System.out.println("idea build path with full package names is " + ideaFQCNBuildDirName);
-    String buildDir = null;
 
+    String buildDir = null;
     for (File entry : entries) {
       if (entry.toString().endsWith(gradleBuildDirName)
           || entry.toString().endsWith(ideaBuildDirName)
@@ -118,15 +112,14 @@ public class ClassAnalysisRule implements TestRule {
         break;
       }
     }
-
     assertThat(buildDir).isNotNull();
-    System.out.println("ClassAnalysisRule is loading class files from " + buildDir);
+    System.out.println(getClass().getSimpleName() + " is loading class files from " + buildDir);
 
     long start = System.currentTimeMillis();
     loadClassesFromBuild(new File(buildDir));
     long finish = System.currentTimeMillis();
 
-    System.out.println("done loading " + this.classes.size() + " classes.  elapsed time = "
+    System.out.println("done loading " + classes.size() + " classes.  elapsed time = "
         + (finish - start) / 1000 + " seconds");
   }
 
@@ -136,7 +129,6 @@ public class ClassAnalysisRule implements TestRule {
 
   private void loadClassesFromBuild(File buildDir) {
     Map<String, CompiledClass> newClasses = CompiledClassUtils.parseClassFilesInDir(buildDir);
-    this.classes.putAll(newClasses);
+    classes.putAll(newClasses);
   }
-
 }

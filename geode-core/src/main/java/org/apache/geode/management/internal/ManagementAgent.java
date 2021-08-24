@@ -58,6 +58,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.inet.LocalHostUtil;
+import org.apache.geode.internal.io.FilterConfiguration;
 import org.apache.geode.internal.net.SSLConfig;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
@@ -109,7 +110,7 @@ public class ManagementAgent {
   private int port;
   private RemoteStreamExporter remoteStreamExporter = null;
 
-  private final JmxRmiSerialFilter serialFilter;
+  private final FilterConfiguration serialFilter;
 
   /**
    * This system property is set to true when the embedded HTTP server is started so that the
@@ -122,7 +123,7 @@ public class ManagementAgent {
   private static final String PULSE_USESSL_LOCATOR = "pulse.useSSL.locator";
 
   public ManagementAgent(DistributionConfig config, InternalCache cache,
-      JmxRmiSerialFilter serialFilter) {
+      FilterConfiguration serialFilter) {
     this.config = config;
     this.cache = cache;
     this.securityService = cache.getSecurityService();
@@ -135,7 +136,7 @@ public class ManagementAgent {
 
 
   public synchronized void startAgent() {
-    serialFilter.configureSerialFilter();
+    serialFilter.configure();
     loadWebApplications();
 
     if (!this.running && this.config.getJmxManagerPort() != 0) {

@@ -69,6 +69,7 @@ import org.apache.geode.internal.DistributionLocator;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.inet.LocalHostUtil;
+import org.apache.geode.internal.io.GeodePropertiesFilterConfiguration;
 import org.apache.geode.internal.lang.ObjectUtils;
 import org.apache.geode.internal.net.SSLConfig;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
@@ -709,10 +710,12 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * @see org.apache.geode.distributed.AbstractLauncher.Status#ONLINE
    * @see org.apache.geode.distributed.AbstractLauncher.Status#STARTING
    */
-  @SuppressWarnings("deprecation")
   public LocatorState start() {
     if (isStartable()) {
       INSTANCE.compareAndSet(null, this);
+
+      new GeodePropertiesFilterConfiguration(getDistributedSystemProperties())
+          .configureJdkSerialFilter();
 
       try {
         this.process =

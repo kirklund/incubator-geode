@@ -14,30 +14,24 @@
  */
 package org.apache.geode.cache.wan.internal;
 
+import static org.apache.geode.internal.io.SanctionedSerializablesLoader.loadClassNames;
+
 import java.io.IOException;
-import java.net.URL;
 import java.util.Collection;
 
 import org.apache.geode.distributed.internal.DistributedSystemService;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.classloader.ClassPathLoader;
 
 public class WANDistributedSystemService implements DistributedSystemService {
-  @Override
-  public void init(InternalDistributedSystem internalDistributedSystem) {
 
-  }
+  private static final String SERIALIZABLES_FILE_NAME = "sanctioned-geode-wan-serializables.txt";
 
   @Override
-  public Class getInterface() {
+  public Class<?> getInterface() {
     return getClass();
   }
 
   @Override
-  public Collection<String> getSerializationAcceptlist() throws IOException {
-    URL sanctionedSerializables = ClassPathLoader.getLatest().getResource(getClass(),
-        "sanctioned-geode-wan-serializables.txt");
-    return InternalDataSerializer.loadClassNames(sanctionedSerializables);
+  public Collection<String> getSerializationAcceptList() throws IOException {
+    return loadClassNames(getClass(), SERIALIZABLES_FILE_NAME);
   }
 }
