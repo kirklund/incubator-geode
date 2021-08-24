@@ -12,15 +12,26 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal;
+package org.apache.geode.test.dunit.internal;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.io.FilterConfiguration;
+import static org.apache.geode.internal.io.SanctionedSerializablesLoader.loadClassNames;
 
-@FunctionalInterface
-interface ManagementAgentFactory {
+import java.io.IOException;
+import java.util.Collection;
 
-  ManagementAgent create(DistributionConfig config, InternalCache cache,
-      FilterConfiguration serialFilter);
+import org.apache.geode.distributed.internal.DistributedSystemService;
+
+public class DUnitDistributedSystemService implements DistributedSystemService {
+
+  private static final String SERIALIZABLES_FILE_NAME = "sanctioned-geode-dunit-serializables.txt";
+
+  @Override
+  public Class<?> getInterface() {
+    return getClass();
+  }
+
+  @Override
+  public Collection<String> getSerializationAcceptList() throws IOException {
+    return loadClassNames(getClass(), SERIALIZABLES_FILE_NAME);
+  }
 }

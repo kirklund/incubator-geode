@@ -12,10 +12,22 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal;
+package org.apache.geode.internal.io;
 
-@FunctionalInterface
-public interface JmxRmiSerialFilter {
+class DoNothing implements Operation {
 
-  void configureSerialFilter();
+  private static final DoNothing CANONICAL = new DoNothing();
+
+  static DoNothing doNothing() {
+    return CANONICAL;
+  }
+
+  private DoNothing() {
+    // do not instantiate
+  }
+
+  @Override
+  public void execute() {
+    // do nothing;
+  }
 }

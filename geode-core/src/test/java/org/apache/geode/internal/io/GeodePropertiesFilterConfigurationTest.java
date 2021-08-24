@@ -12,15 +12,26 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal;
+package org.apache.geode.internal.io;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.io.FilterConfiguration;
+import static org.apache.geode.internal.io.SerialFilterAssertions.assertThatSerialFilterIsNotNull;
+import static org.apache.geode.internal.io.SerialFilterAssertions.assertThatSerialFilterIsNull;
 
-@FunctionalInterface
-interface ManagementAgentFactory {
+import java.lang.reflect.InvocationTargetException;
+import java.util.Properties;
 
-  ManagementAgent create(DistributionConfig config, InternalCache cache,
-      FilterConfiguration serialFilter);
+import org.junit.Test;
+
+public class GeodePropertiesFilterConfigurationTest {
+
+  @Test
+  public void configuresJdkSerialFilter() throws InvocationTargetException, IllegalAccessException {
+    assertThatSerialFilterIsNull();
+
+    GeodePropertiesFilterConfiguration configuration =
+        new GeodePropertiesFilterConfiguration(new Properties());
+    configuration.configureJdkSerialFilter();
+
+    assertThatSerialFilterIsNotNull();
+  }
 }
