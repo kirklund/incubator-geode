@@ -18,6 +18,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.lang.reflect.InvocationTargetException;
 
+import org.apache.geode.internal.serialization.filter.ObjectInputFilterApi;
+import org.apache.geode.internal.serialization.filter.ObjectInputFilterApiFactory;
+
 public class SerialFilterAssertions {
 
   private SerialFilterAssertions() {

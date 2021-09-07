@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal.io;
 
-import static org.apache.geode.internal.io.SerialFilterAssertions.assertThatSerialFilterIsNotNull;
-import static org.apache.geode.internal.io.SerialFilterAssertions.assertThatSerialFilterIsNull;
+import static org.apache.geode.internal.serialization.filter.SerialFilterAssertions.assertThatSerialFilterIsNotNull;
+import static org.apache.geode.internal.serialization.filter.SerialFilterAssertions.assertThatSerialFilterIsNull;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Properties;

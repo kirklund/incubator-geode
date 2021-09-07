@@ -38,6 +38,7 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.serialization.filter.OpenMBeanFilterPattern;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.junit.rules.CloseableReference;
