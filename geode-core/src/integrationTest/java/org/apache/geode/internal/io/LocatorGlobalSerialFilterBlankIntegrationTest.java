@@ -31,6 +31,8 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.LocatorLauncher;
+import org.apache.geode.internal.serialization.filter.ObjectInputFilterApi;
+import org.apache.geode.internal.serialization.filter.ObjectInputFilterApiFactory;
 import org.apache.geode.test.junit.rules.CloseableReference;
 
 public class LocatorGlobalSerialFilterBlankIntegrationTest {

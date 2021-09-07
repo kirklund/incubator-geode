@@ -14,16 +14,14 @@
  */
 package org.apache.geode.internal;
 
-import static org.apache.geode.internal.serialization.SanctionedSerializables.loadSanctionedSerializablesServices;
+import static org.apache.geode.internal.serialization.filter.SanctionedSerializables.loadSanctionedSerializablesServices;
 
-import java.io.BufferedReader;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.NotSerializableException;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
@@ -42,7 +40,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.net.URL;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -107,11 +104,6 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.OldClientSupportService;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.classloader.ClassPathLoader;
-import org.apache.geode.internal.io.EmptyInputStreamFilter;
-import org.apache.geode.internal.io.InputStreamFilter;
-import org.apache.geode.internal.io.SanctionedSerializables;
-import org.apache.geode.internal.io.SanctionedSerializablesFilterPattern;
-import org.apache.geode.internal.io.SerializationFilterFactory;
 import org.apache.geode.internal.lang.ClassUtils;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.BasicSerializable;
@@ -124,11 +116,16 @@ import org.apache.geode.internal.serialization.DscodeHelper;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.ObjectDeserializer;
 import org.apache.geode.internal.serialization.ObjectSerializer;
-import org.apache.geode.internal.serialization.SanctionedSerializablesService;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.SerializationVersions;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.VersionedDataStream;
+import org.apache.geode.internal.serialization.filter.EmptyInputStreamFilter;
+import org.apache.geode.internal.serialization.filter.InputStreamFilter;
+import org.apache.geode.internal.serialization.filter.SanctionedSerializables;
+import org.apache.geode.internal.serialization.filter.SanctionedSerializablesFilterPattern;
+import org.apache.geode.internal.serialization.filter.SanctionedSerializablesService;
+import org.apache.geode.internal.serialization.filter.SerializationFilterFactory;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.NonPortableClassException;
@@ -370,30 +367,6 @@ public abstract class InternalDataSerializer extends DataSerializer {
   @VisibleForTesting
   public static InputStreamFilter getSerializationFilter() {
     return serializationFilter;
-  }
-
-  /**
-   * {@link DistributedSystemService}s that need to acceptlist Serializable objects can use this to
-   * read them from a file and then return them via
-   * {@link DistributedSystemService#getSerializationAcceptList}
-   */
-  public static Collection<String> loadClassNames(URL sanctionedSerializables) throws IOException {
-    ArrayList<String> result = new ArrayList<>(1000);
-    try (InputStream inputStream = sanctionedSerializables.openStream();
-        InputStreamReader reader = new InputStreamReader(inputStream);
-        BufferedReader in = new BufferedReader(reader)) {
-      String line;
-      while ((line = in.readLine()) != null) {
-        line = line.trim();
-        if (!(line.startsWith("#") || line.startsWith("//"))) {
-          line = line.replaceAll("/", ".");
-          result.add(line.substring(0, line.indexOf(',')));
-        }
-      }
-    }
-    // logger.info("loaded {} class names from {}", result.size(), sanctionedSerializables);
-    return result;
-
   }
 
   private static SERIALIZATION_VERSION calculateSerializationVersion() {

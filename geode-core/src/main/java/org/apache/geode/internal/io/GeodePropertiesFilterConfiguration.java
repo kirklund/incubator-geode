@@ -30,28 +30,32 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.distributed.internal.DistributedSystemService;
+import org.apache.geode.internal.serialization.filter.GlobalSerialFilterFactory;
+import org.apache.geode.internal.serialization.filter.ReflectionGlobalSerialFilter;
+import org.apache.geode.internal.serialization.filter.SanctionedSerializables;
+import org.apache.geode.internal.serialization.filter.SanctionedSerializablesFilterPattern;
+import org.apache.geode.internal.serialization.filter.SanctionedSerializablesService;
 
 public class GeodePropertiesFilterConfiguration {
 
   private final SerializableObjectConfig config;
-  private final Set<DistributedSystemService> services;
+  private final Set<SanctionedSerializablesService> services;
   private final ReflectionGlobalSerialFilter filter;
 
-  private static Set<DistributedSystemService> loadDistributedSystemServices() {
-    return stream(ServiceLoader.load(DistributedSystemService.class).spliterator(), false)
+  private static Set<SanctionedSerializablesService> loadSanctionedSerializablesService() {
+    return stream(ServiceLoader.load(SanctionedSerializablesService.class).spliterator(), false)
         .collect(Collectors.toSet());
   }
 
   public GeodePropertiesFilterConfiguration(Properties configProperties) {
     this(new SerializableObjectConfig(configProperties),
-        loadDistributedSystemServices(),
+        loadSanctionedSerializablesService(),
         new ReflectionGlobalSerialFilter());
   }
 
   @VisibleForTesting
   GeodePropertiesFilterConfiguration(SerializableObjectConfig config,
-      Set<DistributedSystemService> services, ReflectionGlobalSerialFilter filter) {
+      Set<SanctionedSerializablesService> services, ReflectionGlobalSerialFilter filter) {
     this.config = config;
     this.services = unmodifiableSet(services);
     this.filter = filter;

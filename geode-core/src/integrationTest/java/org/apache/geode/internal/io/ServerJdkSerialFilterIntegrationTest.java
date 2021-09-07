@@ -37,6 +37,7 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.ServerLauncher;
+import org.apache.geode.internal.serialization.filter.SanctionedSerializablesFilterPattern;
 import org.apache.geode.test.junit.rules.CloseableReference;
 
 public class ServerJdkSerialFilterIntegrationTest {

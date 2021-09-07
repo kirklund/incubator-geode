@@ -22,7 +22,7 @@ import java.util.Collection;
 
 import org.junit.Test;
 
-import org.apache.geode.internal.serialization.SanctionedSerializablesService;
+import org.apache.geode.internal.serialization.filter.SanctionedSerializablesService;
 
 public class MemcachedSanctionedSerializablesServiceIntegrationTest {
 

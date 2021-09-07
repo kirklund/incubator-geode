@@ -38,6 +38,8 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.LocatorLauncher;
+import org.apache.geode.internal.serialization.filter.ObjectInputFilterApi;
+import org.apache.geode.internal.serialization.filter.ObjectInputFilterApiFactory;
 import org.apache.geode.test.junit.rules.CloseableReference;
 
 public class LocatorGlobalSerialFilterPropertyExistsIntegrationTest {
