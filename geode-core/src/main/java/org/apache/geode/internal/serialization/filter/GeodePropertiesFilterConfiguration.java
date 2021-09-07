@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.io;
+package org.apache.geode.internal.serialization.filter;
 
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.requireNonNull;
@@ -30,11 +30,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.internal.serialization.filter.GlobalSerialFilterFactory;
-import org.apache.geode.internal.serialization.filter.ReflectionGlobalSerialFilter;
-import org.apache.geode.internal.serialization.filter.SanctionedSerializables;
-import org.apache.geode.internal.serialization.filter.SanctionedSerializablesFilterPattern;
-import org.apache.geode.internal.serialization.filter.SanctionedSerializablesService;
 
 public class GeodePropertiesFilterConfiguration {
 
@@ -42,7 +37,8 @@ public class GeodePropertiesFilterConfiguration {
   private final Set<SanctionedSerializablesService> services;
   private final ReflectionGlobalSerialFilter filter;
 
-  private static Set<SanctionedSerializablesService> loadSanctionedSerializablesService() {
+  @VisibleForTesting
+  static Set<SanctionedSerializablesService> loadSanctionedSerializablesService() {
     return stream(ServiceLoader.load(SanctionedSerializablesService.class).spliterator(), false)
         .collect(Collectors.toSet());
   }

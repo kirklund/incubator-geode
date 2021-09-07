@@ -23,6 +23,8 @@ import java.util.Properties;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.internal.serialization.filter.GeodePropertiesFilterConfiguration;
+
 /**
  * Global serial filter can only be set once within a JVM.
  */

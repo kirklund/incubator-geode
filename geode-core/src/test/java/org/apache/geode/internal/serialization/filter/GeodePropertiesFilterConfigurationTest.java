@@ -12,15 +12,20 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.io;
+package org.apache.geode.internal.serialization.filter;
 
+import static org.apache.geode.internal.serialization.filter.GeodePropertiesFilterConfiguration.loadSanctionedSerializablesService;
 import static org.apache.geode.internal.serialization.filter.SerialFilterAssertions.assertThatSerialFilterIsNotNull;
 import static org.apache.geode.internal.serialization.filter.SerialFilterAssertions.assertThatSerialFilterIsNull;
+import static org.mockito.Mockito.mock;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Properties;
+import java.util.Set;
 
 import org.junit.Test;
+
+import org.apache.geode.internal.serialization.filter.GeodePropertiesFilterConfiguration.SerializableObjectConfig;
 
 public class GeodePropertiesFilterConfigurationTest {
 
@@ -28,8 +33,14 @@ public class GeodePropertiesFilterConfigurationTest {
   public void configuresJdkSerialFilter() throws InvocationTargetException, IllegalAccessException {
     assertThatSerialFilterIsNull();
 
+    SerializableObjectConfig config = new SerializableObjectConfig(new Properties());
+    Set<SanctionedSerializablesService> services = loadSanctionedSerializablesService();
+    ReflectionGlobalSerialFilter filter = new ReflectionGlobalSerialFilter()
+        .globalSerialFilter(mock(GlobalSerialFilter.class));
+
     GeodePropertiesFilterConfiguration configuration =
-        new GeodePropertiesFilterConfiguration(new Properties());
+        new GeodePropertiesFilterConfiguration(config, services, filter);
+
     configuration.configureJdkSerialFilter();
 
     assertThatSerialFilterIsNotNull();
