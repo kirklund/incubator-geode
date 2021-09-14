@@ -69,6 +69,13 @@ dependencies {
   // Dependencies should be explicit in the relevant build.gradle files to keep our modules
   //  as decoupled as possible.
 
+  acceptanceTestImplementation(sourceSets.main.output)
+  integrationTestImplementation(sourceSets.main.output)
+  distributedTestImplementation(sourceSets.main.output)
+  performanceTestImplementation(sourceSets.main.output)
+  uiTestImplementation(sourceSets.main.output)
+  upgradeTestImplementation(sourceSets.main.output)
+
   // This 'apt' configuration to be removed by GEODE-5606.
   apt files("${rootProject.projectDir}/buildSrc/build/libs/buildSrc.jar")
   apt('junit:junit:' + DependencyConstraints.get('junit.version')) {
