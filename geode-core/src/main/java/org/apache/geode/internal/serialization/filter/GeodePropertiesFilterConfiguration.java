@@ -33,6 +33,7 @@ import org.apache.geode.annotations.VisibleForTesting;
 
 public class GeodePropertiesFilterConfiguration {
 
+  private final GlobalSerialFilterFactory factory;
   private final SerializableObjectConfig config;
   private final Set<SanctionedSerializablesService> services;
   private final ReflectionGlobalSerialFilter filter;
@@ -44,14 +45,17 @@ public class GeodePropertiesFilterConfiguration {
   }
 
   public GeodePropertiesFilterConfiguration(Properties configProperties) {
-    this(new SerializableObjectConfig(configProperties),
+    this(new GlobalSerialFilterFactory(new ReflectionObjectInputFilterApiFactory()),
+        new SerializableObjectConfig(configProperties),
         loadSanctionedSerializablesService(),
         new ReflectionGlobalSerialFilter());
   }
 
   @VisibleForTesting
-  GeodePropertiesFilterConfiguration(SerializableObjectConfig config,
-      Set<SanctionedSerializablesService> services, ReflectionGlobalSerialFilter filter) {
+  GeodePropertiesFilterConfiguration(GlobalSerialFilterFactory factory,
+      SerializableObjectConfig config, Set<SanctionedSerializablesService> services,
+      ReflectionGlobalSerialFilter filter) {
+    this.factory = factory;
     this.config = config;
     this.services = unmodifiableSet(services);
     this.filter = filter;
@@ -59,7 +63,7 @@ public class GeodePropertiesFilterConfiguration {
 
   public void configureJdkSerialFilter() {
     filter
-        .globalSerialFilter(new GlobalSerialFilterFactory().create(
+        .globalSerialFilter(factory.create(
             new SanctionedSerializablesFilterPattern()
                 .append(config.getFilterPatternIfEnabled())
                 .pattern(),

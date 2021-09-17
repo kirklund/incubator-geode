@@ -15,6 +15,7 @@
 package org.apache.geode.internal.serialization.filter;
 
 import static java.util.Objects.nonNull;
+import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCause;
 import static org.apache.geode.internal.serialization.filter.DoNothing.doNothing;
 
@@ -36,8 +37,12 @@ public class ReflectionGlobalSerialFilter implements FilterConfiguration {
 
   @Override
   public void configure() {
+    requireNonNull(globalSerialFilter, "globalSerialFilter is required");
+    requireNonNull(condition, "condition is required");
+
     Operation operation = condition.get()
         ? new SetGlobalSerialFilter(globalSerialFilter, infoLogger) : doNothing();
+
     operation.execute();
   }
 
@@ -59,8 +64,6 @@ public class ReflectionGlobalSerialFilter implements FilterConfiguration {
 
   private static class SetGlobalSerialFilter implements Operation {
 
-    private static final String ALREADY_SET_MESSAGE = "Serial filter can only be set once";
-
     private final GlobalSerialFilter globalSerialFilter;
     private final Consumer<String> infoLogger;
 
@@ -75,7 +78,8 @@ public class ReflectionGlobalSerialFilter implements FilterConfiguration {
       try {
         globalSerialFilter.setFilter();
       } catch (UnsupportedOperationException e) {
-        if (hasRootCauseWithMessage(e, IllegalStateException.class, ALREADY_SET_MESSAGE)) {
+        if (hasRootCauseWithMessage(e, IllegalStateException.class,
+            "Serial filter can only be set once")) {
           infoLogger.accept("Global serial filter is already configured.");
         }
       }

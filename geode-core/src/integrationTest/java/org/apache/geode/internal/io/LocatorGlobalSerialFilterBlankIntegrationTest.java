@@ -32,17 +32,18 @@ import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.internal.serialization.filter.ObjectInputFilterApi;
-import org.apache.geode.internal.serialization.filter.ObjectInputFilterApiFactory;
+import org.apache.geode.internal.serialization.filter.ReflectionObjectInputFilterApiFactory;
 import org.apache.geode.test.junit.rules.CloseableReference;
 
 public class LocatorGlobalSerialFilterBlankIntegrationTest {
 
   private static final String NAME = "locator";
+  private static final ObjectInputFilterApi OBJECT_INPUT_FILTER_API =
+      new ReflectionObjectInputFilterApiFactory().createObjectInputFilterApi();
 
   private File workingDirectory;
   private int locatorPort;
   private int jmxPort;
-  private ObjectInputFilterApi objectInputFilterApi;
 
   @Rule
   public CloseableReference<LocatorLauncher> locator = new CloseableReference<>();
@@ -52,7 +53,6 @@ public class LocatorGlobalSerialFilterBlankIntegrationTest {
   @Before
   public void setUp() throws IOException {
     workingDirectory = temporaryFolder.newFolder(NAME);
-    objectInputFilterApi = new ObjectInputFilterApiFactory().createObjectInputFilterApi();
     int[] ports = getRandomAvailableTCPPorts(2);
     jmxPort = ports[0];
     locatorPort = ports[1];
@@ -61,8 +61,8 @@ public class LocatorGlobalSerialFilterBlankIntegrationTest {
   @Test
   public void doesNotSetSerialFilterWhenSerialFilterIsSetToBlank()
       throws InvocationTargetException, IllegalAccessException {
-    Object existingJdkSerialFilter = objectInputFilterApi.createFilter(" ");
-    objectInputFilterApi.setSerialFilter(existingJdkSerialFilter);
+    Object existingJdkSerialFilter = OBJECT_INPUT_FILTER_API.createFilter(" ");
+    OBJECT_INPUT_FILTER_API.setSerialFilter(existingJdkSerialFilter);
 
     locator.set(new LocatorLauncher.Builder()
         .setMemberName(NAME)

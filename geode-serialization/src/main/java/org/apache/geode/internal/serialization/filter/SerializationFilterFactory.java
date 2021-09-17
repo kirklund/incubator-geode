@@ -16,7 +16,6 @@ package org.apache.geode.internal.serialization.filter;
 
 import java.util.Set;
 
-
 public class SerializationFilterFactory {
 
   public InputStreamFilter create(String pattern,
@@ -27,14 +26,8 @@ public class SerializationFilterFactory {
   }
 
   public InputStreamFilter create(String pattern, Set<String> sanctionedClasses) {
-    ObjectInputFilterApi api = new ObjectInputFilterApiFactory().createObjectInputFilterApi();
+    ObjectInputFilterApi api =
+        new ReflectionObjectInputFilterApiFactory().createObjectInputFilterApi();
     return new DelegatingInputStreamFilter(api, pattern, sanctionedClasses);
-    // if (isJavaVersionAtLeast(JAVA_9)) {
-    // return new Java9InputStreamFilter(pattern, sanctionedClasses);
-    // }
-    // if (isJavaVersionAtLeast(JavaVersion.JAVA_1_8)) {
-    // return new Java8InputStreamFilter(pattern, sanctionedClasses);
-    // }
-    // throw new UnsupportedOperationException("ObjectInputFilter is not supported in JRE version");
   }
 }

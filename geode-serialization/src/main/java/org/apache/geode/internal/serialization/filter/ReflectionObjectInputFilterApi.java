@@ -176,6 +176,14 @@ class ReflectionObjectInputFilterApi implements ObjectInputFilterApi {
         invocationHandler);
   }
 
+  @Override
+  public String toString() {
+    final StringBuilder sb = new StringBuilder("ReflectionObjectInputFilterApi{");
+    sb.append("apiPackage='").append(apiPackage).append('\'');
+    sb.append('}');
+    return sb.toString();
+  }
+
   @VisibleForTesting
   Class<?> getObjectInputFilterClass() {
     return ObjectInputFilter;

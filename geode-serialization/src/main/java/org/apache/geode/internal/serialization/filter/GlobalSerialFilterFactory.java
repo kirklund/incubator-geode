@@ -14,20 +14,17 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.Collection;
 
-import org.apache.geode.annotations.VisibleForTesting;
-
-public class GlobalSerialFilterFactory {
+class GlobalSerialFilterFactory {
 
   private final ObjectInputFilterApiFactory apiFactory;
 
-  public GlobalSerialFilterFactory() {
-    this(new ObjectInputFilterApiFactory());
-  }
-
-  @VisibleForTesting
   GlobalSerialFilterFactory(ObjectInputFilterApiFactory apiFactory) {
+    requireNonNull(apiFactory, "apiFactory is required");
+
     this.apiFactory = apiFactory;
   }
 
@@ -39,6 +36,8 @@ public class GlobalSerialFilterFactory {
 
   public GlobalSerialFilter create(String pattern, Collection<String> sanctionedClasses) {
     ObjectInputFilterApi api = apiFactory.createObjectInputFilterApi();
+    requireNonNull(api, "apiFactory must create a non-null filter api");
+
     return new DelegatingGlobalSerialFilter(api, pattern, sanctionedClasses);
   }
 }

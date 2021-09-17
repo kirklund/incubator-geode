@@ -15,11 +15,10 @@
 package org.apache.geode.internal.serialization.filter;
 
 import static org.apache.geode.internal.serialization.filter.GeodePropertiesFilterConfiguration.loadSanctionedSerializablesService;
-import static org.apache.geode.internal.serialization.filter.SerialFilterAssertions.assertThatSerialFilterIsNotNull;
-import static org.apache.geode.internal.serialization.filter.SerialFilterAssertions.assertThatSerialFilterIsNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Properties;
 import java.util.Set;
 
@@ -30,19 +29,20 @@ import org.apache.geode.internal.serialization.filter.GeodePropertiesFilterConfi
 public class GeodePropertiesFilterConfigurationTest {
 
   @Test
-  public void configuresJdkSerialFilter() throws InvocationTargetException, IllegalAccessException {
-    assertThatSerialFilterIsNull();
-
+  public void configuresJdkSerialFilter() {
+    ObjectInputFilterApiFactory apiFactory = mock(ObjectInputFilterApiFactory.class);
+    when(apiFactory.createObjectInputFilterApi()).thenReturn(mock(ObjectInputFilterApi.class));
+    GlobalSerialFilterFactory factory = new GlobalSerialFilterFactory(apiFactory);
     SerializableObjectConfig config = new SerializableObjectConfig(new Properties());
     Set<SanctionedSerializablesService> services = loadSanctionedSerializablesService();
     ReflectionGlobalSerialFilter filter = new ReflectionGlobalSerialFilter()
         .globalSerialFilter(mock(GlobalSerialFilter.class));
 
     GeodePropertiesFilterConfiguration configuration =
-        new GeodePropertiesFilterConfiguration(config, services, filter);
+        new GeodePropertiesFilterConfiguration(factory, config, services, filter);
 
     configuration.configureJdkSerialFilter();
 
-    assertThatSerialFilterIsNotNull();
+    verify(apiFactory).createObjectInputFilterApi();
   }
 }

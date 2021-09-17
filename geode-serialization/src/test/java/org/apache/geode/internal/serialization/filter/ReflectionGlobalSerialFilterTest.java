@@ -14,12 +14,102 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+
+import java.util.function.Consumer;
+
 import org.junit.Test;
 
 public class ReflectionGlobalSerialFilterTest {
 
   @Test
-  public void foo() {
+  public void requiresGlobalSerialFilter() {
+    ReflectionGlobalSerialFilter reflectionGlobalSerialFilter = new ReflectionGlobalSerialFilter()
+        .condition(() -> true);
 
+    Throwable thrown = catchThrowable(() -> {
+      reflectionGlobalSerialFilter.configure();
+    });
+
+    assertThat(thrown)
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("globalSerialFilter is required");
+  }
+
+  @Test
+  public void requiresCondition() {
+    ReflectionGlobalSerialFilter reflectionGlobalSerialFilter = new ReflectionGlobalSerialFilter()
+        .globalSerialFilter(mock(GlobalSerialFilter.class));
+
+    Throwable thrown = catchThrowable(() -> {
+      reflectionGlobalSerialFilter.configure();
+    });
+
+    assertThat(thrown)
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("condition is required");
+  }
+
+  @Test
+  public void configureSetsFilterIfConditionIsTrue() {
+    GlobalSerialFilter globalSerialFilter = mock(GlobalSerialFilter.class);
+    ReflectionGlobalSerialFilter reflectionGlobalSerialFilter = new ReflectionGlobalSerialFilter()
+        .globalSerialFilter(globalSerialFilter)
+        .condition(() -> true);
+
+    reflectionGlobalSerialFilter.configure();
+
+    verify(globalSerialFilter).setFilter();
+  }
+
+  @Test
+  public void doesNothingIfConditionIsFalse() {
+    GlobalSerialFilter globalSerialFilter = mock(GlobalSerialFilter.class);
+    ReflectionGlobalSerialFilter reflectionGlobalSerialFilter = new ReflectionGlobalSerialFilter()
+        .globalSerialFilter(globalSerialFilter)
+        .condition(() -> false);
+
+    reflectionGlobalSerialFilter.configure();
+
+    verifyNoInteractions(globalSerialFilter);
+  }
+
+  @Test
+  public void logsAlreadyConfiguredIfUnsupportedOperationExceptionWithAlreadySetIsThrown() {
+    GlobalSerialFilter globalSerialFilter = mock(GlobalSerialFilter.class);
+    Consumer<String> infoLogger = uncheckedCast(mock(Consumer.class));
+    doThrow(new UnsupportedOperationException(
+        new IllegalStateException("Serial filter can only be set once")))
+            .when(globalSerialFilter).setFilter();
+    ReflectionGlobalSerialFilter reflectionGlobalSerialFilter = new ReflectionGlobalSerialFilter()
+        .globalSerialFilter(globalSerialFilter)
+        .condition(() -> true)
+        .infoLogger(infoLogger);
+
+    reflectionGlobalSerialFilter.configure();
+
+    verify(infoLogger).accept("Global serial filter is already configured.");
+  }
+
+  @Test
+  public void doesNothingIfUnsupportedOperationExceptionWithoutAlreadySetIsThrown() {
+    GlobalSerialFilter globalSerialFilter = mock(GlobalSerialFilter.class);
+    Consumer<String> infoLogger = uncheckedCast(mock(Consumer.class));
+    doThrow(new UnsupportedOperationException("testing with no root cause"))
+        .when(globalSerialFilter).setFilter();
+    ReflectionGlobalSerialFilter reflectionGlobalSerialFilter = new ReflectionGlobalSerialFilter()
+        .globalSerialFilter(globalSerialFilter)
+        .condition(() -> true)
+        .infoLogger(infoLogger);
+
+    reflectionGlobalSerialFilter.configure();
+
+    verifyNoInteractions(infoLogger);
   }
 }

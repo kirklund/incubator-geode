@@ -46,4 +46,13 @@ class DelegatingGlobalSerialFilter implements GlobalSerialFilter {
           e);
     }
   }
+
+  @Override
+  public String toString() {
+    final StringBuilder sb = new StringBuilder("DelegatingGlobalSerialFilter{");
+    sb.append("api=").append(api);
+    sb.append(", pattern='").append(pattern).append('\'');
+    sb.append('}');
+    return sb.toString();
+  }
 }

@@ -20,14 +20,16 @@ import java.lang.reflect.InvocationTargetException;
 
 public class SerialFilterAssertions {
 
+  private static final ObjectInputFilterApi API = new ReflectionObjectInputFilterApiFactory()
+      .createObjectInputFilterApi();
+
   private SerialFilterAssertions() {
     // do not instantiate
   }
 
   public static void assertThatSerialFilterIsNull()
       throws InvocationTargetException, IllegalAccessException {
-    ObjectInputFilterApi api = new ObjectInputFilterApiFactory().createObjectInputFilterApi();
-    boolean exists = api.getSerialFilter() != null;
+    boolean exists = API.getSerialFilter() != null;
     assertThat(exists)
         .as("ObjectInputFilter$Config.getSerialFilter() is null")
         .isFalse();
@@ -35,8 +37,7 @@ public class SerialFilterAssertions {
 
   public static void assertThatSerialFilterIsNotNull()
       throws InvocationTargetException, IllegalAccessException {
-    ObjectInputFilterApi api = new ObjectInputFilterApiFactory().createObjectInputFilterApi();
-    boolean exists = api.getSerialFilter() != null;
+    boolean exists = API.getSerialFilter() != null;
     assertThat(exists)
         .as("ObjectInputFilter$Config.getSerialFilter() is not null")
         .isTrue();
@@ -44,8 +45,7 @@ public class SerialFilterAssertions {
 
   public static void assertThatSerialFilterIsSameAs(Object objectInputFilter)
       throws InvocationTargetException, IllegalAccessException {
-    ObjectInputFilterApi api = new ObjectInputFilterApiFactory().createObjectInputFilterApi();
-    Object currentFilter = api.getSerialFilter();
+    Object currentFilter = API.getSerialFilter();
     boolean sameIdentity = currentFilter == objectInputFilter;
     assertThat(sameIdentity)
         .as("ObjectInputFilter$Config.getSerialFilter() is same as parameter")
@@ -54,8 +54,7 @@ public class SerialFilterAssertions {
 
   public static void assertThatSerialFilterIsNotSameAs(Object objectInputFilter)
       throws InvocationTargetException, IllegalAccessException {
-    ObjectInputFilterApi api = new ObjectInputFilterApiFactory().createObjectInputFilterApi();
-    Object currentFilter = api.getSerialFilter();
+    Object currentFilter = API.getSerialFilter();
     boolean sameIdentity = currentFilter == objectInputFilter;
     assertThat(sameIdentity)
         .as("ObjectInputFilter$Config.getSerialFilter() is same as parameter")

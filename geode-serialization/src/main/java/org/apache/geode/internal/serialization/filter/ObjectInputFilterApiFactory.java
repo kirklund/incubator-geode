@@ -14,29 +14,11 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
-import static org.apache.commons.lang3.JavaVersion.JAVA_1_8;
-import static org.apache.commons.lang3.JavaVersion.JAVA_9;
-import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
-
 import org.apache.geode.annotations.VisibleForTesting;
 
 @VisibleForTesting
-public class ObjectInputFilterApiFactory {
+@FunctionalInterface
+public interface ObjectInputFilterApiFactory {
 
-  private static final String UNSUPPORTED_MESSAGE =
-      "ObjectInputFilter is not supported in JRE version";
-
-  public ObjectInputFilterApi createObjectInputFilterApi() {
-    try {
-      if (isJavaVersionAtLeast(JAVA_9)) {
-        return new ReflectionObjectInputFilterApi("java.io.");
-      }
-      if (isJavaVersionAtLeast(JAVA_1_8)) {
-        return new ReflectionObjectInputFilterApi("sun.misc.");
-      }
-    } catch (ClassNotFoundException | NoSuchMethodException e) {
-      throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE, e);
-    }
-    throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
-  }
+  ObjectInputFilterApi createObjectInputFilterApi();
 }

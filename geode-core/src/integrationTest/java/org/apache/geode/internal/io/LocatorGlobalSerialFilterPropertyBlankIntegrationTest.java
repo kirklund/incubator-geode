@@ -38,8 +38,6 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.LocatorLauncher;
-import org.apache.geode.internal.serialization.filter.ObjectInputFilterApi;
-import org.apache.geode.internal.serialization.filter.ObjectInputFilterApiFactory;
 import org.apache.geode.test.junit.rules.CloseableReference;
 
 public class LocatorGlobalSerialFilterPropertyBlankIntegrationTest {
@@ -50,7 +48,6 @@ public class LocatorGlobalSerialFilterPropertyBlankIntegrationTest {
   private File workingDirectory;
   private int locatorPort;
   private int jmxPort;
-  private ObjectInputFilterApi objectInputFilterApi;
 
   @Rule
   public CloseableReference<LocatorLauncher> locator = new CloseableReference<>();
@@ -62,7 +59,6 @@ public class LocatorGlobalSerialFilterPropertyBlankIntegrationTest {
   @Before
   public void setUp() throws IOException {
     workingDirectory = temporaryFolder.newFolder(NAME);
-    objectInputFilterApi = new ObjectInputFilterApiFactory().createObjectInputFilterApi();
     int[] ports = getRandomAvailableTCPPorts(2);
     jmxPort = ports[0];
     locatorPort = ports[1];

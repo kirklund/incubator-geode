@@ -39,18 +39,19 @@ import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.internal.serialization.filter.ObjectInputFilterApi;
-import org.apache.geode.internal.serialization.filter.ObjectInputFilterApiFactory;
+import org.apache.geode.internal.serialization.filter.ReflectionObjectInputFilterApiFactory;
 import org.apache.geode.test.junit.rules.CloseableReference;
 
 public class LocatorGlobalSerialFilterPropertyExistsIntegrationTest {
 
   private static final String NAME = "locator";
   private static final String JDK_SERIAL_FILTER_PROPERTY = "jdk.serialFilter";
+  private static final ObjectInputFilterApi OBJECT_INPUT_FILTER_API =
+      new ReflectionObjectInputFilterApiFactory().createObjectInputFilterApi();
 
   private File workingDirectory;
   private int locatorPort;
   private int jmxPort;
-  private ObjectInputFilterApi objectInputFilterApi;
 
   @Rule
   public CloseableReference<LocatorLauncher> locator = new CloseableReference<>();
@@ -62,7 +63,6 @@ public class LocatorGlobalSerialFilterPropertyExistsIntegrationTest {
   @Before
   public void setUp() throws IOException {
     workingDirectory = temporaryFolder.newFolder(NAME);
-    objectInputFilterApi = new ObjectInputFilterApiFactory().createObjectInputFilterApi();
     int[] ports = getRandomAvailableTCPPorts(2);
     jmxPort = ports[0];
     locatorPort = ports[1];
@@ -87,7 +87,7 @@ public class LocatorGlobalSerialFilterPropertyExistsIntegrationTest {
         .get()
         .start();
 
-    assertThat(objectInputFilterApi.getSerialFilter())
+    assertThat(OBJECT_INPUT_FILTER_API.getSerialFilter())
         .as("ObjectInputFilter$Config.getSerialFilter()")
         .isNotNull(); // TODO:KIRK: add forking tests for system property
   }
@@ -112,7 +112,7 @@ public class LocatorGlobalSerialFilterPropertyExistsIntegrationTest {
         .get()
         .start();
 
-    assertThat(objectInputFilterApi.getSerialFilter())
+    assertThat(OBJECT_INPUT_FILTER_API.getSerialFilter())
         .as("ObjectInputFilter$Config.getSerialFilter()")
         .isNull();
   }
