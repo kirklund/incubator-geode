@@ -2,6 +2,7 @@ package org.apache.geode.internal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -10,8 +11,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import org.junit.AfterClass;
-import org.junit.Assume;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -45,7 +45,7 @@ public class InternalDataSerializerSerializationAcceptlistTest {
 
   @Before
   public void setUp() {
-    Assume.assumeTrue("ObjectInputFilter is present in this JVM (post- 8.111)",
+    assumeTrue("ObjectInputFilter is present in this JVM (post- 8.111)",
         hasObjectInputFilter());
     outputStream = new HeapDataOutputStream(Version.CURRENT);
     testSerializable = new TestSerializable();
@@ -57,10 +57,9 @@ public class InternalDataSerializerSerializationAcceptlistTest {
         || ClassUtils.isClassAvailable("java.io.ObjectInputFilter"));
   }
 
-  @AfterClass
-  public static void clearDataSerializerFilter() {
-    InternalDataSerializer.initialize(new DistributionConfigImpl(new Properties()),
-        new ArrayList<>());
+  @After
+  public void clearSerializationFilter() {
+    InternalDataSerializer.clearSerializationFilter();
   }
 
   @Test
