@@ -133,13 +133,10 @@ public class PersistentRecoveryOrderDUnitTest extends CacheTestCase {
 
   @Rule
   public DistributedDiskDirRule diskDirRule = new DistributedDiskDirRule();
-
   @Rule
   public DistributedExecutorServiceRule executorServiceRule = new DistributedExecutorServiceRule();
-
   @Rule
   public SerializableErrorCollector errorCollector = new SerializableErrorCollector();
-
   @Rule
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
