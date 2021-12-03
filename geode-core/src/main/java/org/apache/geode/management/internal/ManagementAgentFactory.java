@@ -16,10 +16,11 @@ package org.apache.geode.management.internal;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.serialization.filter.JmxSerialFilterConfiguration;
 
 @FunctionalInterface
 interface ManagementAgentFactory {
 
   ManagementAgent create(DistributionConfig config, InternalCache cache,
-      JmxRmiSerialFilter serialFilter);
+      JmxSerialFilterConfiguration filterConfiguration);
 }

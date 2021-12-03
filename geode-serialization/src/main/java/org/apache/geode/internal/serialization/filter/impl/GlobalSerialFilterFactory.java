@@ -12,13 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal;
+package org.apache.geode.internal.serialization.filter.impl;
 
-import java.io.ObjectInputStream;
+import java.util.Collection;
 
-public class EmptyInputStreamFilter implements InputStreamFilter {
-  @Override
-  public void setFilterOn(ObjectInputStream ois) {
-    // Do nothing, this is the case where we don't filter.
-  }
+@FunctionalInterface
+public interface GlobalSerialFilterFactory {
+
+  GlobalSerialFilter create(String pattern, Collection<String> sanctionedClasses);
 }

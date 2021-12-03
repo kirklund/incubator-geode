@@ -12,10 +12,18 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal;
+package org.apache.geode.internal.serialization.filter.impl;
 
-@FunctionalInterface
-public interface JmxRmiSerialFilter {
+import org.apache.geode.internal.serialization.filter.JmxSerialFilterConfiguration;
 
-  void configureSerialFilter();
+public class ConditionalJmxSerialFilterConfiguration implements JmxSerialFilterConfiguration {
+
+  @Override
+  public boolean configure() {
+    String filterPattern = new OpenMBeanFilterPattern().pattern();
+
+    return new Java9SystemPropertyConfigurationFactory()
+        .create("jmx.remote.rmi.server.serial.filter.pattern", filterPattern)
+        .configure();
+  }
 }
