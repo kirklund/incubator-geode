@@ -12,12 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.wan;
+package org.apache.geode.cache.wan.internal;
 
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.codeAnalysis.SanctionedSerializablesServiceIntegrationTestBase;
-import org.apache.geode.internal.serialization.SanctionedSerializablesService;
+import org.apache.geode.internal.serialization.filter.SanctionedSerializablesService;
 import org.apache.geode.test.junit.categories.SanctionedSerializablesTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
@@ -34,6 +34,6 @@ public class WANSanctionedSerializablesServiceIntegrationTest
 
   @Override
   protected ServiceResourceExpectation getServiceResourceExpectation() {
-    return ServiceResourceExpectation.EMPTY;
+    return ServiceResourceExpectation.NON_EMPTY;
   }
 }
