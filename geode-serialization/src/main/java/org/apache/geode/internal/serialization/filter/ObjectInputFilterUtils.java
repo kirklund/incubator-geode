@@ -18,12 +18,18 @@ import java.util.function.Function;
 
 import org.apache.geode.internal.lang.utils.ClassUtils;
 
+/**
+ * Utility methods for {@code ObjectInputFilter}.
+ */
 public class ObjectInputFilterUtils {
 
   private ObjectInputFilterUtils() {
     // do not instantiate
   }
 
+  /**
+   * Returns true if this JVM supports {@code ObjectInputFilter}.
+   */
   public static boolean supportsObjectInputFilter() {
     return supportsObjectInputFilter(ClassUtils::isClassAvailable);
   }

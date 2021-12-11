@@ -14,27 +14,28 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.Collection;
+import static java.util.Objects.requireNonNull;
 
 /**
- * Service interface to define a module's sanctioned serializables.
+ * The package containing {@code ObjectInputFilter}. On Java 8, it's {@code sun.misc}. On Java 9 or
+ * greater, it's {@code java.io}.
  */
-@FunctionalInterface
-public interface SanctionedSerializablesService {
+public enum ApiPackage {
 
-  /**
-   * Returns a URL for the resource defining a module's collection of sanctioned serializable
-   * classes.
-   */
-  URL getSanctionedSerializablesURL();
+  JAVA_IO("java.io."),
+  SUN_MISC("sun.misc.");
 
-  default Class<?> getInterface() {
-    return getClass();
+  private final String prefix;
+
+  ApiPackage(String prefix) {
+    this.prefix = prefix;
   }
 
-  default Collection<String> getSerializationAcceptlist() throws IOException {
-    return SanctionedSerializables.loadClassNames(getSanctionedSerializablesURL());
+  public String getPrefix() {
+    return prefix;
+  }
+
+  public String qualify(String className) {
+    return prefix + requireNonNull(className, "className is required");
   }
 }

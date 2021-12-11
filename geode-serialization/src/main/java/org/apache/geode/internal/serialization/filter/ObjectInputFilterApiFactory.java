@@ -14,27 +14,11 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.Collection;
-
 /**
- * Service interface to define a module's sanctioned serializables.
+ * Creates appropriate {@code ObjectInputFilterApi} instance for the current JVM.
  */
 @FunctionalInterface
-public interface SanctionedSerializablesService {
+public interface ObjectInputFilterApiFactory {
 
-  /**
-   * Returns a URL for the resource defining a module's collection of sanctioned serializable
-   * classes.
-   */
-  URL getSanctionedSerializablesURL();
-
-  default Class<?> getInterface() {
-    return getClass();
-  }
-
-  default Collection<String> getSerializationAcceptlist() throws IOException {
-    return SanctionedSerializables.loadClassNames(getSanctionedSerializablesURL());
-  }
+  ObjectInputFilterApi createObjectInputFilterApi();
 }

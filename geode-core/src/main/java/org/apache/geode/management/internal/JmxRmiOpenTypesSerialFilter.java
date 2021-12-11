@@ -53,7 +53,7 @@ public class JmxRmiOpenTypesSerialFilter implements JmxRmiSerialFilter {
   private final Consumer<String> infoLogger;
   private final Supplier<Boolean> supportsSerialFilter;
 
-  JmxRmiOpenTypesSerialFilter() {
+  public JmxRmiOpenTypesSerialFilter() {
     this(logger::info, () -> isJavaVersionAtLeast(JavaVersion.JAVA_9));
   }
 
@@ -96,8 +96,7 @@ public class JmxRmiOpenTypesSerialFilter implements JmxRmiSerialFilter {
    * Returns a serial filter pattern that accepts all open MBean data types and rejects everything
    * not included in the pattern.
    */
-  @VisibleForTesting
-  String createSerialFilterPattern() {
+  public String createSerialFilterPattern() {
     // note: java.util.* may also be needed
     return new StringBuilder()
         // accept all open MBean data types
