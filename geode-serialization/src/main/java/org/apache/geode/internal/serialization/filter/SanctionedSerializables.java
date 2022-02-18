@@ -43,12 +43,14 @@ public class SanctionedSerializables {
    * Loads all SanctionedSerializablesServices on the classpath.
    */
   public static Set<SanctionedSerializablesService> loadSanctionedSerializablesServices() {
+    logger.info("GEODE-10060: enter SanctionedSerializables#loadSanctionedSerializablesServices");
     ServiceLoader<SanctionedSerializablesService> loader =
         ServiceLoader.load(SanctionedSerializablesService.class);
     Set<SanctionedSerializablesService> services = new HashSet<>();
     for (SanctionedSerializablesService service : loader) {
       services.add(service);
     }
+    logger.info("GEODE-10060: exit SanctionedSerializables#loadSanctionedSerializablesServices");
     return services;
   }
 
@@ -57,7 +59,9 @@ public class SanctionedSerializables {
    * serialization filter acceptlist.
    */
   static Collection<String> loadClassNames(URL sanctionedSerializables) throws IOException {
+    logger.info("GEODE-10060: enter SanctionedSerializables#loadClassNames loading class names");
     if (sanctionedSerializables == null) {
+      logger.info("GEODE-10060: exit-1 SanctionedSerializables#loadClassNames loading class names");
       return emptyList();
     }
     Collection<String> result = new ArrayList<>(1000);
@@ -72,11 +76,14 @@ public class SanctionedSerializables {
         }
       }
     }
+    logger.info("GEODE-10060: exit-2 SanctionedSerializables#loadClassNames loading class names");
     return result;
   }
 
   public static Set<String> loadSanctionedClassNames(
       Iterable<SanctionedSerializablesService> services) {
+    logger.info(
+        "GEODE-10060: enter SanctionedSerializables#loadSanctionedClassNames loading sanctioned class names");
     Set<String> sanctionedClasses = new HashSet<>(650);
     for (SanctionedSerializablesService service : services) {
       try {
@@ -85,11 +92,15 @@ public class SanctionedSerializables {
             service.getClass().getSimpleName());
         sanctionedClasses.addAll(classNames);
       } catch (IOException e) {
+        logger.info(
+            "GEODE-10060: exit-1 SanctionedSerializables#loadSanctionedClassNames loading sanctioned class names");
         throw new UncheckedIOException(
             "Unable to initialize serialization filter for " + service,
             e);
       }
     }
+    logger.info(
+        "GEODE-10060: exit-2 SanctionedSerializables#loadSanctionedClassNames loading sanctioned class names");
     return sanctionedClasses;
   }
 

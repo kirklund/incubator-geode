@@ -14,11 +14,15 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
+import static java.lang.System.identityHashCode;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.util.function.BooleanSupplier;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.internal.lang.SystemProperty;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Creates an instance of {@code GlobalSerialFilterConfiguration} that is enabled only if certain
@@ -28,7 +32,15 @@ import org.apache.geode.internal.lang.SystemProperty;
 public class SystemPropertyGlobalSerialFilterConfigurationFactory
     implements GlobalSerialFilterConfigurationFactory {
 
+  private static final Logger logger = LogService.getLogger();
+
   private final boolean enabled;
+
+  {
+    logger.info(
+        "GEODE-10060: enter/exit SystemPropertyGlobalSerialFilterConfigurationFactory init-block [{}]",
+        identityHashCode(this));
+  }
 
   public SystemPropertyGlobalSerialFilterConfigurationFactory() {
     // enable GlobalSerialFilter only under these conditions:
@@ -47,21 +59,43 @@ public class SystemPropertyGlobalSerialFilterConfigurationFactory
   }
 
   private SystemPropertyGlobalSerialFilterConfigurationFactory(boolean enabled) {
+    logger.info(
+        "GEODE-10060: enter main SystemPropertyGlobalSerialFilterConfigurationFactory#constructor enabled = {} [{}]",
+        enabled, identityHashCode(this));
     this.enabled = enabled;
+    logger.info(
+        "GEODE-10060: exit main SystemPropertyGlobalSerialFilterConfigurationFactory#constructor enabled = {} [{}]",
+        enabled, identityHashCode(this));
   }
 
   @Override
   public FilterConfiguration create(SerializableObjectConfig serializableObjectConfig) {
+    logger.info(
+        "GEODE-10060: enter SystemPropertyGlobalSerialFilterConfigurationFactory#create [{}]",
+        identityHashCode(this));
     if (enabled) {
+      logger.info(
+          "GEODE-10060: exit-1 SystemPropertyGlobalSerialFilterConfigurationFactory#create [{}]",
+          identityHashCode(this));
       return new GlobalSerialFilterConfiguration(serializableObjectConfig);
     }
+    logger.info(
+        "GEODE-10060: exit-2 SystemPropertyGlobalSerialFilterConfigurationFactory#create [{}]",
+        identityHashCode(this));
     return new NullFilterConfiguration();
   }
 
   private static class NullFilterConfiguration implements FilterConfiguration {
 
+    public NullFilterConfiguration() {
+      logger.info("GEODE-10060: enter/exit NullFilterConfiguration#constructor [{}]",
+          identityHashCode(this));
+    }
+
     @Override
     public boolean configure() {
+      logger.info("GEODE-10060: enter/exit NullFilterConfiguration#configure [{}]",
+          identityHashCode(this));
       return false;
     }
   }

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
+import static java.lang.System.identityHashCode;
 import static java.util.Collections.unmodifiableCollection;
 import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCause;
@@ -22,13 +23,18 @@ import java.io.ObjectInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.TestOnly;
+
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Implementation of {@code ObjectInputFilter} that delegates to {@code ObjectInputFilterApi} to
  * maintain independence from the JRE version.
  */
 class ReflectiveFacadeStreamSerialFilter implements StreamSerialFilter {
+
+  private static final Logger logger = LogService.getLogger();
 
   private final ObjectInputFilterApi api;
   private final String pattern;
@@ -39,9 +45,13 @@ class ReflectiveFacadeStreamSerialFilter implements StreamSerialFilter {
    */
   ReflectiveFacadeStreamSerialFilter(ObjectInputFilterApi api, String pattern,
       Collection<String> sanctionedClasses) {
+    logger.info("GEODE-10060: enter ReflectiveFacadeStreamSerialFilter$constructor [{}]",
+        identityHashCode(this));
     this.api = requireNonNull(api, "ObjectInputFilterApi is required");
     this.pattern = pattern;
     this.sanctionedClasses = unmodifiableCollection(sanctionedClasses);
+    logger.info("GEODE-10060: exit ReflectiveFacadeStreamSerialFilter$constructor [{}]",
+        identityHashCode(this));
   }
 
   /**
@@ -51,12 +61,17 @@ class ReflectiveFacadeStreamSerialFilter implements StreamSerialFilter {
   @Override
   public void setFilterOn(ObjectInputStream objectInputStream)
       throws UnableToSetSerialFilterException {
+    logger.info("GEODE-10060: enter ReflectiveFacadeStreamSerialFilter$setFilterOn [{}]",
+        identityHashCode(this));
     try {
       // create the ObjectInputFilter to set as the global serial filter
       Object objectInputFilter = api.createObjectInputFilterProxy(pattern, sanctionedClasses);
 
       // set the global serial filter
       api.setObjectInputFilter(objectInputStream, objectInputFilter);
+
+      logger.info("GEODE-10060: exit ReflectiveFacadeStreamSerialFilter$setFilterOn [{}]",
+          identityHashCode(this));
 
     } catch (IllegalAccessException | InvocationTargetException e) {
       handleExceptionThrownByApi(e);

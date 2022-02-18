@@ -14,7 +14,13 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
+import static java.lang.System.identityHashCode;
+
 import java.util.Set;
+
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Creates an instance of {@code ObjectInputFilter} that delegates to {@code ObjectInputFilterApi}
@@ -22,8 +28,18 @@ import java.util.Set;
  */
 public class ReflectiveFacadeStreamSerialFilterFactory implements StreamSerialFilterFactory {
 
+  private static final Logger logger = LogService.getLogger();
+
+  public ReflectiveFacadeStreamSerialFilterFactory() {
+    logger.info(
+        "GEODE-10060: enter/exit ReflectiveFacadeStreamSerialFilterFactory$constructor [{}]",
+        identityHashCode(this));
+  }
+
   @Override
   public StreamSerialFilter create(SerializableObjectConfig config, Set<String> sanctionedClasses) {
+    logger.info("GEODE-10060: enter ReflectiveFacadeStreamSerialFilterFactory$create [{}]",
+        identityHashCode(this));
     ObjectInputFilterApi api =
         new ReflectiveObjectInputFilterApiFactory().createObjectInputFilterApi();
 
@@ -32,8 +48,12 @@ public class ReflectiveFacadeStreamSerialFilterFactory implements StreamSerialFi
           .append(config.getSerializableObjectFilter())
           .pattern();
 
+      logger.info("GEODE-10060: exit-1 ReflectiveFacadeStreamSerialFilterFactory$create [{}]",
+          identityHashCode(this));
       return new ReflectiveFacadeStreamSerialFilter(api, pattern, sanctionedClasses);
     }
+    logger.info("GEODE-10060: exit-2 ReflectiveFacadeStreamSerialFilterFactory$create [{}]",
+        identityHashCode(this));
     return new NullStreamSerialFilter();
   }
 }

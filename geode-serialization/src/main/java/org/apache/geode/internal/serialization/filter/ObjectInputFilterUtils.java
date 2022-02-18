@@ -16,13 +16,18 @@ package org.apache.geode.internal.serialization.filter;
 
 import java.util.function.Function;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.lang.utils.ClassUtils;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Utility methods for {@code ObjectInputFilter}.
  */
 public class ObjectInputFilterUtils {
+
+  private static final Logger logger = LogService.getLogger();
 
   private static final String UNSUPPORTED_MESSAGE = "ObjectInputFilter is not available.";
 
@@ -51,6 +56,8 @@ public class ObjectInputFilterUtils {
 
   @VisibleForTesting
   static boolean supportsObjectInputFilter(Function<String, Boolean> isClassAvailable) {
+    logger.info(
+        "GEODE-10060: enter/exit ObjectInputFilterUtils#supportsObjectInputFilter(Function<String,Boolean>)");
     return isClassAvailable.apply("sun.misc.ObjectInputFilter") ||
         isClassAvailable.apply("java.io.ObjectInputFilter");
   }

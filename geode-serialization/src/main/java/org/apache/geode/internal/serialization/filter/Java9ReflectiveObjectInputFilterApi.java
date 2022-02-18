@@ -14,18 +14,31 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
+import static java.lang.System.identityHashCode;
+
 import java.io.ObjectInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Java 9 or greater needs to override some API paths in {@code ReflectiveObjectInputFilterApi}.
  */
 class Java9ReflectiveObjectInputFilterApi extends ReflectiveObjectInputFilterApi {
 
+  private static final Logger logger = LogService.getLogger();
+
   private final Class<?> ObjectInputStream;
   private final Method ObjectInputStream_setObjectInputFilter;
   private final Method ObjectInputStream_getObjectInputFilter;
+
+  {
+    logger.info("GEODE-10060: enter/exit Java9ReflectiveObjectInputFilterApi init-block [{}]",
+        identityHashCode(this));
+  }
 
   /**
    * Constructs instance for the specified {@code ApiPackage}.
@@ -33,9 +46,13 @@ class Java9ReflectiveObjectInputFilterApi extends ReflectiveObjectInputFilterApi
   Java9ReflectiveObjectInputFilterApi(ApiPackage apiPackage)
       throws ClassNotFoundException, NoSuchMethodException {
     super(apiPackage);
+    logger.info("GEODE-10060: enter Java9ReflectiveObjectInputFilterApi#constructor [{}]",
+        identityHashCode(this));
     ObjectInputStream = ObjectInputStream();
     ObjectInputStream_setObjectInputFilter = ObjectInputStream_setObjectInputFilter();
     ObjectInputStream_getObjectInputFilter = ObjectInputStream_getObjectInputFilter();
+    logger.info("GEODE-10060: exit Java9ReflectiveObjectInputFilterApi#constructor [{}]",
+        identityHashCode(this));
   }
 
   private Class<?> ObjectInputStream() throws ClassNotFoundException {

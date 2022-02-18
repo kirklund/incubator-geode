@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
+import static java.lang.System.identityHashCode;
 import static org.apache.commons.lang3.JavaVersion.JAVA_1_8;
 import static org.apache.commons.lang3.JavaVersion.JAVA_9;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
@@ -21,24 +22,50 @@ import static org.apache.geode.internal.serialization.filter.ApiPackage.JAVA_IO;
 import static org.apache.geode.internal.serialization.filter.ApiPackage.SUN_MISC;
 import static org.apache.geode.internal.serialization.filter.ObjectInputFilterUtils.throwUnsupportedOperationException;
 
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.logging.internal.log4j.api.LogService;
+
 /**
  * Implementation of {@code ObjectInputFilterApiFactory} that creates a reflection based
  * {@code ObjectInputFilterApi}.
  */
 public class ReflectiveObjectInputFilterApiFactory implements ObjectInputFilterApiFactory {
 
+  private static final Logger logger = LogService.getLogger();
+
+  public ReflectiveObjectInputFilterApiFactory() {
+    logger.info("GEODE-10060: enter/exit ReflectiveObjectInputFilterApiFactory#constructor [{}]",
+        identityHashCode(this));
+  }
+
   @Override
   public ObjectInputFilterApi createObjectInputFilterApi() {
+    logger.info(
+        "GEODE-10060: enter ReflectiveObjectInputFilterApiFactory#createObjectInputFilterApi [{}]",
+        identityHashCode(this));
     try {
       if (isJavaVersionAtLeast(JAVA_9)) {
+        logger.info(
+            "GEODE-10060: exit-1 ReflectiveObjectInputFilterApiFactory#createObjectInputFilterApi [{}]",
+            identityHashCode(this));
         return new Java9ReflectiveObjectInputFilterApi(JAVA_IO);
       }
       if (isJavaVersionAtLeast(JAVA_1_8)) {
+        logger.info(
+            "GEODE-10060: exit-2 ReflectiveObjectInputFilterApiFactory#createObjectInputFilterApi [{}]",
+            identityHashCode(this));
         return new ReflectiveObjectInputFilterApi(SUN_MISC);
       }
     } catch (ClassNotFoundException | NoSuchMethodException e) {
+      logger.info(
+          "GEODE-10060: exit-3 ReflectiveObjectInputFilterApiFactory#createObjectInputFilterApi [{}]",
+          identityHashCode(this));
       throwUnsupportedOperationException(e);
     }
+    logger.info(
+        "GEODE-10060: exit-4 ReflectiveObjectInputFilterApiFactory#createObjectInputFilterApi [{}]",
+        identityHashCode(this));
     throwUnsupportedOperationException();
     return null; // unreachable
   }

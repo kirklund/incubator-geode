@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
+import static java.lang.System.identityHashCode;
+
 import java.io.ObjectInputStream;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -21,13 +23,18 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Collection;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Implementation of {@code ObjectInputFilterApi} that uses reflection and a dynamic proxy to wrap
  * the JREs ObjectInputFilter API in both Java 8 and Java 9 or greater.
  */
 public class ReflectiveObjectInputFilterApi implements ObjectInputFilterApi {
+
+  private static final Logger logger = LogService.getLogger();
 
   protected final ApiPackage apiPackage;
 
@@ -54,6 +61,8 @@ public class ReflectiveObjectInputFilterApi implements ObjectInputFilterApi {
    */
   public ReflectiveObjectInputFilterApi(ApiPackage apiPackage)
       throws ClassNotFoundException, NoSuchMethodException {
+    logger.info("GEODE-10060: enter ReflectiveObjectInputFilterApi#constructor [{}]",
+        identityHashCode(this));
     this.apiPackage = apiPackage;
 
     ObjectInputFilter = ObjectInputFilter();
@@ -66,6 +75,8 @@ public class ReflectiveObjectInputFilterApi implements ObjectInputFilterApi {
     // Status enum includes UNDECIDED, ALLOWED, and REJECTED
     if (!ObjectInputFilter_Status_ALLOWED.toString().equals("ALLOWED")
         || !ObjectInputFilter_Status_REJECTED.toString().equals("REJECTED")) {
+      logger.info("GEODE-10060: exit-1 ReflectiveObjectInputFilterApi#constructor [{}]",
+          identityHashCode(this));
       throw new UnsupportedOperationException(
           "ObjectInputFilter$Status enumeration in this JDK is not as expected");
     }
@@ -86,6 +97,8 @@ public class ReflectiveObjectInputFilterApi implements ObjectInputFilterApi {
     ObjectInputFilter_Config_setSerialFilter = ObjectInputFilter_Config_setSerialFilter();
 
     ObjectInputFilter_FilterInfo_serialClass = ObjectInputFilter_FilterInfo_serialClass();
+    logger.info("GEODE-10060: exit-2 ReflectiveObjectInputFilterApi#constructor [{}]",
+        identityHashCode(this));
   }
 
   @Override
@@ -123,6 +136,9 @@ public class ReflectiveObjectInputFilterApi implements ObjectInputFilterApi {
   @Override
   public Object createObjectInputFilterProxy(String pattern, Collection<String> sanctionedClasses)
       throws InvocationTargetException, IllegalAccessException {
+    logger.info(
+        "GEODE-10060: enter ReflectiveObjectInputFilterApi#createObjectInputFilterProxy [{}]",
+        identityHashCode(this));
     Object objectInputFilter =
         ObjectInputFilter_Config_createFilter.invoke(ObjectInputFilter_Config, pattern);
 
@@ -145,6 +161,10 @@ public class ReflectiveObjectInputFilterApi implements ObjectInputFilterApi {
         ObjectInputFilter_Status_REJECTED,
         objectInputFilter,
         sanctionedClasses);
+
+    logger.info(
+        "GEODE-10060: exit ReflectiveObjectInputFilterApi#createObjectInputFilterProxy [{}]",
+        identityHashCode(this));
 
     // wrap the filter within a proxy to inject the above invocation handler
     return Proxy.newProxyInstance(

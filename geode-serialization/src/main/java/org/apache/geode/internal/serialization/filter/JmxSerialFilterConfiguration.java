@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
+import static java.lang.System.identityHashCode;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import org.apache.logging.log4j.Logger;
@@ -42,6 +43,11 @@ class JmxSerialFilterConfiguration implements FilterConfiguration {
   private final String value;
   private final Logger logger;
 
+  {
+    LOGGER.info("GEODE-10060: entered JmxSerialFilterConfiguration init-block [{}]",
+        identityHashCode(this));
+  }
+
   /**
    * Constructs instance for the specified system property and filter pattern.
    */
@@ -54,20 +60,30 @@ class JmxSerialFilterConfiguration implements FilterConfiguration {
       String property,
       String pattern,
       Logger logger) {
+    LOGGER.info("GEODE-10060: enter JmxSerialFilterConfiguration#constructor [{}]",
+        identityHashCode(this));
     key = property;
     value = pattern;
     this.logger = logger;
+    LOGGER.info("GEODE-10060: exit JmxSerialFilterConfiguration#constructor [{}]",
+        identityHashCode(this));
   }
 
   @Override
   public boolean configure() {
+    LOGGER.info("GEODE-10060: enter JmxSerialFilterConfiguration#configure [{}]",
+        identityHashCode(this));
     if (isBlank(System.getProperty(key))) {
       System.setProperty(key, value);
       logger.info("System property '" + key + "' is now configured with '" + value + "'.");
+      LOGGER.info("GEODE-10060: exit-1 JmxSerialFilterConfiguration#configure [{}]",
+          identityHashCode(this));
       return true;
     }
 
     logger.info("System property '" + key + "' is already configured.");
+    LOGGER.info("GEODE-10060: exit-2 JmxSerialFilterConfiguration#configure [{}]",
+        identityHashCode(this));
     return false;
   }
 }

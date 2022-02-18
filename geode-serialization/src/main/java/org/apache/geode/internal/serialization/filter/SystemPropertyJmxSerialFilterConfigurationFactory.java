@@ -14,11 +14,15 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
+import static java.lang.System.identityHashCode;
 import static org.apache.commons.lang3.JavaVersion.JAVA_9;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Creates an instance of {@code JmxSerialFilterConfiguration} that is enabled only if certain
@@ -28,10 +32,18 @@ import org.apache.geode.annotations.VisibleForTesting;
 public class SystemPropertyJmxSerialFilterConfigurationFactory
     implements JmxSerialFilterConfigurationFactory {
 
+  private static final Logger logger = LogService.getLogger();
+
   private static final String PROPERTY_NAME = "jmx.remote.rmi.server.serial.filter.pattern";
 
   private final boolean enabled;
   private final String pattern;
+
+  {
+    logger.info(
+        "GEODE-10060: enter/exit SystemPropertyJmxSerialFilterConfigurationFactory init-block [{}]",
+        identityHashCode(this));
+  }
 
   public SystemPropertyJmxSerialFilterConfigurationFactory() {
     // JmxSerialFilter requires Java 9 or greater
@@ -41,15 +53,28 @@ public class SystemPropertyJmxSerialFilterConfigurationFactory
 
   @VisibleForTesting
   SystemPropertyJmxSerialFilterConfigurationFactory(boolean enabled, String pattern) {
+    logger.info(
+        "GEODE-10060: enter main SystemPropertyJmxSerialFilterConfigurationFactory#constructor enabled = {} [{}]",
+        enabled, identityHashCode(this));
     this.enabled = enabled;
     this.pattern = pattern;
+    logger.info(
+        "GEODE-10060: exit main SystemPropertyJmxSerialFilterConfigurationFactory#constructor enabled = {} [{}]",
+        enabled, identityHashCode(this));
   }
 
   @Override
   public FilterConfiguration create() {
+    logger.info("GEODE-10060: enter SystemPropertyJmxSerialFilterConfigurationFactory#create [{}]",
+        identityHashCode(this));
     if (enabled) {
+      logger.info(
+          "GEODE-10060: exit-1 SystemPropertyJmxSerialFilterConfigurationFactory#create [{}]",
+          identityHashCode(this));
       return new JmxSerialFilterConfiguration(PROPERTY_NAME, pattern);
     }
+    logger.info("GEODE-10060: exit-2 SystemPropertyJmxSerialFilterConfigurationFactory#create [{}]",
+        identityHashCode(this));
     return () -> false;
   }
 }

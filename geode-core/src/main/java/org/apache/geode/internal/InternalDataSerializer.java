@@ -419,7 +419,9 @@ public abstract class InternalDataSerializer extends DataSerializer {
    * @param config the DistributedSystem configuration
    */
   public static void initializeSerializationFilter(SerializableObjectConfig config) {
+    logger.info("GEODE-10060: enter InternalDataSerializer#initializeSerializationFilter");
     initializeSerializationFilter(config, loadSanctionedSerializablesServices());
+    logger.info("GEODE-10060: exit InternalDataSerializer#initializeSerializationFilter");
   }
 
   /**
@@ -2537,6 +2539,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
         return dsfidFactory.create(in.readInt(), in);
       case DS_NO_FIXED_ID:
       case DATA_SERIALIZABLE:
+        logger.info(
+            "GEODE-10060: InternalDataSerializer#basicReadObject invoking readDataSerializable");
         return readDataSerializable(in);
       case NULL:
       case NULL_STRING:
@@ -2648,14 +2652,24 @@ public abstract class InternalDataSerializer extends DataSerializer {
       case VOID_TYPE:
         return Void.TYPE;
       case USER_DATA_SERIALIZABLE:
+        logger.info(
+            "GEODE-10060: InternalDataSerializer#basicReadObject passing readByte to readUserDataSerializable");
         return readUserDataSerializable(in, in.readByte());
       case USER_DATA_SERIALIZABLE_2:
+        logger.info(
+            "GEODE-10060: InternalDataSerializer#basicReadObject passing readShort to readUserDataSerializable");
         return readUserDataSerializable(in, in.readShort());
       case USER_DATA_SERIALIZABLE_4:
+        logger.info(
+            "GEODE-10060: InternalDataSerializer#basicReadObject passing readInt to readUserDataSerializable");
         return readUserDataSerializable(in, in.readInt());
       case SERIALIZABLE:
+        logger
+            .info("GEODE-10060: InternalDataSerializer#basicReadObject invoking readSerializable");
         return readSerializable(in);
       case PDX:
+        logger.info(
+            "GEODE-10060: InternalDataSerializer#basicReadObject invoking readPdxSerializable");
         return readPdxSerializable(in);
       case PDX_ENUM:
         return readPdxEnum(in);
@@ -2704,7 +2718,9 @@ public abstract class InternalDataSerializer extends DataSerializer {
       ObjectInput ois = new DSObjectInputStream(stream);
 
       try {
+        logger.info("GEODE-10060: InternalDataSerializer#readSerializable before setFilterOn");
         serializationFilter.setFilterOn((ObjectInputStream) ois);
+        logger.info("GEODE-10060: InternalDataSerializer#readSerializable after setFilterOn");
       } catch (UnableToSetSerialFilterException e) {
         // maintain existing behavior for validate-serializable-objects
         throw new UnsupportedOperationException(e);

@@ -14,15 +14,30 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
+import static java.lang.System.identityHashCode;
+
 import java.io.ObjectInputStream;
+
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Implementation of {@code StreamSerialFilter} that does nothing.
  */
 public class NullStreamSerialFilter implements StreamSerialFilter {
 
+  private static final Logger logger = LogService.getLogger();
+
+  public NullStreamSerialFilter() {
+    logger.info("GEODE-10060: enter/exit NullStreamSerialFilter#constructor [{}]",
+        identityHashCode(this));
+  }
+
   @Override
   public void setFilterOn(ObjectInputStream objectInputStream) {
+    logger.info("GEODE-10060: enter/exit NullStreamSerialFilter#setFilterOn [{}]",
+        identityHashCode(this));
     // Do nothing, this is the case where we don't filter.
   }
 }

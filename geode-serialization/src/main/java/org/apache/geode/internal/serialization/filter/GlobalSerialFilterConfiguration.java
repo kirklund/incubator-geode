@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
+import static java.lang.System.identityHashCode;
 import static org.apache.geode.internal.serialization.filter.SanctionedSerializables.loadSanctionedClassNames;
 import static org.apache.geode.internal.serialization.filter.SanctionedSerializables.loadSanctionedSerializablesServices;
 
@@ -37,6 +38,11 @@ class GlobalSerialFilterConfiguration implements FilterConfiguration {
   private final Supplier<Set<String>> sanctionedClassesSupplier;
   private final Logger logger;
   private final GlobalSerialFilterFactory globalSerialFilterFactory;
+
+  {
+    LOGGER.info("GEODE-10060: enter/exit GlobalSerialFilterConfiguration init-block [{}]",
+        identityHashCode(this));
+  }
 
   /**
    * Constructs instance with collaborators.
@@ -74,15 +80,21 @@ class GlobalSerialFilterConfiguration implements FilterConfiguration {
       Supplier<Set<String>> sanctionedClassesSupplier,
       Logger logger,
       GlobalSerialFilterFactory globalSerialFilterFactory) {
+    LOGGER.info("GEODE-10060: enter main GlobalSerialFilterConfiguration#constructor [{}]",
+        identityHashCode(this));
     this.serializableObjectConfig = serializableObjectConfig;
     this.filterPatternFactory = filterPatternFactory;
     this.sanctionedClassesSupplier = sanctionedClassesSupplier;
     this.logger = logger;
     this.globalSerialFilterFactory = globalSerialFilterFactory;
+    LOGGER.info("GEODE-10060: exit main GlobalSerialFilterConfiguration#constructor [{}]",
+        identityHashCode(this));
   }
 
   @Override
   public boolean configure() throws UnableToSetSerialFilterException {
+    LOGGER.info("GEODE-10060: enter GlobalSerialFilterConfiguration#configure [{}]",
+        identityHashCode(this));
     // enable validate-serializable-objects
     serializableObjectConfig.setValidateSerializableObjects(true);
 
@@ -98,6 +110,8 @@ class GlobalSerialFilterConfiguration implements FilterConfiguration {
 
     // log statement that filter is now configured
     logger.info("Global serialization filter is now configured.");
+    LOGGER.info("GEODE-10060: exit GlobalSerialFilterConfiguration#configure [{}]",
+        identityHashCode(this));
     return true;
   }
 

@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
+import static java.lang.System.identityHashCode;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.rmi.MarshalledObject;
@@ -28,14 +30,27 @@ import javax.management.openmbean.SimpleType;
 import javax.management.openmbean.TabularData;
 import javax.management.openmbean.TabularType;
 
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.logging.internal.log4j.api.LogService;
+
 /**
  * Defines a serial filter pattern that accepts all open MBean data types and rejects everything
  * not included in the pattern.
  */
 public class OpenMBeanFilterPattern implements FilterPattern {
 
+  private static final Logger logger = LogService.getLogger();
+
+  public OpenMBeanFilterPattern() {
+    logger.info("GEODE-10060: enter/exit OpenMBeanFilterPattern#constructor [{}]",
+        identityHashCode(this));
+  }
+
   @Override
   public String pattern() {
+    logger.info("GEODE-10060: enter/exit OpenMBeanFilterPattern#pattern [{}]",
+        identityHashCode(this));
     // note: java.util.* may also be needed
     return new StringJoiner(";")
 

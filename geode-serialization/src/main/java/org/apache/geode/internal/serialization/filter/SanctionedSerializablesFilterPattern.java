@@ -14,7 +14,13 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
+import static java.lang.System.identityHashCode;
+
 import java.util.StringJoiner;
+
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This list contains classes that Geode's classes subclass, such as antlr AST classes which are
@@ -39,10 +45,19 @@ import java.util.StringJoiner;
  */
 public class SanctionedSerializablesFilterPattern implements FilterPattern {
 
+  private static final Logger logger = LogService.getLogger();
+
   private final StringJoiner stringJoiner = dependenciesPattern();
+
+  public SanctionedSerializablesFilterPattern() {
+    logger.info("GEODE-10060: enter/exit SanctionedSerializablesFilterPattern#constructor [{}]",
+        identityHashCode(this));
+  }
 
   @Override
   public String pattern() {
+    logger.info("GEODE-10060: enter/exit SanctionedSerializablesFilterPattern#pattern [{}]",
+        identityHashCode(this));
     return new StringJoiner(";")
         .merge(stringJoiner)
 
