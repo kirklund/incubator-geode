@@ -2677,7 +2677,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
 
   }
 
-  private static Serializable readSerializable(DataInput in)
+  @VisibleForTesting
+  static Serializable readSerializable(DataInput in)
       throws IOException, ClassNotFoundException {
     final boolean isDebugEnabled_SERIALIZER = logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE);
     Serializable serializableResult;
