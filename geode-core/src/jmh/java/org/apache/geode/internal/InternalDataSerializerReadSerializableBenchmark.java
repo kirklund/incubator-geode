@@ -38,6 +38,11 @@ import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.serialization.KnownVersion;
 
+/**
+ * <pre>
+ * ./gradlew --no-daemon geode-core:jmh -Pjmh.include=org.apache.geode.internal.InternalDataSerializerReadSerializableBenchmark
+ * </pre>
+ */
 @Measurement(iterations = 5, time = 120, timeUnit = SECONDS)
 @Warmup(iterations = 1, time = 30, timeUnit = SECONDS)
 @Fork(1)
