@@ -221,6 +221,8 @@ public class InternalDistributedSystem extends DistributedSystem
       SecurityConfig securityConfig,
       MetricsService.Builder metricsSessionBuilder,
       final MembershipLocator<InternalDistributedMember> locator) {
+    InternalDataSerializer.readSerializableCount.set(0);
+
     if (config == null) {
       config = new Properties();
     }
@@ -1507,6 +1509,10 @@ public class InternalDistributedSystem extends DistributedSystem
    * @param keepAlive true if user requested durable subscriptions are to be retained at server.
    */
   protected void disconnect(boolean preparingForReconnect, String reason, boolean keepAlive) {
+    logger.info("GEODE-10060: InternalDistributedSystem#disconnect readSerializableCount="
+        + InternalDataSerializer.readSerializableCount.get());
+    InternalDataSerializer.readSerializableCount.set(0);
+
     boolean isShutdownHook = (shutdownHook != null) && (Thread.currentThread() == shutdownHook);
 
     if (!preparingForReconnect) {

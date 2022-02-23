@@ -67,6 +67,7 @@ import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -2681,8 +2682,12 @@ public abstract class InternalDataSerializer extends DataSerializer {
 
   }
 
-  private static Serializable readSerializable(DataInput in)
+  public static final AtomicInteger readSerializableCount = new AtomicInteger();
+
+  @VisibleForTesting("Visible for JMH benchmarking")
+  static Serializable readSerializable(DataInput in)
       throws IOException, ClassNotFoundException {
+    readSerializableCount.incrementAndGet();
     final boolean isDebugEnabled_SERIALIZER = logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE);
     Serializable serializableResult;
     if (in instanceof DSObjectInputStream) {
