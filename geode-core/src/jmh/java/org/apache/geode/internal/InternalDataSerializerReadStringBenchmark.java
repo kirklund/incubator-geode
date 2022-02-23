@@ -44,7 +44,7 @@ import org.apache.geode.internal.serialization.KnownVersion;
 
 @State(Scope.Thread)
 @Fork(1)
-public class InternalDataSerializerBenchmark {
+public class InternalDataSerializerReadStringBenchmark {
 
   private final ByteArrayDataInput dataInput = new ByteArrayDataInput();
   private byte[] serializedBytes;
