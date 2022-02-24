@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal;
 
-import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.io.IOException;
@@ -24,6 +24,7 @@ import java.util.Arrays;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
@@ -43,11 +44,11 @@ import org.apache.geode.internal.serialization.KnownVersion;
  * ./gradlew --no-daemon geode-core:jmh -Pjmh.include=org.apache.geode.internal.InternalDataSerializerReadSerializableBenchmark
  * </pre>
  */
-@Measurement(iterations = 5, time = 120, timeUnit = SECONDS)
+@Measurement(iterations = 1, time = 1, timeUnit = MINUTES)
 @Warmup(iterations = 1, time = 30, timeUnit = SECONDS)
 @Fork(1)
-@BenchmarkMode(Mode.AverageTime)
-@OutputTimeUnit(NANOSECONDS)
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(SECONDS)
 @State(Scope.Thread)
 @SuppressWarnings("all")
 public class InternalDataSerializerReadSerializableBenchmark {
@@ -55,7 +56,7 @@ public class InternalDataSerializerReadSerializableBenchmark {
   private ByteArrayDataInput dataInput = new ByteArrayDataInput();
   private byte[] serializedBytes;
 
-  @Setup
+  @Setup(Level.Trial)
   public void setUp() throws IOException {
     System.out.println("Available processors: " + Runtime.getRuntime().availableProcessors());
 
