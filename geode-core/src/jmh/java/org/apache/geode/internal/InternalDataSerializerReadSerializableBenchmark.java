@@ -44,7 +44,7 @@ import org.apache.geode.internal.serialization.KnownVersion;
  * ./gradlew --no-daemon geode-core:jmh -Pjmh.include=org.apache.geode.internal.InternalDataSerializerReadSerializableBenchmark
  * </pre>
  */
-@Measurement(iterations = 1, time = 1, timeUnit = MINUTES)
+@Measurement(iterations = 1, time = 5, timeUnit = MINUTES)
 @Warmup(iterations = 1, time = 30, timeUnit = SECONDS)
 @Fork(1)
 @BenchmarkMode(Mode.Throughput)
