@@ -40,7 +40,6 @@ import org.junitpioneer.jupiter.ClearSystemProperty;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.serialization.filter.FilterConfiguration;
 
 class ManagementAgentIntegrationTest {
 
@@ -53,14 +52,14 @@ class ManagementAgentIntegrationTest {
   void testSetMBeanServer() throws IOException {
     final DistributionConfig distributionConfig = mock(DistributionConfig.class);
     final InternalCache internalCache = mock(InternalCache.class);
-    final FilterConfiguration filterConfiguration = mock(FilterConfiguration.class);
+    final JmxRmiSerialFilter serialFilter = mock(JmxRmiSerialFilter.class);
     final SecurityService securityService = mock(SecurityService.class);
     when(internalCache.getSecurityService()).thenReturn(securityService);
     when(securityService.isIntegratedSecurity()).thenReturn(false);
     final Path tempFile = Files.createFile(temporaryFolder.resolve("testFile")).toAbsolutePath();
     when(distributionConfig.getJmxManagerAccessFile()).thenReturn(tempFile.toString());
     final ManagementAgent managementAgent =
-        new ManagementAgent(distributionConfig, internalCache, filterConfiguration);
+        new ManagementAgent(distributionConfig, internalCache, serialFilter);
     final MBeanServer mBeanServer = mock(MBeanServer.class);
 
     managementAgent.setJmxConnectorServer(new JmxConnectorServerWithMBeanServer(mBeanServer));

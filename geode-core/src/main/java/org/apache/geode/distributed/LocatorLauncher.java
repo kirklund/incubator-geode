@@ -65,7 +65,6 @@ import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketFactory;
-import org.apache.geode.internal.DistributedSerializableObjectConfig;
 import org.apache.geode.internal.DistributionLocator;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -89,7 +88,6 @@ import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.internal.process.UnableToControlProcessException;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.internal.serialization.filter.SystemPropertyGlobalSerialFilterConfigurationFactory;
 import org.apache.geode.lang.AttachAPINotFoundException;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.util.HostUtils;
@@ -715,11 +713,6 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     if (isStartable()) {
       INSTANCE.compareAndSet(null, this);
 
-      boolean serializationFilterConfigured =
-          new SystemPropertyGlobalSerialFilterConfigurationFactory()
-              .create(new DistributedSerializableObjectConfig(getDistributedSystemProperties()))
-              .configure();
-
       try {
         process =
             new FileControllableProcess(controlHandler, new File(getWorkingDirectory()),
@@ -735,11 +728,6 @@ public class LocatorLauncher extends AbstractLauncher<String> {
               bindAddress, true, getDistributedSystemProperties(),
               getHostnameForClients(),
               Paths.get(workingDirectory));
-
-          if (serializationFilterConfigured) {
-            log.info("Global serial filter is now configured.");
-          }
-
         } finally {
           ProcessLauncherContext.remove();
         }
