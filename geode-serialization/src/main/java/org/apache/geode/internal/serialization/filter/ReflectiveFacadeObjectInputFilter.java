@@ -15,8 +15,7 @@
 package org.apache.geode.internal.serialization.filter;
 
 import static java.util.Collections.unmodifiableCollection;
-import static java.util.Objects.requireNonNull;
-import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCause;
+import static org.apache.geode.internal.serialization.filter.ObjectInputFilterUtils.throwUnsupportedOperationException;
 
 import java.io.ObjectInputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -28,7 +27,7 @@ import org.jetbrains.annotations.TestOnly;
  * Implementation of {@code ObjectInputFilter} that delegates to {@code ObjectInputFilterApi} to
  * maintain independence from the JRE version.
  */
-class ReflectiveFacadeStreamSerialFilter implements StreamSerialFilter {
+class ReflectiveFacadeObjectInputFilter implements ObjectInputFilter {
 
   private final ObjectInputFilterApi api;
   private final String pattern;
@@ -37,11 +36,11 @@ class ReflectiveFacadeStreamSerialFilter implements StreamSerialFilter {
   /**
    * Constructs instance with the specified collaborators.
    */
-  ReflectiveFacadeStreamSerialFilter(ObjectInputFilterApi api, String pattern,
+  ReflectiveFacadeObjectInputFilter(ObjectInputFilterApi api, String pattern,
       Collection<String> sanctionedClasses) {
-    this.api = requireNonNull(api, "ObjectInputFilterApi is required");
     this.pattern = pattern;
     this.sanctionedClasses = unmodifiableCollection(sanctionedClasses);
+    this.api = api;
   }
 
   /**
@@ -49,8 +48,7 @@ class ReflectiveFacadeStreamSerialFilter implements StreamSerialFilter {
    * {@code ObjectInputStream}.
    */
   @Override
-  public void setFilterOn(ObjectInputStream objectInputStream)
-      throws UnableToSetSerialFilterException {
+  public void setFilterOn(ObjectInputStream objectInputStream) {
     try {
       // create the ObjectInputFilter to set as the global serial filter
       Object objectInputFilter = api.createObjectInputFilterProxy(pattern, sanctionedClasses);
@@ -59,7 +57,10 @@ class ReflectiveFacadeStreamSerialFilter implements StreamSerialFilter {
       api.setObjectInputFilter(objectInputStream, objectInputFilter);
 
     } catch (IllegalAccessException | InvocationTargetException e) {
-      handleExceptionThrownByApi(e);
+      throwUnsupportedOperationException(
+          "Geode was unable to configure a serialization filter on input stream '"
+              + objectInputStream.hashCode() + "'",
+          e);
     }
   }
 
@@ -76,37 +77,5 @@ class ReflectiveFacadeStreamSerialFilter implements StreamSerialFilter {
   @TestOnly
   ObjectInputFilterApi getObjectInputFilterApi() {
     return api;
-  }
-
-  private void handleExceptionThrownByApi(ReflectiveOperationException e)
-      throws UnableToSetSerialFilterException {
-    String className = getClassName(e);
-    switch (className) {
-      case "java.lang.IllegalAccessException":
-        throw new UnableToSetSerialFilterException(
-            "Unable to configure an input stream serialization filter using reflection.",
-            e);
-      case "java.lang.reflect.InvocationTargetException":
-        if (getRootCause(e) instanceof IllegalStateException) {
-          // ObjectInputFilter throws IllegalStateException
-          // if the filter has already been set non-null
-          throw new FilterAlreadyConfiguredException(
-              "Unable to configure an input stream serialization filter because a non-null filter has already been set.",
-              e);
-        }
-        String causeClassName = e.getCause() == null ? getClassName(e) : getClassName(e.getCause());
-        throw new UnableToSetSerialFilterException(
-            "Unable to configure an input stream serialization filter because invocation target threw "
-                + causeClassName + ".",
-            e);
-      default:
-        throw new UnableToSetSerialFilterException(
-            "Unable to configure an input stream serialization filter.",
-            e);
-    }
-  }
-
-  private static String getClassName(Throwable throwable) {
-    return throwable.getClass().getName();
   }
 }
