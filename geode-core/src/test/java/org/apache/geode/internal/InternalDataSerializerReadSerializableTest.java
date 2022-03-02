@@ -27,14 +27,12 @@ import org.apache.geode.internal.serialization.KnownVersion;
 
 public class InternalDataSerializerReadSerializableTest {
 
-  private final ByteArrayDataInput dataInput = new ByteArrayDataInput();
-
   @Test
   public void readSerializableDeserializesException() throws IOException, ClassNotFoundException {
     String message = "12345678901234567890123456789012345";
     Serializable serializable = new Exception(message);
     byte[] serialized = SerializationUtils.serialize(serializable);
-
+    ByteArrayDataInput dataInput = new ByteArrayDataInput();
     dataInput.initialize(serialized, KnownVersion.CURRENT);
 
     Serializable deserialized = InternalDataSerializer.readSerializable(dataInput);
