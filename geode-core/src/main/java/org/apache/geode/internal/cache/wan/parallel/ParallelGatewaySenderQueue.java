@@ -1197,7 +1197,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
     if (!recipients.isEmpty()) {
       final Map<String, Map<Integer, List<Object>>> temp = new HashMap<>();
-      Map<Integer, List<Object>> bucketIdToDispatchedKeys = new ConcurrentHashMap<>();
+      Map<Integer, List<Object>> bucketIdToDispatchedKeys = new HashMap<>();
       temp.put(prQ.getFullPath(), bucketIdToDispatchedKeys);
       addRemovedEventToMap(bucketIdToDispatchedKeys, bucketId, key);
       ParallelQueueRemovalMessage pqrm = new ParallelQueueRemovalMessage(temp);
