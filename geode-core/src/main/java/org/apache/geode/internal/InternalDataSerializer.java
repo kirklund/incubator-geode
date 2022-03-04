@@ -816,6 +816,15 @@ public abstract class InternalDataSerializer extends DataSerializer {
         return true;
       }
     });
+    classesToSerializers.put("java.util.concurrent.ConcurrentHashMap", new WellKnownPdxDS() {
+      @Override
+      public boolean toData(Object o, DataOutput out) throws IOException {
+        ConcurrentHashMap list = (ConcurrentHashMap) o;
+        out.writeByte(DSCODE.CONCURRENT_HASH_MAP.toByte());
+        writeConcurrentHashMap(list, out);
+        return true;
+      }
+    });
     classesToSerializers.put("java.util.IdentityHashMap", new WellKnownDS() {
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
