@@ -22,6 +22,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.lang.management.ManagementFactory;
 
 import org.apache.geode.annotations.Immutable;
@@ -115,9 +116,6 @@ public class ProcessUtils {
   /**
    * Returns true if a process identified by the process id was running on this host machine and has
    * been terminated by this operation.
-   *
-   * @param pid process id
-   * @return true if the process was terminated by this operation
    */
   public static boolean killProcess(final int pid) {
     isTrue(pid > 0, "Invalid pid '" + pid + "' specified");
@@ -125,12 +123,14 @@ public class ProcessUtils {
     return internal.killProcess(pid);
   }
 
-  public static int readPid(final File pidFile) throws IOException {
+  public static int readPid(final File pidFile) throws UncheckedIOException {
     notNull(pidFile, "Invalid pidFile '" + pidFile + "' specified");
     isTrue(pidFile.exists(), "Nonexistent pidFile '" + pidFile + "' specified");
 
     try (BufferedReader reader = new BufferedReader(new FileReader(pidFile))) {
       return Integer.parseInt(reader.readLine());
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     }
   }
 
