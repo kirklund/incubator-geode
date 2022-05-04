@@ -24,34 +24,38 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_A
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_TYPE;
-import static org.apache.geode.test.junit.rules.gfsh.GfshRule.startLocatorCommand;
-import static org.apache.geode.test.junit.rules.gfsh.GfshRule.startServerCommand;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 import org.apache.geode.cache.ssl.CertStores;
 import org.apache.geode.cache.ssl.CertificateBuilder;
 import org.apache.geode.cache.ssl.CertificateMaterial;
 import org.apache.geode.internal.UniquePortSupplier;
 import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
+import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
+import org.apache.geode.test.junit.rules.gfsh.GfshExecutor;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
@@ -62,42 +66,48 @@ import org.apache.geode.test.version.VersionManager;
  * This test iterates through the versions of Geode and executes client compatibility with
  * the current version of Geode.
  */
-@Category({BackwardCompatibilityTest.class})
+@Category(BackwardCompatibilityTest.class)
 @RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
+@UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class RollingUpgradeWithSslDUnitTest {
-  private final UniquePortSupplier portSupplier = new UniquePortSupplier();
-  private final String hostName;
-  private final String keyStoreFileName;
-  private final String trustStoreFileName;
-  private File securityPropertiesFile;
 
-  @Parameterized.Parameters(name = "{0}")
+  private final UniquePortSupplier portSupplier = new UniquePortSupplier();
+
+  private final String version;
+
+  private String hostName;
+  private String keyStoreFileName;
+  private String trustStoreFileName;
+  private File securityPropertiesFile;
+  private GfshExecutor oldGfsh;
+  private GfshExecutor currentGfsh;
+  private Path tempFolder;
+
+  @Parameters(name = "{0}")
   public static Collection<String> data() {
     final List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
     result.removeIf(s -> TestVersion.compare(s, "1.10.0") < 0);
     return result;
   }
 
-  @Rule
-  public GfshRule oldGfsh;
+  @Rule(order = 0)
+  public FolderRule folderRule = new FolderRule();
+  @Rule(order = 1)
+  public GfshRule gfshRule = new GfshRule();
 
-  @Rule
-  public GfshRule currentGfsh;
-
-  @Rule
-  public TemporaryFolder tempFolder = new TemporaryFolder();
-
-  public RollingUpgradeWithSslDUnitTest(String version) throws UnknownHostException {
-    oldGfsh = new GfshRule(version);
-    currentGfsh = new GfshRule();
-    hostName = InetAddress.getLocalHost().getCanonicalHostName();
-    keyStoreFileName = hostName + "-keystore.jks";
-    trustStoreFileName = hostName + "-truststore.jks";
+  public RollingUpgradeWithSslDUnitTest(String version) {
+    this.version = version;
   }
 
   @Before
-  public void before() throws IOException, GeneralSecurityException {
+  public void setUp() throws IOException, GeneralSecurityException {
+    tempFolder = folderRule.getFolder().toPath();
+    oldGfsh = gfshRule.executor().withGeodeVersion(version).build(tempFolder);
+    currentGfsh = gfshRule.executor().build(tempFolder);
+    hostName = InetAddress.getLocalHost().getCanonicalHostName();
+    keyStoreFileName = hostName + "-keystore.jks";
+    trustStoreFileName = hostName + "-truststore.jks";
+
     generateStores();
     /*
      * We must use absolute paths for truststore and keystore in properties file and
@@ -107,14 +117,16 @@ public class RollingUpgradeWithSslDUnitTest {
      */
     final Properties properties = generateSslProperties();
 
-    securityPropertiesFile = tempFolder.newFile("gfsecurity.properties");
+    securityPropertiesFile = tempFolder.resolve("gfsecurity.properties").toFile();
+    Files.createFile(securityPropertiesFile.toPath());
     final FileOutputStream fileOutputStream =
         new FileOutputStream(securityPropertiesFile.getAbsolutePath());
     properties.store(fileOutputStream, "");
   }
 
   @Test
-  public void testRollingUpgradeWithDeployment() throws Exception {
+  public void testRollingUpgradeWithDeployment()
+      throws IOException, ExecutionException, InterruptedException, TimeoutException {
     final int locatorPort = portSupplier.getAvailablePort();
     final int locatorJmxPort = portSupplier.getAvailablePort();
     final int locator2Port = portSupplier.getAvailablePort();
@@ -129,7 +141,7 @@ public class RollingUpgradeWithSslDUnitTest {
                 locatorPort))
             .and(startServerCommandWithConfig("server1", server1Port, locatorPort))
             .and(startServerCommandWithConfig("server2", server2Port, locatorPort))
-            .execute(oldGfsh, tempFolder.getRoot());
+            .execute(oldGfsh, tempFolder);
 
     initializeRegion(locatorPort);
     causeP2PTraffic(locatorPort);
@@ -153,18 +165,20 @@ public class RollingUpgradeWithSslDUnitTest {
 
   private void upgradeLocator(String name, int locatorPort, int locatorJmxPort,
       int connectedLocatorPort,
-      GfshExecution startupExecution) {
-    oldGfsh.stopLocator(startupExecution, name);
+      GfshExecution startupExecution)
+      throws IOException, ExecutionException, InterruptedException, TimeoutException {
+    startupExecution.stopLocator(oldGfsh, name);
     GfshScript
         .of(startLocatorCommandWithConfig(name, locatorPort, locatorJmxPort, connectedLocatorPort))
-        .execute(currentGfsh, tempFolder.getRoot());
+        .execute(currentGfsh, tempFolder);
   }
 
   private void upgradeServer(String name, int serverPort, int locatorPort,
-      GfshExecution startupExecution) {
-    oldGfsh.stopServer(startupExecution, name);
+      GfshExecution startupExecution)
+      throws IOException, ExecutionException, InterruptedException, TimeoutException {
+    startupExecution.stopServer(oldGfsh, name);
     GfshScript.of(startServerCommandWithConfig(name, serverPort, locatorPort))
-        .execute(currentGfsh, tempFolder.getRoot());
+        .execute(currentGfsh, tempFolder);
   }
 
   private Properties generateSslProperties() {
@@ -175,22 +189,23 @@ public class RollingUpgradeWithSslDUnitTest {
     properties.setProperty(SSL_ENABLED_COMPONENTS, "cluster,server");
     properties.setProperty(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "true");
 
-    properties.setProperty(SSL_KEYSTORE, tempFolder.getRoot() + "/" + keyStoreFileName);
+    properties.setProperty(SSL_KEYSTORE, tempFolder + "/" + keyStoreFileName);
     properties.setProperty(SSL_KEYSTORE_TYPE, "jks");
     properties.setProperty(SSL_KEYSTORE_PASSWORD, "geode");
 
-    properties.setProperty(SSL_TRUSTSTORE, tempFolder.getRoot() + "/" + trustStoreFileName);
+    properties.setProperty(SSL_TRUSTSTORE, tempFolder + "/" + trustStoreFileName);
     properties.setProperty(SSL_TRUSTSTORE_TYPE, "jks");
     properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "geode");
 
     return properties;
   }
 
-  private void verifyListMembers(int locatorPort) {
+  private void verifyListMembers(int locatorPort)
+      throws IOException, ExecutionException, InterruptedException, TimeoutException {
     final GfshExecution members =
         GfshScript.of("connect --locator=" + hostName + "[" + locatorPort + "]")
             .and("list members")
-            .execute(currentGfsh, tempFolder.getRoot());
+            .execute(currentGfsh, tempFolder);
 
     assertThat(members.getOutputText())
         .contains("locator1")
@@ -198,7 +213,7 @@ public class RollingUpgradeWithSslDUnitTest {
         .contains("server1")
         .contains("server2");
 
-    GfshScript.of("disconnect").execute(currentGfsh, tempFolder.getRoot());
+    GfshScript.of("disconnect").execute(currentGfsh, tempFolder);
   }
 
   private String startServerCommandWithConfig(String server, int serverPort, int locatorPort) {
@@ -209,8 +224,7 @@ public class RollingUpgradeWithSslDUnitTest {
       final int locatorJmxPort,
       final int connectedLocatorPort) {
     return startLocatorCommand(name, hostName, locatorPort, locatorJmxPort, 0, connectedLocatorPort)
-        +
-        additionalParameters();
+        + additionalParameters();
   }
 
   private String additionalParameters() {
@@ -222,31 +236,33 @@ public class RollingUpgradeWithSslDUnitTest {
         " --J=-Dgemfire.forceDnsUse=true --J=-Djdk.tls.trustNameService=true";
   }
 
-  private void initializeRegion(int locatorPort) {
+  private void initializeRegion(int locatorPort)
+      throws IOException, ExecutionException, InterruptedException, TimeoutException {
     final GfshExecution getResponse =
         GfshScript.of("connect --locator=" + hostName + "[" + locatorPort + "]")
             .and("create region --name=region1 --type=REPLICATE")
             .and("list regions")
-            .execute(currentGfsh, tempFolder.getRoot());
+            .execute(currentGfsh, tempFolder);
 
     assertThat(getResponse.getOutputText()).contains("region1");
 
-    GfshScript.of("disconnect").execute(currentGfsh, tempFolder.getRoot());
+    GfshScript.of("disconnect").execute(currentGfsh, tempFolder);
   }
 
-  private void causeP2PTraffic(int locatorPort) {
+  private void causeP2PTraffic(int locatorPort)
+      throws IOException, ExecutionException, InterruptedException, TimeoutException {
     final GfshExecution getResponse =
         GfshScript.of("connect --locator=" + hostName + "[" + locatorPort + "]")
             .and("put --key='123abc' --value='Hello World!!' --region=region1")
             .and("get --key='123abc' --region=region1")
-            .execute(currentGfsh, tempFolder.getRoot());
+            .execute(currentGfsh, tempFolder);
 
     assertThat(getResponse.getOutputText()).contains("Hello World!!");
 
-    GfshScript.of("disconnect").execute(currentGfsh, tempFolder.getRoot());
+    GfshScript.of("disconnect").execute(currentGfsh, tempFolder);
   }
 
-  public void generateStores() throws IOException, GeneralSecurityException {
+  private void generateStores() throws IOException, GeneralSecurityException {
     final String algorithm = "SHA256withRSA";
     final CertificateMaterial ca = new CertificateBuilder(365, algorithm)
         .commonName("Test CA")
@@ -263,14 +279,33 @@ public class RollingUpgradeWithSslDUnitTest {
     store.withCertificate("geode", certificate);
     store.trust("ca", ca);
 
-    final File keyStoreFile = new File(tempFolder.getRoot(), keyStoreFileName);
+    final File keyStoreFile = new File(tempFolder.toFile(), keyStoreFileName);
     keyStoreFile.createNewFile();
     store.createKeyStore(keyStoreFile.getAbsolutePath(), "geode");
     System.out.println("Keystore created: " + keyStoreFile.getAbsolutePath());
 
-    final File trustStoreFile = new File(tempFolder.getRoot(), trustStoreFileName);
+    final File trustStoreFile = new File(tempFolder.toFile(), trustStoreFileName);
     trustStoreFile.createNewFile();
     store.createTrustStore(trustStoreFile.getPath(), "geode");
     System.out.println("Truststore created: " + trustStoreFile.getAbsolutePath());
+  }
+
+  private static String startServerCommand(String name, String hostname, int port,
+      int connectedLocatorPort) {
+    return "start server --name=" + name
+        + " --server-port=" + port
+        + " --locators=" + hostname + "[" + connectedLocatorPort + "]";
+  }
+
+  private static String startLocatorCommand(String name, String hostname, int port, int jmxPort,
+      int httpPort, int connectedLocatorPort) {
+    String command = "start locator --name=" + name
+        + " --port=" + port
+        + " --http-service-port=" + httpPort;
+    if (connectedLocatorPort > 0) {
+      command += " --locators=" + hostname + "[" + connectedLocatorPort + "]";
+    }
+    command += " --J=-Dgemfire.jmx-manager-port=" + jmxPort;
+    return command;
   }
 }

@@ -20,6 +20,7 @@ import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -160,7 +161,19 @@ public class GfshScript {
    * this will allow you to specify a gfsh workingDir when executing the script
    */
   public GfshExecution execute(GfshRule gfshRule, File workingDir) {
-    return gfshRule.execute(this, workingDir);
+    return gfshRule.execute(workingDir, this);
+  }
+
+  public GfshExecution execute(GfshExecutor executor) {
+    return executor.execute(this);
+  }
+
+  public GfshExecution execute(GfshExecutor executor, File workingDir) {
+    return executor.execute(workingDir, this);
+  }
+
+  public GfshExecution execute(GfshExecutor executor, Path workingDirPath) {
+    return executor.execute(workingDirPath.toFile(), this);
   }
 
   @Override

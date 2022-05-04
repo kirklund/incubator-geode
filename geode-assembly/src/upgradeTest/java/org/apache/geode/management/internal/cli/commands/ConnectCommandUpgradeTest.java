@@ -16,24 +16,26 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assume.assumeFalse;
 
+import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
-import org.apache.commons.lang3.JavaVersion;
-import org.apache.commons.lang3.SystemUtils;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-import org.apache.geode.test.dunit.rules.ClusterStartupRule;
-import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.GfshTest;
+import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
+import org.apache.geode.test.junit.rules.gfsh.GfshExecutor;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 import org.apache.geode.test.version.TestVersion;
@@ -43,49 +45,67 @@ import org.apache.geode.test.version.VersionManager;
 @RunWith(Parameterized.class)
 public class ConnectCommandUpgradeTest {
 
-  private String oldVersion;
+  private static final String HOSTNAME = "localhost";
+
+  private final String oldVersion;
+
+  private GfshExecutor oldGfsh;
+  private GfshExecutor gfsh;
+
+  @Parameters(name = "Locator Version: {0}")
+  public static Collection<String> data() {
+    return VersionManager.getInstance().getVersionsWithoutCurrent();
+  }
 
   public ConnectCommandUpgradeTest(String oldVersion) {
     this.oldVersion = oldVersion;
   }
 
-  @Parameterized.Parameters(name = "Locator Version: {0}")
-  public static Collection<String> data() {
-    List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
-    return result;
+  @Rule(order = 0)
+  public FolderRule folderRule = new FolderRule();
+  @Rule(order = 1)
+  public GfshRule gfshRule = new GfshRule();
+
+  @Before
+  public void setUp() {
+    oldGfsh = gfshRule.executor()
+        .withGeodeVersion(oldVersion)
+        .build(folderRule.getFolder().toPath());
+    gfsh = gfshRule.executor()
+        .build(folderRule.getFolder().toPath());
   }
 
-  @Rule
-  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
-
-  @Rule
-  public GfshRule gfshDefault = new GfshRule();
-
   @Test
-  public void useCurrentGfshToConnectToOlderLocator() {
-    assumeFalse(
-        "this test can only be run with pre-9 jdk since it needs to run older version of gfsh",
-        SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9));
+  public void useCurrentGfshToConnectToOlderLocator()
+      throws IOException, ExecutionException, InterruptedException, TimeoutException {
+    int[] ports = getRandomAvailableTCPPorts(3);
+    int httpPort = ports[0];
+    int locatorPort = ports[1];
+    int jmxPort = ports[2];
+    GfshScript
+        .of(startLocatorCommand("test", locatorPort, jmxPort, httpPort, 0))
+        .execute(oldGfsh);
 
-    MemberVM oldVersionLocator = clusterStartupRule.startLocatorVM(0, oldVersion);
-
-    if (TestVersion.compare(oldVersion, "1.10.0") < 0) { // New version gfsh could not connect to
-                                                         // locators with version below 1.10.0
+    // New version gfsh could not connect to locators with version below 1.10.0
+    if (TestVersion.compare(oldVersion, "1.10.0") < 0) {
       GfshExecution connect = GfshScript
-          .of("connect --locator=localhost[" + oldVersionLocator.getPort() + "]")
+          .of("connect --locator=localhost[" + locatorPort + "]")
           .expectFailure()
-          .execute(gfshDefault);
+          .execute(gfsh);
 
       assertThat(connect.getOutputText())
           .contains("Cannot use a")
           .contains("gfsh client to connect to")
           .contains("cluster.");
 
-    } else { // From 1.10.0 new version gfsh are able to connect to old version locators
+    }
+
+    // From 1.10.0 new version gfsh are able to connect to old version locators
+    else {
       GfshExecution connect = GfshScript
-          .of("connect --locator=localhost[" + oldVersionLocator.getPort() + "]")
+          .of("connect --locator=localhost[" + locatorPort + "]")
           .expectExitCode(0)
-          .execute(gfshDefault);
+          .execute(gfsh);
 
       assertThat(connect.getOutputText())
           .contains("Successfully connected to:");
@@ -93,17 +113,35 @@ public class ConnectCommandUpgradeTest {
   }
 
   @Test
-  public void invalidHostname() {
-    MemberVM oldVersionLocator = clusterStartupRule.startLocatorVM(0, oldVersion);
+  public void invalidHostname()
+      throws IOException, ExecutionException, InterruptedException, TimeoutException {
+    int[] ports = getRandomAvailableTCPPorts(3);
+    int httpPort = ports[0];
+    int locatorPort = ports[1];
+    int jmxPort = ports[2];
+    GfshScript
+        .of(startLocatorCommand("test", locatorPort, jmxPort, httpPort, 0))
+        .execute(oldGfsh);
 
     GfshExecution connect = GfshScript
         .of("connect --locator=\"invalid host name[52326]\"")
         .expectFailure()
-        .execute(gfshDefault);
+        .execute(gfsh);
 
     assertThat(connect.getOutputText())
         .doesNotContain("UnknownHostException")
         .doesNotContain("nodename nor servname")
         .contains("can't be reached. Hostname or IP address could not be found.");
+  }
+
+  private static String startLocatorCommand(String name, int port, int jmxPort, int httpPort,
+      int connectedLocatorPort) {
+    String startLocatorCommand =
+        "start locator --name=%s --port=%d --http-service-port=%d --J=-Dgemfire.jmx-manager-port=%d";
+    if (connectedLocatorPort > 0) {
+      return String.format(startLocatorCommand + " --locators=%s[%d]",
+          name, port, httpPort, jmxPort, HOSTNAME, connectedLocatorPort);
+    }
+    return String.format(startLocatorCommand, name, port, httpPort, jmxPort);
   }
 }

@@ -12,8 +12,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.rest;
+package org.apache.geode.rules;
 
+import static java.lang.String.format;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 
 import org.junit.Before;
@@ -21,14 +22,14 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.test.junit.rules.FolderRule;
-import org.apache.geode.test.junit.rules.GeodeDevRestClient;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 
-public class RegionManagementAcceptanceTest {
+public class GfshRuleExampleTest {
 
   private int locatorPort;
   private int httpPort;
+  private int jmxPort;
 
   @Rule(order = 0)
   public FolderRule folderRule = new FolderRule();
@@ -37,25 +38,19 @@ public class RegionManagementAcceptanceTest {
 
   @Before
   public void setUp() {
-    int[] ports = getRandomAvailableTCPPorts(2);
+    int[] ports = getRandomAvailableTCPPorts(3);
     locatorPort = ports[0];
     httpPort = ports[1];
+    jmxPort = ports[2];
   }
 
   @Test
-  public void sanityCheck() {
+  public void test() {
     GfshScript
-        .of("start locator --port=" + locatorPort + " --J=-Dgemfire.http-service-port=" + httpPort)
+        .of(format(
+            "start locator --name=locator --port=%d --http-service-port=%d --J=-Dgeode.jmx-manager-port=%d",
+            locatorPort, httpPort, jmxPort),
+            "start server --name=server --disable-default-server")
         .execute(gfshRule);
-
-    // verify the management rest api is started correctly
-    GeodeDevRestClient client =
-        new GeodeDevRestClient("/management/v1", "localhost", httpPort, false);
-
-    client
-        .doGetAndAssert("/ping")
-        .hasStatusCode(200)
-        .hasResponseBody()
-        .isEqualTo("pong");
   }
 }

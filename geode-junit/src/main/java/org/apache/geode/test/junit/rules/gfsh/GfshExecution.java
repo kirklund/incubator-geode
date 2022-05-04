@@ -14,12 +14,14 @@
  */
 package org.apache.geode.test.junit.rules.gfsh;
 
-import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
+import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.concat;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
+import static org.apache.geode.internal.process.ProcessType.LOCATOR;
+import static org.apache.geode.internal.process.ProcessType.SERVER;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -28,19 +30,19 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
+import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.test.junit.rules.gfsh.internal.ProcessLogger;
 
 public class GfshExecution {
 
-  private static final String DOUBLE_QUOTE = "\"";
   private static final String SCRIPT_TIMEOUT_FAILURE_MESSAGE =
       "Process started by [%s] did not exit after %s %s";
   private static final String SCRIPT_EXIT_VALUE_DESCRIPTION =
@@ -67,7 +69,7 @@ public class GfshExecution {
 
   protected GfshExecution(Process process, File workingDir) {
     this.process = process;
-    this.workingDir = workingDir;
+    this.workingDir = workingDir.getAbsoluteFile();
 
     processLogger = new ProcessLogger(process, workingDir.getName());
     processLogger.start();
@@ -87,6 +89,62 @@ public class GfshExecution {
 
   public Process getProcess() {
     return process;
+  }
+
+  public List<Path> getServerDirs() {
+    File[] subDirs = workingDir.listFiles(File::isDirectory);
+
+    Predicate<File> isServerDir = dir -> stream(requireNonNull(dir.list()))
+        .anyMatch(filename -> filename.endsWith("server.pid"));
+
+    return Arrays.stream(requireNonNull(subDirs)).filter(isServerDir)
+        .map(dir -> dir.toPath().toAbsolutePath())
+        .collect(toList());
+  }
+
+  public List<Path> getLocatorDirs() {
+    File[] subDirs = workingDir.listFiles(File::isDirectory);
+
+    Predicate<File> isLocatorDir = dir -> Arrays.stream(requireNonNull(dir.list()))
+        .anyMatch(filename -> filename.endsWith("locator.pid"));
+
+    return Arrays.stream(requireNonNull(subDirs)).filter(isLocatorDir)
+        .map(dir -> dir.toPath().toAbsolutePath())
+        .collect(toList());
+  }
+
+  private void printLogFiles() {
+    System.out.println(
+        "Printing contents of all log files found in " + workingDir.getAbsolutePath());
+    List<File> logFiles = findLogFiles();
+
+    for (File logFile : logFiles) {
+      System.out.println("Contents of " + logFile.getAbsolutePath());
+      try (BufferedReader br =
+          new BufferedReader(new InputStreamReader(new FileInputStream(logFile)))) {
+        String line;
+        while ((line = br.readLine()) != null) {
+          System.out.println(line);
+        }
+      } catch (IOException e) {
+        System.out.println("Unable to print log due to: " + getStackTrace(e));
+      }
+    }
+  }
+
+  private List<File> findLogFiles() {
+    List<Path> servers = getServerDirs();
+    List<Path> locators = getLocatorDirs();
+
+    return concat(servers.stream(), locators.stream())
+        .flatMap(this::findLogFiles)
+        .collect(toList());
+  }
+
+  private Stream<File> findLogFiles(Path memberDir) {
+    return stream(requireNonNull(memberDir.toFile().listFiles()))
+        .filter(File::isFile)
+        .filter(file -> file.getName().toLowerCase().endsWith(".log"));
   }
 
   void awaitTermination(GfshScript script)
@@ -114,103 +172,55 @@ public class GfshExecution {
    * this only kills the process of "gfsh -e command", it does not kill the child processes started
    * by this command.
    */
-  void killProcess() {
+  void killProcess() throws InterruptedException {
     process.destroyForcibly();
     if (process.isAlive()) {
       // process may not terminate immediately after destroyForcibly
-      boolean exited;
-      try {
-        exited = process.waitFor(getTimeout().toMinutes(), MINUTES);
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
-      }
+      boolean exited = process.waitFor(getTimeout().toMinutes(), MINUTES);
       if (!exited) {
-        throw new RuntimeException("failed to destroy the process of " + workingDir.getName());
+        throw new IllegalStateException(
+            "Failed to destroy Gfsh process started in " + workingDir.getName());
       }
     }
   }
 
-  String[] getStopMemberCommands() {
-    Stream<String> stopServers = getServerDirs(true)
-        .stream()
-        .map(f -> "stop server --dir=" + quoteArgument(f.toString()));
-    Stream<String> stopLocators = getLocatorDirs(true)
-        .stream()
-        .map(f -> "stop locator --dir=" + quoteArgument(f.toString()));
-    return concat(stopServers, stopLocators)
-        .toArray(String[]::new);
+  public Path getSubDir(String subDirName) {
+    return getWorkingDir().toPath().resolve(subDirName);
   }
 
-  private void printLogFiles() {
-    System.out.println(
-        "Printing contents of all log files found in " + workingDir.getAbsolutePath());
-    List<File> logFiles = findLogFiles();
-
-    for (File logFile : logFiles) {
-      System.out.println("Contents of " + logFile.getAbsolutePath());
-      try (BufferedReader br = new BufferedReader(new InputStreamReader(
-          new FileInputStream(logFile), Charset.defaultCharset()))) {
-        String line;
-        while ((line = br.readLine()) != null) {
-          System.out.println(line);
-        }
-      } catch (IOException e) {
-        System.out.println("Unable to print log due to: " + getStackTrace(e));
-      }
+  /*
+   * this will stop the server that's been started in this gfsh execution
+   */
+  public void stopServer(GfshExecutor executor, String serverName) {
+    String command = getStopProcessCommand(SERVER, getSubDir(serverName));
+    try {
+      executor.execute(GfshScript.of(command).withName("Stop-server-" + serverName));
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
   }
 
-  private List<File> getServerDirs(boolean isRunning) {
-    Predicate<File> predicate = isRunning ? IS_RUNNING_SERVER_DIRECTORY : IS_SERVER_DIRECTORY;
-    return findPotentialMemberDirectories()
-        .stream()
-        .filter(predicate)
-        .collect(toList());
-  }
-
-  private List<File> getLocatorDirs(boolean isRunning) {
-    Predicate<File> predicate = isRunning ? IS_RUNNING_LOCATOR_DIRECTORY : IS_LOCATOR_DIRECTORY;
-    return findPotentialMemberDirectories()
-        .stream()
-        .filter(predicate)
-        .collect(toList());
-  }
-
-  private List<File> findPotentialMemberDirectories() {
-    File[] directories = workingDir.listFiles(File::isDirectory);
-
-    assertThat(directories)
-        .as("List of directories under " + workingDir.getAbsolutePath())
-        .isNotNull();
-
-    List<File> potentialMemberDirectories = new ArrayList<>(asList(directories));
-    potentialMemberDirectories.add(workingDir);
-
-    return potentialMemberDirectories;
-  }
-
-  private List<File> findLogFiles() {
-    List<File> servers = getServerDirs(false);
-    List<File> locators = getLocatorDirs(false);
-
-    return concat(servers.stream(), locators.stream())
-        .flatMap(GfshExecution::findLogFiles)
-        .collect(toList());
-  }
-
-  private static Stream<File> findLogFiles(File memberDir) {
-    return stream(memberDir.listFiles())
-        .filter(File::isFile)
-        .filter(file -> file.getName().toLowerCase().endsWith(".log"));
-  }
-
-  private static String quoteArgument(String argument) {
-    if (!argument.startsWith(DOUBLE_QUOTE)) {
-      argument = DOUBLE_QUOTE + argument;
+  /*
+   * this will stop the locator that's been started in this gfsh execution
+   */
+  public void stopLocator(GfshExecutor executor, String locatorName) {
+    String command = getStopProcessCommand(LOCATOR, getSubDir(locatorName));
+    try {
+      executor.execute(GfshScript.of(command).withName("Stop-locator-" + locatorName));
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
-    if (!argument.endsWith(DOUBLE_QUOTE)) {
-      argument = argument + DOUBLE_QUOTE;
+  }
+
+  private String getStopProcessCommand(ProcessType processType, Path directory) {
+    StringBuilder sb = new StringBuilder("stop ");
+    if (processType == SERVER) {
+      sb.append("server ");
+    } else {
+      sb.append("locator ");
     }
-    return argument;
+    sb.append("--dir=");
+    sb.append(directory.toFile());
+    return sb.toString();
   }
 }
