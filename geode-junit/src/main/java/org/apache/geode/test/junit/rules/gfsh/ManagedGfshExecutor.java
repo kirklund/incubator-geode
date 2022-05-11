@@ -49,11 +49,10 @@ import org.apache.geode.internal.process.NativeProcessUtils;
 import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.internal.process.ProcessUtilsProvider;
-import org.apache.geode.test.junit.rules.Folder;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.version.VersionManager;
 
-public class GfshContext implements GfshExecutor {
+public class ManagedGfshExecutor {
 
   private final List<GfshExecution> gfshExecutions = synchronizedList(new ArrayList<>());
   private final List<String> jvmOptions;
@@ -65,7 +64,7 @@ public class GfshContext implements GfshExecutor {
   private final Path gfshPath;
   private final Path dir;
 
-  private GfshContext(Builder builder) {
+  private ManagedGfshExecutor(Builder builder) {
     thrown = builder.thrown;
     javaHome = builder.javaHome;
     gfshPath = builder.gfshPath;
@@ -90,12 +89,10 @@ public class GfshContext implements GfshExecutor {
         .forEach(this::killProcess);
   }
 
-  @Override
   public GfshExecution execute(String... commands) {
     return execute(GfshScript.of(commands));
   }
 
-  @Override
   public GfshExecution execute(GfshScript gfshScript) {
     try {
       Path scriptPath = dir.resolve(gfshScript.getName());
@@ -106,22 +103,18 @@ public class GfshContext implements GfshExecutor {
     }
   }
 
-  @Override
   public GfshExecution execute(File workingDir, String... commands) {
     return execute(workingDir, GfshScript.of(commands));
   }
 
-  @Override
   public GfshExecution execute(Path workingDir, String... commands) {
     return execute(workingDir, GfshScript.of(commands));
   }
 
-  @Override
   public GfshExecution execute(Path workingDir, GfshScript gfshScript) {
     return execute(workingDir.toFile(), gfshScript);
   }
 
-  @Override
   public GfshExecution execute(File workingDir, GfshScript gfshScript) {
     try {
       return doExecute(workingDir, gfshScript);
@@ -236,45 +229,41 @@ public class GfshContext implements GfshExecutor {
     }
   }
 
-  public static class Builder implements GfshExecutor.Builder {
+  public static class Builder {
 
     private static final ProcessUtilsProvider processUtils = NativeProcessUtils.create();
 
     private final List<String> jvmOptions = new ArrayList<>();
-    private final Consumer<GfshContext> contextCreated;
-    private final Consumer<Throwable> thrown;
+    private Consumer<ManagedGfshExecutor> contextCreated;
+    private Consumer<Throwable> thrown;
     private final IntConsumer processKiller = processUtils::killProcess;
     private Path javaHome;
     private Path gfshPath = findGfsh(null);
-    private Path dir;
+    private final Path dir;
 
-    Builder(Consumer<GfshContext> contextCreated, Consumer<Throwable> thrown) {
+    Builder(Consumer<ManagedGfshExecutor> contextCreated, Consumer<Throwable> thrown, Path dir) {
       this.contextCreated = contextCreated;
       this.thrown = thrown;
+      this.dir = dir;
     }
 
-    @Override
     public Builder withJavaHome(Path javaHome) {
       this.javaHome = javaHome;
       return this;
     }
 
-    @Override
     public Builder withGeodeVersion(String geodeVersion) {
       gfshPath = findGfsh(geodeVersion);
       return this;
     }
 
-    @Override
     public Builder withGfshJvmOptions(String... option) {
       jvmOptions.addAll(Arrays.asList(option));
       return this;
     }
 
-    @Override
-    public GfshContext build(Path dir) {
-      this.dir = dir;
-      GfshContext context = new GfshContext(this);
+    public ManagedGfshExecutor build() {
+      ManagedGfshExecutor context = new ManagedGfshExecutor(this);
       contextCreated.accept(context);
       return context;
     }

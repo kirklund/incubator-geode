@@ -15,7 +15,7 @@
 package org.apache.geode.test.junit.rules.serializable;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.apache.geode.test.junit.rules.serializable.FieldSerializationUtils.readField;
+import static org.apache.geode.internal.lang.ReflectionUtils.readField;
 import static org.apache.geode.test.junit.rules.serializable.FieldsOfTimeout.FIELD_LOOK_FOR_STUCK_THREAD;
 import static org.apache.geode.test.junit.rules.serializable.FieldsOfTimeout.FIELD_TIMEOUT;
 import static org.apache.geode.test.junit.rules.serializable.FieldsOfTimeout.FIELD_TIME_UNIT;
@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.rules.Timeout;
 
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.internal.lang.ReflectionUtils;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 /**
@@ -99,10 +100,14 @@ public class SerializableTimeout extends Timeout implements SerializableTestRule
     private final boolean lookForStuckThread;
 
     SerializationProxy(final SerializableTimeout instance) {
-      timeout = (long) readField(Timeout.class, instance, FIELD_TIMEOUT);
-      timeUnit = (TimeUnit) readField(Timeout.class, instance, FIELD_TIME_UNIT);
-      lookForStuckThread =
-          (boolean) readField(Timeout.class, instance, FIELD_LOOK_FOR_STUCK_THREAD);
+      try {
+        timeout = (long) readField(Timeout.class, instance, FIELD_TIMEOUT);
+        timeUnit = (TimeUnit) readField(Timeout.class, instance, FIELD_TIME_UNIT);
+        lookForStuckThread =
+            (boolean) readField(Timeout.class, instance, FIELD_LOOK_FOR_STUCK_THREAD);
+      } catch (IllegalAccessException | NoSuchFieldException e) {
+        throw new Error(e);
+      }
     }
 
     protected Object readResolve() {

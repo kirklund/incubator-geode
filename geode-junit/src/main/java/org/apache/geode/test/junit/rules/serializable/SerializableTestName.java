@@ -14,8 +14,8 @@
  */
 package org.apache.geode.test.junit.rules.serializable;
 
-import static org.apache.geode.test.junit.rules.serializable.FieldSerializationUtils.readField;
-import static org.apache.geode.test.junit.rules.serializable.FieldSerializationUtils.writeField;
+import static org.apache.geode.internal.lang.ReflectionUtils.readField;
+import static org.apache.geode.internal.lang.ReflectionUtils.writeField;
 import static org.apache.geode.test.junit.rules.serializable.FieldsOfTestName.FIELD_NAME;
 
 import java.io.InvalidObjectException;
@@ -52,12 +52,20 @@ public class SerializableTestName extends TestName implements SerializableTestRu
     private final String name;
 
     SerializationProxy(final SerializableTestName instance) {
-      name = (String) readField(TestName.class, instance, FIELD_NAME);
+      try {
+        name = (String) readField(TestName.class, instance, FIELD_NAME);
+      } catch (IllegalAccessException | NoSuchFieldException e) {
+        throw new Error(e);
+      }
     }
 
     private Object readResolve() {
       SerializableTestName instance = new SerializableTestName();
-      writeField(TestName.class, instance, FIELD_NAME, name);
+      try {
+        writeField(TestName.class, instance, FIELD_NAME, name);
+      } catch (IllegalAccessException | NoSuchFieldException e) {
+        throw new Error(e);
+      }
       return instance;
     }
   }

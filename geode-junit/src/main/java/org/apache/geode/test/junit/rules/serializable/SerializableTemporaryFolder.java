@@ -14,8 +14,8 @@
  */
 package org.apache.geode.test.junit.rules.serializable;
 
-import static org.apache.geode.test.junit.rules.serializable.FieldSerializationUtils.readField;
-import static org.apache.geode.test.junit.rules.serializable.FieldSerializationUtils.writeField;
+import static org.apache.geode.internal.lang.ReflectionUtils.readField;
+import static org.apache.geode.internal.lang.ReflectionUtils.writeField;
 import static org.apache.geode.test.junit.rules.serializable.FieldsOfTemporaryFolder.FIELD_ASSURE_DELETION;
 import static org.apache.geode.test.junit.rules.serializable.FieldsOfTemporaryFolder.FIELD_FOLDER;
 import static org.apache.geode.test.junit.rules.serializable.FieldsOfTemporaryFolder.FIELD_PARENT_FOLDER;
@@ -201,9 +201,13 @@ public class SerializableTemporaryFolder extends TemporaryFolder implements Seri
     private final boolean assureDeletion;
 
     private SerializationProxy(SerializableTemporaryFolder instance) {
-      parentFolder = (File) readField(TemporaryFolder.class, instance, FIELD_PARENT_FOLDER);
-      folder = (File) readField(TemporaryFolder.class, instance, FIELD_FOLDER);
-      assureDeletion = (boolean) readField(TemporaryFolder.class, instance, FIELD_ASSURE_DELETION);
+      try {
+        parentFolder = (File) readField(TemporaryFolder.class, instance, FIELD_PARENT_FOLDER);
+        folder = (File) readField(TemporaryFolder.class, instance, FIELD_FOLDER);
+        assureDeletion = (boolean) readField(TemporaryFolder.class, instance, FIELD_ASSURE_DELETION);
+      } catch (IllegalAccessException | NoSuchFieldException e) {
+        throw new Error(e);
+      }
     }
 
     protected Object readResolve() {
@@ -215,7 +219,11 @@ public class SerializableTemporaryFolder extends TemporaryFolder implements Seri
       }
 
       SerializableTemporaryFolder instance = new SerializableTemporaryFolder(instanceBuilder);
-      writeField(TemporaryFolder.class, instance, FIELD_FOLDER, folder);
+      try {
+        writeField(TemporaryFolder.class, instance, FIELD_FOLDER, folder);
+      } catch (IllegalAccessException | NoSuchFieldException e) {
+        throw new Error(e);
+      }
 
       return instance;
     }

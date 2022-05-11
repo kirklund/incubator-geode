@@ -14,7 +14,7 @@
  */
 package org.apache.geode.test.junit.rules.serializable;
 
-import static org.apache.geode.test.junit.rules.serializable.FieldSerializationUtils.readField;
+import static org.apache.geode.internal.lang.ReflectionUtils.readField;
 import static org.apache.geode.test.junit.rules.serializable.FieldsOfTemporaryFolder.FIELD_ASSURE_DELETION;
 import static org.apache.geode.test.junit.rules.serializable.FieldsOfTemporaryFolder.FIELD_FOLDER;
 import static org.apache.geode.test.junit.rules.serializable.FieldsOfTemporaryFolder.FIELD_PARENT_FOLDER;

@@ -66,6 +66,7 @@ import org.apache.geode.internal.UniquePortSupplier;
 import org.apache.geode.internal.shared.NativeCalls;
 import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecutor;
+import org.apache.geode.test.junit.rules.gfsh.GfshManager;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.version.TestVersion;
 import org.apache.geode.test.version.VersionManager;
@@ -97,6 +98,12 @@ public class SocketCreatorUpgradeTest {
   public final FolderRule tempFolder = new FolderRule();
   @Rule(order = 1)
   public final GfshRule gfshRule = new GfshRule();
+
+  @Rule
+  public GfshManager gfshManager = new GfshManager(this);
+
+  @GfshManager.GfshExecutorBuilder
+  GfshExecutor.Builder gfshExecutorBuilder;
 
   private GfshExecutor gfshOldGeodeOldJava;
   private GfshExecutor gfshOldGeodeNewJava;
@@ -132,12 +139,20 @@ public class SocketCreatorUpgradeTest {
 
     root = tempFolder.getFolder().toPath();
 
-    gfshOldGeodeOldJava =
-        gfshRule.executor().withGeodeVersion(version).withJavaHome(oldJavaHome).build(root);
-    gfshOldGeodeNewJava =
-        gfshRule.executor().withGeodeVersion(version).withJavaHome(newJavaHome).build(root);
-    gfshNewGeodeOldJava = gfshRule.executor().withJavaHome(oldJavaHome).build(root);
-    gfshNewGeodeNewJava = gfshRule.executor().withJavaHome(newJavaHome).build(root);
+    gfshOldGeodeOldJava = gfshExecutorBuilder
+        .withGeodeVersion(version)
+        .withJavaHome(oldJavaHome)
+        .build(root);
+    gfshOldGeodeNewJava = gfshExecutorBuilder
+        .withGeodeVersion(version)
+        .withJavaHome(newJavaHome)
+        .build(root);
+    gfshNewGeodeOldJava = gfshExecutorBuilder
+        .withJavaHome(oldJavaHome)
+        .build(root);
+    gfshNewGeodeNewJava = gfshExecutorBuilder
+        .withJavaHome(newJavaHome)
+        .build(root);
 
     final UniquePortSupplier portSupplier = new UniquePortSupplier();
     final int locator1Port = portSupplier.getAvailablePort();

@@ -15,7 +15,7 @@
 package org.apache.geode.test.junit.rules.serializable;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.geode.test.junit.rules.serializable.FieldSerializationUtils.readField;
+import static org.apache.geode.internal.lang.ReflectionUtils.readField;
 import static org.apache.geode.test.junit.rules.serializable.FieldsOfTimeout.FIELD_LOOK_FOR_STUCK_THREAD;
 import static org.apache.geode.test.junit.rules.serializable.FieldsOfTimeout.FIELD_TIMEOUT;
 import static org.apache.geode.test.junit.rules.serializable.FieldsOfTimeout.FIELD_TIME_UNIT;
@@ -29,6 +29,8 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Test;
 import org.junit.rules.Timeout;
+
+import org.apache.geode.internal.lang.ReflectionUtils;
 
 
 /**
@@ -61,7 +63,7 @@ public class SerializableTimeoutTest {
   }
 
   @Test
-  public void fieldsCanBeRead() {
+  public void fieldsCanBeRead() throws NoSuchFieldException, IllegalAccessException {
     long timeout = 1000;
     TimeUnit timeUnit = TimeUnit.MILLISECONDS;
     boolean lookingForStuckThread = false;
@@ -94,7 +96,7 @@ public class SerializableTimeoutTest {
   }
 
   @Test
-  public void canBeSerialized() {
+  public void canBeSerialized() throws NoSuchFieldException, IllegalAccessException {
     long timeout = 2;
     TimeUnit timeUnit = SECONDS;
     boolean lookingForStuckThread = true;
